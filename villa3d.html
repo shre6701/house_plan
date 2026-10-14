@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4BHK Villa - Interactive Architectural & Interior Plan</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --warn: #f43f5e;
+    --good: #10b981;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  header { padding: 14px 24px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
+  .controls { display: flex; gap: 12px; align-items: center; }
+  .btn-group { display: flex; background: var(--bg); border-radius: 6px; padding: 3px; border: 1px solid var(--border); }
+  button { background: transparent; color: var(--muted); border: none; padding: 7px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; }
+  button.active { background: var(--accent); color: #0f172a; font-weight: 600; }
+  button.mode-orig.active { background: var(--warn); color: white; }
+  button.mode-reim.active { background: var(--good); color: #0f172a; }
+  .workspace { display: flex; flex: 1; overflow: hidden; }
+  .canvas-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; padding: 20px; background: radial-gradient(circle, #1e293b 1px, transparent 1px); background-size: 20px 20px; }
+  svg { max-width: 100%; max-height: 100%; width: 680px; height: 680px; background: #0b1120; border: 2px solid var(--border); border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  .room { cursor: pointer; transition: all 0.2s ease; stroke: #475569; stroke-width: 2; }
+  .room:hover { filter: brightness(1.25); stroke: #fff; stroke-width: 2.5; }
+  .room.selected { stroke: var(--accent); stroke-width: 3.5; }
+  .room-label { fill: #f8fafc; font-size: 11px; font-weight: 600; text-anchor: middle; pointer-events: none; }
+  .room-dim { fill: #cbd5e1; font-size: 9.5px; text-anchor: middle; pointer-events: none; }
+  .sidebar { width: 380px; background: var(--panel); border-left: 1px solid var(--border); padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+  .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+  .badge.orig { background: rgba(244, 63, 94, 0.2); color: var(--warn); border: 1px solid var(--warn); }
+  .badge.reim { background: rgba(16, 185, 129, 0.2); color: var(--good); border: 1px solid var(--good); }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .card h3 { font-size: 13px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .card p, .card li { font-size: 13.5px; line-height: 1.5; color: #e2e8f0; }
+  .card ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+  .compass { position: absolute; top: 30px; right: 30px; background: var(--panel); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; color: var(--accent); }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>4BHK VILLA ARCHITECTURAL STUDIO</h1>
+  <div class="controls">
+    <div class="btn-group" id="floorBtns">
+      <button class="active" onclick="setFloor('gf')">Ground Floor</button>
+      <button onclick="setFloor('ff')">1st Floor</button>
+      <button onclick="setFloor('sf')">2nd Floor</button>
+    </div>
+    <div class="btn-group" id="modeBtns">
+      <button class="mode-orig active" onclick="setMode('orig')">Original Plan (Flawed)</button>
+      <button class="mode-reim" onclick="setMode('reim')">Reimagined (Optimized)</button>
+    </div>
+  </div>
+</header>
+
+<div class="workspace">
+  <div class="canvas-area">
+    <div class="compass">▲ NORTH</div>
+    <svg id="blueprint" viewBox="0 0 600 600"></svg>
+  </div>
+  <div class="sidebar">
+    <div id="roomDetails">
+      <span class="badge orig" id="statusBadge">ORIGINAL PLAN</span>
+      <h2 id="rTitle" style="font-size: 20px; margin-bottom: 4px;">Select a Room</h2>
+      <p id="rDim" style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Click any zone on the blueprint to inspect dimensions & advisor critique.</p>
+      
+      <div class="card" style="margin-bottom: 12px;">
+        <h3>Senior Advisor Critique</h3>
+        <p id="rCritique">Use the top buttons to switch floors or toggle between your original attached layout and the reimagined architectural layout.</p>
+      </div>
+
+      <div class="card">
+        <h3>Interior & Spatial Directives</h3>
+        <ul id="rDesign">
+          <li>Click any room on the interactive map to view tailored furniture, lighting, and structural adjustments.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i class="dot" style="background:#1e3a5f"></i> Living/Social</span>
+      <span><i class="dot" style="background:#312e81"></i> Bedrooms</span>
+      <span><i class="dot" style="background:#115e59"></i> Wet Areas/Toilets</span>
+      <span><i class="dot" style="background:#78350f"></i> Closets/Store</span>
+      <span><i class="dot" style="background:#374151"></i> Core/Stairs/Lift</span>
+      <span><i class="dot" style="background:#14532d"></i> Outdoor/Terrace</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const C = {
+  social: "#1e3a5f", bed: "#312e81", wet: "#115e59",
+  store: "#78350f", core: "#374151", outdoor: "#14532d", void: "#090d16"
+};
+
+const DATA = {
+  gf: {
+    orig: [
+      { id:"garden", x:20, y:20, w:300, h:70, name:"LAWN / GARDEN", dim:"North-West Lawn", c:C.outdoor, critique:"Good perimeter buffer, but cut off from the main entrance view by internal walls.", design:["Plant native low-maintenance shrubs along West boundary.","Install warm 2700K bollard lighting."] },
+      { id:"parking", x:320, y:20, w:260, h:70, name:"CAR PARKING", dim:"Front Porch", c:C.core, critique:"Tight turning radius if a second car is parked outside.", design:["Use permeable pavers to prevent waterlogging.","Add EV charger point on East pillar."] },
+      { id:"living", x:60, y:90, w:140, h:170, name:"LIVING ROOM", dim:"12'-8\" x 14'-8\"", c:C.social, critique:"WARNING: Isolated in the back corner. Guests have to walk past the dining table to reach the main sofa. Also sits directly underneath the 1st-floor toilet.", design:["Current L-sofa blocks garden access.","Needs acoustic ceiling insulation due to toilet above."] },
+      { id:"dining", x:200, y:90, w:130, h:170, name:"DOUBLE HEIGHT DINING", dim:"11' x 14'-3\"", c:C.social, critique:"Acts as a noise and cooking-odor chimney straight into the 1st-floor bedrooms.", design:["Requires a high-suction silent chimney in the kitchen.","Use acoustic wall panels to dampen echo."] },
+      { id:"puja", x:330, y:90, w:50, h:70, name:"PUJA", dim:"4' WIDE", c:C.store, critique:"Blocks the natural flow between the Drawing Room and Dining Area.", design:["Ventilation is poor for incense smoke; keep open to dining."] },
+      { id:"drawing", x:380, y:90, w:120, h:170, name:"DRAWING ROOM", dim:"10'-3\" x 14'-3\"", c:C.social, critique:"Too narrow (10'3\"). Once you put a sofa and coffee table, walking space is cramped. Redundant when you already have a Living Room.", design:["Use slim-profile armchairs instead of bulky sofas."] },
+      { id:"ent", x:500, y:90, w:80, h:170, name:"ENTRANCE VERANDAH", dim:"5'-5\" WIDE", c:C.outdoor, critique:"Side-facing entrance is functional, but opens into a boxy 10'3\" room.", design:["Add concealed shoe cabinetry along the steps."] },
+      { id:"bed1", x:60, y:260, w:140, h:190, name:"BEDROOM 01", dim:"12' x 14'-8\"", c:C.bed, critique:"Decent size, but wardrobe placement eats into circulation space.", design:["Use sliding wardrobe shutters to save floor clearance."] },
+      { id:"wic1", x:60, y:450, w:140, h:70, name:"WALK-IN CLOSET", dim:"12' x 5'-3\"", c:C.store, critique:"Generous storage, though a 5'3\" width only allows wardrobe depth on one side (2ft) leaving 3'3\" walkway.", design:["Install full-height mirrors at the end to visually widen."] },
+      { id:"lift", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Well-positioned central vertical core.", design:["Choose a gearless traction home lift to avoid pit/headroom issues."] },
+      { id:"toil1", x:200, y:390, w:65, h:100, name:"ATTACHED TOILET", dim:"5'-7\" x 7'-10\"", c:C.wet, critique:"Door placement is awkward next to the lift shaft.", design:["Wall-mounted WC and glass shower partition."] },
+      { id:"pwd", x:265, y:330, w:45, h:90, name:"COMMON TOILET", dim:"3'-8\" x 8'", c:C.wet, critique:"3'8\" is tight. Your elbows will feel the walls.", design:["Use a corner or narrow-depth floating vanity basin."] },
+      { id:"ser_t", x:265, y:420, w:45, h:100, name:"SER. TOILET", dim:"3'-8\" x 6'", c:C.wet, critique:"Functional for staff, shares plumbing wall with common toilet.", design:["Durable ceramic tile finish."] },
+      { id:"stairs", x:310, y:330, w:90, h:130, name:"STAIRCASE", dim:"U-Turn Stairs", c:C.core, critique:"Good central location, keeps circulation compact.", design:["Use open risers or glass balustrade to let light pass through."] },
+      { id:"servant", x:310, y:460, w:90, h:60, name:"SERVANT QUARTER", dim:"7'-9\" x 3'-8\"", c:C.store, critique:"MAJOR FLAW: 3'-8\" wide is unlivable. That is the width of a corridor, not a bedroom. A human cannot live here.", design:["Must be merged with adjacent Store Room immediately."] },
+      { id:"kitchen", x:400, y:260, w:110, h:190, name:"KITCHEN", dim:"10' x 16'", c:C.wet, critique:"Good size, but completely boxed in by walls. Cuts off the cook from the family.", design:["Parallel counter layout works best for a 10' width."] },
+      { id:"store", x:400, y:450, w:110, h:70, name:"STORE ROOM", dim:"8' x 3'-10\"", c:C.store, critique:"Wasted partition wall separating this from the tiny servant quarter.", design:["Heavy-duty slotted angle shelving."] },
+      { id:"util_e", x:510, y:260, w:70, h:260, name:"EAST UTILITY", dim:"5'-6\" WIDE", c:C.outdoor, critique:"Very useful wet-work zone for laundry and heavy dishwashing.", design:["Place washing machine, dryer, and secondary sink here."] },
+      { id:"util_s", x:60, y:520, w:520, h:50, name:"SOUTH UTILITY PASSAGE", dim:"4'-6\" WIDE", c:C.outdoor, critique:"Good ventilation corridor for southern plumbing shafts.", design:["Keep clear for AC outdoor units and piping access."] }
+    ],
+    reim: [
+      { id:"garden", x:20, y:20, w:300, h:70, name:"LANDSCAPED DECK & LAWN", dim:"Extended Indoor-Outdoor", c:C.outdoor, critique:"OPTIMIZED: Now connects directly to the expansive Great Room via sliding glass walls.", design:["Flush threshold trackless sliders connecting indoor tile to outdoor deck."] },
+      { id:"parking", x:320, y:20, w:260, h:70, name:"COVERED PORTICO", dim:"2-Car Optimized", c:C.core, critique:"OPTIMIZED: Widened gate approach for effortless parking.", design:["Architectural pergola overhead with integrated linear LEDs."] },
+      { id:"bed1_new", x:60, y:90, w:140, h:210, name:"BEDROOM 01 (GARDEN SUITE)", dim:"12'-8\" x 18'-0\"", c:C.bed, critique:"OPTIMIZED: Moved to the quiet NW garden corner. No longer suffers from 1st-floor toilet pipes overhead (since 1st-floor toilet was also relocated).", design:["Floor-to-ceiling corner glass overlooking private garden.","Built-in wardrobe wall along South partition."] },
+      { id:"great_room", x:200, y:90, w:300, h:170, name:"GRAND GREAT ROOM (LIVING + DINING)", dim:"25'-3\" x 14'-3\"", c:C.social, critique:"OPTIMIZED: Demolished the walls between Drawing Room, Puja, and Dining. You now have a true 25-foot luxury entertaining pavilion instead of two cramped boxes.", design:["10-seater dining table under double-height chandelier.","Floating low-back modular sofa facing both garden and TV wall.","Sculptural glass Puja niche integrated into East wall."] },
+      { id:"ent", x:500, y:90, w:80, h:170, name:"FOYER DECK", dim:"5'-5\" WIDE", c:C.outdoor, critique:"OPTIMIZED: Opens directly into a sweeping 25-foot vista instead of a narrow wall.", design:["Pivot main entrance door in teakwood."] },
+      { id:"lounge_den", x:60, y:300, w:140, h:130, name:"MEDIA DEN / STUDY", dim:"12' x 11'-6\"", c:C.social, critique:"OPTIMIZED: Replaces the awkward middle bedroom space with an acoustic TV den/home office.", design:["Acoustic fabric wall panels and concealed sliding pocket doors."] },
+      { id:"toil1_new", x:60, y:430, w:140, h:90, name:"MASTER BATH + DRESS", dim:"12' x 7'-6\"", c:C.wet, critique:"OPTIMIZED: Vertically aligned with 1st and 2nd floor SW wet stacks. Zero pipes over living rooms.", design:["His & Hers vanity + walk-in rain shower."] },
+      { id:"lift", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Retained in central structural core.", design:["Glass door cabin."] },
+      { id:"pwd", x:200, y:390, w:110, h:65, name:"POWDER ROOM", dim:"8' x 5'-6\"", c:C.wet, critique:"OPTIMIZED: Reoriented to give a wider, hotel-grade powder room for guests.", design:["Backlit onyx feature wall behind vanity."] },
+      { id:"ser_t", x:200, y:455, w:110, h:65, name:"STAFF BATH", dim:"8' x 5'-0\"", c:C.wet, critique:"OPTIMIZED: Properly proportioned staff washroom accessed from South corridor.", design:["Anti-skid vitrified tiles."] },
+      { id:"stairs", x:310, y:330, w:90, h:130, name:"SCULPTURAL STAIRS", dim:"Open Tread", c:C.core, critique:"Retained structural core.", design:["Cantilevered wood treads with concealed LED strip lighting."] },
+      { id:"kitchen", x:400, y:260, w:110, h:175, name:"OPEN ISLAND KITCHEN", dim:"10' x 14'-6\"", c:C.wet, critique:"OPTIMIZED: Removed the North partition wall and added a breakfast island overlooking the Great Room. Heavy frying moves to the East Utility.", design:["Quartz waterfall island seating 4.","Integrated appliances (refrigerator & ovens flush with cabinetry)."] },
+      { id:"staff_new", x:310, y:460, w:200, h:60, name:"CONSOLIDATED STAFF ROOM", dim:"15'-9\" x 5'-6\" (Merged)", c:C.store, critique:"OPTIMIZED: Merged the unlivable 3'8\" Servant Quarter with the Store Room to create an actual bedroom that fits a single bed, wardrobe, and fan comfortably.", design:["Built-in Murphy bed or single divan with overhead storage."] },
+      { id:"util_e", x:510, y:260, w:70, h:260, name:"WET KITCHEN & LAUNDRY", dim:"5'-6\" WIDE", c:C.outdoor, critique:"OPTIMIZED: Enclosed with UPVC glazing to serve as the heavy spice/frying kitchen + laundry.", design:["Heavy-duty gas hob, commercial chimney, and laundry stack."] },
+      { id:"util_s", x:60, y:520, w:520, h:50, name:"SOUTH SERVICE CORRIDOR", dim:"4'-6\" WIDE", c:C.outdoor, critique:"Service access for staff and MEP maintenance.", design:["Motion-sensor security lighting."] }
+    ]
+  },
+  ff: {
+    orig: [
+      { id:"toil2", x:60, y:90, w:140, h:75, name:"TOILET (BED 02)", dim:"12' x 6'", c:C.wet, critique:"MAJOR FLAW: Sits directly over the Ground Floor Living Room! Flushing noise and potential leaks will ruin your main living ceiling.", design:["Requires suspended false ceiling below to hide soil pipes."] },
+      { id:"wic2", x:60, y:165, w:140, h:95, name:"WALK-IN CLOSET", dim:"12'-3\" x 7'-8\"", c:C.store, critique:"Blocks the best North-West garden view that the bedroom should be enjoying.", design:["L-shaped wardrobe layout."] },
+      { id:"void1", x:200, y:90, w:130, h:170, name:"DOUBLE HEIGHT VOID", dim:"Open to Dining Below", c:C.void, critique:"Transmits kitchen smells and dining noise directly into the 1st-floor bedrooms.", design:["Install a tall statement pendant light dropping from ceiling."] },
+      { id:"bed3", x:330, y:90, w:170, h:170, name:"BEDROOM 03", dim:"14'-3\" x 14'-3\"", c:C.bed, critique:"Good square room, but cut off from its bathroom by a massive wasted foyer.", design:["King bed on East wall facing TV unit."] },
+      { id:"balc_n", x:360, y:40, w:200, h:50, name:"NORTH BALCONY", dim:"4' WIDE", c:C.outdoor, critique:"Nice street-facing sit-out.", design:["Toughened glass railing with wooden handrail."] },
+      { id:"balc_e", x:500, y:90, w:65, h:430, name:"EAST BALCONY", dim:"5'-2\" WIDE", c:C.outdoor, critique:"Long linear balcony; half of it runs alongside the bathroom/closet wall where it can't even be accessed.", design:["Add planter boxes for privacy from neighbors."] },
+      { id:"bed2", x:60, y:260, w:140, h:260, name:"BEDROOM 02", dim:"12' x 20'-3\"", c:C.bed, critique:"Long tunnel-like proportion (12' wide by 20' long). Pushed to the South side while its toilet hogs the prime North garden view.", design:["Divide into sleeping zone and seating lounge."] },
+      { id:"pass1", x:200, y:260, w:200, h:70, name:"PASSAGE", dim:"6' WIDE", c:C.core, critique:"Generous width, acts as bridge across the double-height dining room.", design:["Console table along wall."] },
+      { id:"foyer3", x:400, y:260, w:100, h:70, name:"FOYER", dim:"10' x 5'", c:C.core, critique:"MAJOR FLAW: 50 sq. ft. of pure wasted corridor inside Bedroom 03's suite just to connect the bedroom to the closet.", design:["Completely unnecessary partition walls."] },
+      { id:"lift1", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Aligned with GF.", design:["Standard landing door."] },
+      { id:"store1", x:200, y:390, w:60, h:130, name:"STORE ROOM", dim:"5'-2\" x 7'-10\"", c:C.store, critique:"Useful linen closet, sits over GF toilet.", design:["Floor-to-ceiling linen cabinets."] },
+      { id:"stairs1", x:260, y:330, w:140, h:190, name:"STAIRCASE", dim:"Central Core", c:C.core, critique:"Aligned with GF.", design:["Skylight illumination from above."] },
+      { id:"wic3", x:400, y:330, w:100, h:110, name:"WALK-IN CLOSET", dim:"10' x 8'-4\"", c:C.store, critique:"Good size, but blocks access to the southern half of the East balcony.", design:["His & Hers parallel wardrobes."] },
+      { id:"toil3", x:400, y:440, w:100, h:80, name:"TOILET (BED 03)", dim:"10' x 6'", c:C.wet, critique:"Sits over the Ground Floor Store/Kitchen—acceptable plumbing stack.", design:["Double vanity and walk-in shower."] }
+    ],
+    reim: [
+      { id:"bed2_new", x:60, y:90, w:140, h:240, name:"BEDROOM 02 (NORTH-WEST SUITE)", dim:"12'-3\" x 20'-0\"", c:C.bed, critique:"OPTIMIZED: Flipped the suite! The bedroom now enjoys the quiet North-West garden view instead of giving the best view to the toilet.", design:["Bed faces North garden window.","Private reading lounge in center of room."] },
+      { id:"wic2_new", x:60, y:330, w:140, h:95, name:"WALK-IN DRESSER", dim:"12' x 8'-0\"", c:C.store, critique:"OPTIMIZED: Acts as an acoustic buffer between the sleeping area and the bathroom/lift core.", design:["Fluted glass wardrobe doors with internal sensor lighting."] },
+      { id:"toil2_new", x:60, y:425, w:140, h:95, name:"MASTER BATH 02 (STACKED)", dim:"12' x 8'-0\"", c:C.wet, critique:"OPTIMIZED: Relocated to the South-West corner directly above the Ground Floor bathroom! Zero drainage pipes over any living room.", design:["Freestanding soaking tub + rain shower enclosure."] },
+      { id:"void1", x:200, y:90, w:130, h:170, name:"ACOUSTIC GLAZED ATRIUM", dim:"11' x 14'-3\"", c:C.void, critique:"OPTIMIZED: Enclosed the 1st-floor passage overlook with floor-to-ceiling acoustic glass. You keep the dramatic visual volume and daylight, but block 100% of kitchen odors and noise.", design:["Frameless laminated acoustic glass partition."] },
+      { id:"bed3_new", x:330, y:90, w:170, h:240, name:"BEDROOM 03 + STUDY LOUNGE", dim:"14'-3\" x 19'-3\"", c:C.bed, critique:"OPTIMIZED: Absorbed the useless 10' x 5' Foyer directly into Bedroom 03! The suite now has a dedicated work-from-home study nook opening onto the East Balcony.", design:["Executive study desk overlooking East balcony.","King bed with upholstered full-height headboard."] },
+      { id:"balc_n", x:360, y:40, w:200, h:50, name:"NORTH BALCONY", dim:"4' WIDE", c:C.outdoor, critique:"Retained.", design:["Outdoor lounge chairs."] },
+      { id:"balc_e", x:500, y:90, w:65, h:430, name:"EAST WRAP BALCONY", dim:"5'-2\" WIDE", c:C.outdoor, critique:"OPTIMIZED: Now accessible from both the bedroom and the new study nook.", design:["Vertical garden wall along southern end."] },
+      { id:"pass1", x:200, y:260, w:130, h:70, name:"GALLERY BRIDGE", dim:"6' WIDE", c:C.core, critique:"OPTIMIZED: Shortened the corridor by moving Bedroom 03's entrance door west, giving more private space to the suite.", design:["Art gallery lighting along passage."] },
+      { id:"lift1", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Aligned.", design:["Aligned."] },
+      { id:"store1", x:200, y:390, w:60, h:130, name:"UTILITY / LINEN CLOSET", dim:"5'-2\" x 7'-10\"", c:C.store, critique:"Retained.", design:["Add mini-fridge/coffee station inside corridor niche so you don't walk downstairs at night."] },
+      { id:"stairs1", x:260, y:330, w:140, h:190, name:"STAIRCASE", dim:"Central Core", c:C.core, critique:"Aligned.", design:["Aligned."] },
+      { id:"wic3", x:400, y:330, w:100, h:110, name:"WALK-IN CLOSET 03", dim:"10' x 8'-4\"", c:C.store, critique:"Direct entry from the expanded Bedroom 03 study zone.", design:["Island dresser drawer in center."] },
+      { id:"toil3", x:400, y:440, w:100, h:80, name:"TOILET (BED 03)", dim:"10' x 6'", c:C.wet, critique:"Stacked cleanly over GF kitchen/utility wet wall.", design:["Skylight or high louver window facing East."] }
+    ]
+  },
+  sf: {
+    orig: [
+      { id:"toil4", x:60, y:90, w:140, h:75, name:"TOILET (BED 04)", dim:"12' x 6'", c:C.wet, critique:"Same issue as 1st floor—positioned in the prime North-West garden corner.", design:["Standard fixtures."] },
+      { id:"wic4", x:60, y:165, w:140, h:95, name:"WALK-IN CLOSET", dim:"12' x 7'-8\"", c:C.store, critique:"Same as 1st floor.", design:["L-shaped cabinetry."] },
+      { id:"lounge", x:200, y:90, w:170, h:170, name:"FAMILY LOUNGE", dim:"15' x 14'-3\"", c:C.social, critique:"MAJOR STRUCTURAL FLAW: This heavy room sits directly over the empty air of the Ground/1st Floor Double-Height Dining Void! Requires expensive deep transfer beams and blocks natural skylight from reaching the center of the house.", design:["Two facing 3-seater sofas."] },
+      { id:"terrace", x:370, y:90, w:195, h:240, name:"OPEN TERRACE", dim:"15'-10\" x 23'-3\"", c:C.outdoor, critique:"Great size, but disconnected from the Covered Outdoor Seating by the staircase wall.", design:["Outdoor deck tiles with proper slope toward rainwater harvesting drains."] },
+      { id:"bed4", x:60, y:260, w:140, h:260, name:"BEDROOM 04", dim:"12' x 20'-3\"", c:C.bed, critique:"Identical to Bedroom 02 below.", design:["Penthouse suite styling."] },
+      { id:"pass2", x:200, y:260, w:170, h:70, name:"PASSAGE", dim:"6' WIDE", c:C.core, critique:"Connects lift/stairs to terrace.", design:["Weatherproof sliding door to terrace."] },
+      { id:"lift2", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Top landing.", design:["Ensure terrace slab waterproofs lift machine room/headroom."] },
+      { id:"store2", x:200, y:390, w:60, h:130, name:"STORE ROOM", dim:"5'-2\" x 7'-10\"", c:C.store, critique:"Good storage for outdoor terrace cushions and maintenance gear.", design:["Heavy shelving."] },
+      { id:"stairs2", x:260, y:330, w:140, h:190, name:"STAIRCASE", dim:"Top Landing", c:C.core, critique:"Aligned.", design:["Add skylight above stairwell."] },
+      { id:"cov_seat", x:400, y:330, w:165, h:190, name:"COVERED OUTDOOR SEATING", dim:"10' x 13'-6\"", c:C.outdoor, critique:"Nice semi-open gazebo space, though slightly isolated in the SE corner.", design:["Curved outdoor sectional sofa and bar counter."] }
+    ],
+    reim: [
+      { id:"bed4_new", x:60, y:90, w:140, h:240, name:"PENTHOUSE MASTER (BED 04)", dim:"12'-3\" x 20'-0\"", c:C.bed, critique:"OPTIMIZED: Stacked identically with the corrected 1st Floor Bedroom 02. Enjoys panoramic North-West views.", design:["Private coffee bar and acoustic sliding door."] },
+      { id:"wic4_new", x:60, y:330, w:140, h:95, name:"WALK-IN DRESSER 04", dim:"12' x 8'-0\"", c:C.store, critique:"OPTIMIZED: Aligned with 1st floor.", design:["Skylight tube in ceiling for natural daytime dressing light."] },
+      { id:"toil4_new", x:60, y:425, w:140, h:95, name:"PENTHOUSE SPA BATH (STACKED)", dim:"12' x 8'-0\"", c:C.wet, critique:"OPTIMIZED: Vertically aligned with GF and 1st Floor SW wet stack. Single vertical plumbing shaft for all 3 floors!", design:["Steam shower + frosted glass skylight."] },
+      { id:"skylight_void", x:200, y:90, w:130, h:170, name:"ZENITHAL SKYLIGHT ATRIUM", dim:"11' x 14'-3\" (Glass Roof)", c:C.void, critique:"OPTIMIZED: Instead of pouring a heavy concrete floor over the double-height dining void, we cap it with a solar-control glass skylight! Floods all 3 floors with natural daylight and saves massive structural steel costs.", design:["Double-glazed heat-reflective laminated skylight with automated sun-blinds."] },
+      { id:"lounge_new", x:330, y:90, w:235, h:190, name:"GLASS PAVILION LOUNGE & BAR", dim:"19'-6\" x 15'-0\"", c:C.social, critique:"OPTIMIZED: Shifted the Family Lounge East so it sits directly over the solid structural walls of Bedroom 03 below! Wraps into the terrace with bi-fold glass doors.", design:["Wet bar counter on West wall.","Home theater projector drop-screen + modular lounge pit."] },
+      { id:"pass2", x:200, y:260, w:130, h:70, name:"SKY BRIDGE", dim:"6' WIDE", c:C.core, critique:"Overlooks the 3-story sunlit atrium.", design:["Glass balustrade."] },
+      { id:"lift2", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Top landing.", design:["Aligned."] },
+      { id:"pwd2", x:200, y:390, w:60, h:130, name:"TERRACE POWDER ROOM + PANTRY", dim:"5'-2\" x 7'-10\"", c:C.wet, critique:"OPTIMIZED: Converted the redundant 2nd-floor Store Room into a Powder Room + Bar Pantry! In your original plan, guests on the terrace had to walk through a private bedroom just to use the toilet.", design:["WC + washbasin + bar sink/ice-maker."] },
+      { id:"stairs2", x:260, y:330, w:140, h:190, name:"STAIRCASE", dim:"Central Core", c:C.core, critique:"Aligned.", design:["Aligned."] },
+      { id:"terrace_new", x:330, y:280, w:235, h:240, name:"UNIFIED SKY DECK & PERGOLA", dim:"19'-6\" x 20'-0\"", c:C.outdoor, critique:"OPTIMIZED: Combined the Open Terrace and Covered Seating into a cohesive South-East entertainment deck connected directly to the Glass Pavilion Lounge.", design:["Motorized bioclimatic louver pergola.","Outdoor BBQ kitchen counter and sunken fire-pit seating."] }
+    ]
+  }
+};
+
+let curFloor = 'gf';
+let curMode = 'orig';
+let selectedId = null;
+
+function render() {
+  const svg = document.getElementById('blueprint');
+  svg.innerHTML = '';
+  const rooms = DATA[curFloor][curMode];
+
+  // Outer plot boundary
+  const plot = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  plot.setAttribute("x", 15); plot.setAttribute("y", 15);
+  plot.setAttribute("width", 570); plot.setAttribute("height", 560);
+  plot.setAttribute("fill", "none"); plot.setAttribute("stroke", "#334155");
+  plot.setAttribute("stroke-dasharray", "6,6");
+  svg.appendChild(plot);
+
+  rooms.forEach((r, idx) => {
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", r.x); rect.setAttribute("y", r.y);
+    rect.setAttribute("width", r.w); rect.setAttribute("height", r.h);
+    rect.setAttribute("fill", r.c);
+    rect.setAttribute("class", "room" + (selectedId === r.id ? " selected" : ""));
+    rect.onclick = () => selectRoom(r);
+    g.appendChild(rect);
+
+    // Text label
+    const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    txt.setAttribute("x", r.x + r.w / 2);
+    txt.setAttribute("y", r.y + r.h / 2 - 4);
+    txt.setAttribute("class", "room-label");
+    txt.textContent = r.name;
+    g.appendChild(txt);
+
+    // Dim label
+    const dim = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    dim.setAttribute("x", r.x + r.w / 2);
+    dim.setAttribute("y", r.y + r.h / 2 + 12);
+    dim.setAttribute("class", "room-dim");
+    dim.textContent = r.dim;
+    g.appendChild(dim);
+
+    svg.appendChild(g);
+    if (idx === 2 && !selectedId) selectRoom(r);
+  });
+}
+
+function selectRoom(r) {
+  selectedId = r.id;
+  const badge = document.getElementById('statusBadge');
+  badge.className = "badge " + curMode;
+  badge.textContent = curMode === 'orig' ? "ORIGINAL PLAN (FLAWED)" : "REIMAGINED PLAN (OPTIMIZED)";
+  
+  document.getElementById('rTitle').textContent = r.name;
+  document.getElementById('rDim').textContent = "Dimensions: " + r.dim;
+  document.getElementById('rCritique').textContent = r.critique;
+  
+  const ul = document.getElementById('rDesign');
+  ul.innerHTML = '';
+  r.design.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    ul.appendChild(li);
+  });
+  render();
+}
+
+function setFloor(f) {
+  curFloor = f;
+  selectedId = null;
+  const btns = document.getElementById('floorBtns').children;
+  btns[0].classList.toggle('active', f === 'gf');
+  btns[1].classList.toggle('active', f === 'ff');
+  btns[2].classList.toggle('active', f === 'sf');
+  render();
+}
+
+function setMode(m) {
+  curMode = m;
+  selectedId = null;
+  const btns = document.getElementById('modeBtns').children;
+  btns[0].classList.toggle('active', m === 'orig');
+  btns[1].classList.toggle('active', m === 'reim');
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

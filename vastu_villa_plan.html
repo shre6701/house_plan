@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4BHK Villa - Triple-Checked Vastu Shastra Interactive Blueprint</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --text: #f8fafc; --muted: #94a3b8;
+    --accent: #f59e0b; --warn: #ef4444; --good: #10b981; --border: #334155;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  header { padding: 12px 24px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  header h1 { font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; }
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .btn-group { display: flex; background: var(--bg); border-radius: 6px; padding: 3px; border: 1px solid var(--border); }
+  button { background: transparent; color: var(--muted); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12.5px; font-weight: 600; transition: 0.2s; }
+  button.active { background: var(--accent); color: #0f172a; }
+  button.mode-orig.active { background: var(--warn); color: white; }
+  button.mode-reim.active { background: var(--good); color: #0f172a; }
+  .workspace { display: flex; flex: 1; overflow: hidden; }
+  .canvas-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; padding: 16px; background: radial-gradient(circle, #1e293b 1px, transparent 1px); background-size: 20px 20px; }
+  svg { max-width: 100%; max-height: 100%; width: 660px; height: 660px; background: #090d16; border: 2px solid var(--border); border-radius: 8px; }
+  .room { cursor: pointer; transition: 0.2s; stroke: #475569; stroke-width: 2; }
+  .room:hover { filter: brightness(1.25); stroke: #fff; stroke-width: 2.5; }
+  .room.selected { stroke: var(--accent); stroke-width: 3.5; }
+  .room-label { fill: #f8fafc; font-size: 10.5px; font-weight: 700; text-anchor: middle; pointer-events: none; }
+  .room-dim { fill: #cbd5e1; font-size: 9px; text-anchor: middle; pointer-events: none; }
+  .vastu-tag { fill: #fbbf24; font-size: 8.5px; font-weight: 700; text-anchor: middle; pointer-events: none; }
+  .dir-marker { position: absolute; background: rgba(15,23,42,0.9); border: 1px solid var(--accent); color: var(--accent); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; pointer-events: none; }
+  .dir-n { left: 24px; top: 50%; transform: translateY(-50%); }
+  .dir-s { right: 24px; top: 50%; transform: translateY(-50%); }
+  .dir-e { top: 20px; left: 50%; transform: translateX(-50%); }
+  .dir-w { bottom: 20px; left: 50%; transform: translateX(-50%); }
+  .sidebar { width: 400px; background: var(--panel); border-left: 1px solid var(--border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+  .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-bottom: 6px; }
+  .badge.orig { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid var(--warn); }
+  .badge.reim { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid var(--good); }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .card h3 { font-size: 12px; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+  .card p, .card li { font-size: 13px; line-height: 1.5; color: #e2e8f0; }
+  .card ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>4BHK VILLA — TRIPLE-CHECKED VASTU SHASTRA STUDIO</h1>
+  <div class="controls">
+    <div class="btn-group" id="compassBtns">
+      <button class="active" onclick="setCompass('left')">Compass: North = Left (As Drawn)</button>
+      <button onclick="setCompass('top')">Compass: North = Top</button>
+    </div>
+    <div class="btn-group" id="floorBtns">
+      <button class="active" onclick="setFloor('gf')">Ground Floor</button>
+      <button onclick="setFloor('ff')">1st Floor</button>
+      <button onclick="setFloor('sf')">2nd Floor</button>
+    </div>
+    <div class="btn-group" id="modeBtns">
+      <button class="mode-orig active" onclick="setMode('orig')">Original Plan (Vastu Audit)</button>
+      <button class="mode-reim" onclick="setMode('reim')">Vastu-Reimagined Plan</button>
+    </div>
+  </div>
+</header>
+
+<div class="workspace">
+  <div class="canvas-area">
+    <div class="dir-marker dir-n" id="lblLeft">◀ NORTH (N)</div>
+    <div class="dir-marker dir-e" id="lblTop">▲ EAST (E)</div>
+    <div class="dir-marker dir-s" id="lblRight">SOUTH (S) ▶</div>
+    <div class="dir-marker dir-w" id="lblBottom">▼ WEST (W)</div>
+    <svg id="blueprint" viewBox="0 0 600 600"></svg>
+  </div>
+  <div class="sidebar">
+    <div>
+      <span class="badge orig" id="statusBadge">ORIGINAL PLAN VASTU AUDIT</span>
+      <h2 id="rTitle" style="font-size: 19px; margin-bottom: 2px;">Select Any Room</h2>
+      <p id="rDim" style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">Click a room to view dimensions & Vastu Shastra compliance.</p>
+
+      <div class="card" style="margin-bottom: 12px;">
+        <h3>Vastu Shastra Zone & Verdict</h3>
+        <p id="rVastu" style="font-weight:600; color:#fbbf24; margin-bottom:6px;"></p>
+        <p id="rCritique"></p>
+      </div>
+
+      <div class="card">
+        <h3>Architect & Interior Remedy</h3>
+        <ul id="rDesign"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const C = {
+  social: "#1e3a5f", bed: "#312e81", wet: "#115e59",
+  store: "#78350f", core: "#374151", outdoor: "#14532d",
+  void: "#090d16", defect: "#7f1d1d"
+};
+
+let compassMode = 'left'; // 'left' = North is Left (As drawn on PDF); 'top' = North is Top
+
+function getZone(pos) {
+  const mapLeft = {
+    TL: "NORTH-EAST (Ishanya / Sacred Water)",
+    TM: "EAST (Indra / Morning Sun)",
+    TR: "SOUTH-EAST (Agni / Fire Zone)",
+    ML: "NORTH (Kubera / Wealth)",
+    MM: "BRAHMASTHAN (Center Atrium)",
+    MR: "SOUTH (Yama / Stability)",
+    BL: "NORTH-WEST (Vayu / Air Zone)",
+    BM: "WEST (Varuna / Gains)",
+    BR: "SOUTH-WEST (Nairutya / Master Earth Zone)"
+  };
+  const mapTop = {
+    TL: "NORTH-WEST (Vayu / Air Zone)",
+    TM: "NORTH (Kubera / Wealth)",
+    TR: "NORTH-EAST (Ishanya / Sacred Water)",
+    ML: "WEST (Varuna / Gains)",
+    MM: "BRAHMASTHAN (Center Atrium)",
+    MR: "EAST (Indra / Morning Sun)",
+    BL: "SOUTH-WEST (Nairutya / Master Earth Zone)",
+    BM: "SOUTH (Yama / Stability)",
+    BR: "SOUTH-EAST (Agni / Fire Zone)"
+  };
+  return compassMode === 'left' ? mapLeft[pos] : mapTop[pos];
+}
+
+const DATA = {
+  gf: {
+    orig: [
+      { id:"living", pos:"TL", x:60, y:90, w:140, h:170, name:"LIVING ROOM", dim:"12'-8\" x 14'-8\"", c:C.social,
+        critLeft:"EXCELLENT VASTU on Ground Floor (sits in auspicious North-East garden corner), BUT RUINED BY 1st FLOOR: Directly above this sacred NE room sits Bedroom 02's 12'x6' Toilet!",
+        critTop:"GOOD VASTU: North-West (Vayu) is ideal for a guest living room, though a 1st-floor toilet sits directly above this ceiling.",
+        design:["Keep North and East windows completely unobstructed.","Use light cream, white, or pastel blue upholstery."] },
+      { id:"dining", pos:"TM", x:200, y:90, w:130, h:170, name:"DOUBLE HEIGHT DINING", dim:"11' x 14'-3\"", c:C.social,
+        critLeft:"100% VASTU COMPLIANT: Open Double-Height volume in the East/Center lets morning sunlight flood the Brahmasthan.",
+        critTop:"100% VASTU COMPLIANT: Open North/Center zone keeps the house energized.",
+        design:["Face East or North while dining.","Keep the central floor clear of heavy pillars."] },
+      { id:"puja", pos:"TM", x:330, y:90, w:50, h:70, name:"PUJA", dim:"4' WIDE", c:C.store,
+        critLeft:"COMPLIANT ZONE (East-South-East), but ensure idols are placed on the top (East) wall so the person praying faces East.",
+        critTop:"100% VASTU COMPLIANT: Placed in the North-East zone. Place idols on the East wall rather than the North wall.",
+        design:["Use white marble or teakwood mandir.","Never place idols backing onto a toilet wall."] },
+      { id:"drawing", pos:"TR", x:380, y:90, w:120, h:170, name:"DRAWING ROOM", dim:"10'-3\" x 14'-3\"", c:C.social,
+        critLeft:"MISSED VASTU OPPORTUNITY: This Top-Right corner is the South-East (Agni/Fire) corner—the ideal place for the Kitchen! Instead, a narrow 10'3\" Drawing Room is placed here.",
+        critTop:"GOOD VASTU: Sits in the auspicious North-East entrance zone.",
+        design:["If kept as Drawing Room, place warm lighting or electrical panel in the SE corner to honor Agni."] },
+      { id:"bed1", pos:"BL", x:60, y:260, w:140, h:190, name:"BEDROOM 01", dim:"12' x 14'-8\"", c:C.bed,
+        critLeft:"VASTU WARNING: Sits in North-West (good for guests/children, NOT Master). CRITICAL BED ERROR: The bed head is drawn against the West (Bottom) wall. In Vastu, sleeping with your head to the West is restless; head must be South (Right) or East (Top).",
+        critTop:"100% VASTU COMPLIANT: Sits in the South-West Master zone with the bed head pointing South (Bottom).",
+        design:["If North=Left, rotate bed so headboard is against the Right (South) or Top (East) wall."] },
+      { id:"wic1", pos:"BL", x:60, y:450, w:140, h:70, name:"WALK-IN CLOSET", dim:"12' x 5'-3\"", c:C.store,
+        critLeft:"COMPLIANT: Heavy storage along the West/North-West wall is acceptable.",
+        critTop:"100% VASTU COMPLIANT: Heavy wardrobes in the extreme South-West corner anchor the house.",
+        design:["Keep cash locker facing North."] },
+      { id:"lift_stairs", pos:"BM", x:200, y:330, w:200, h:130, name:"LIFT (5x5) + STAIRS + TOILETS", dim:"Central West/South Core", c:C.core,
+        critLeft:"100% VASTU COMPLIANT: Placing the heavy Lift, Staircase, and Toilets (5'7\"x7'10\" & 3'8\"x8') in the West/South-West-West zone is ideal Vastu.",
+        critTop:"100% VASTU COMPLIANT: Heavy staircase, lift, and disposal toilets in the South/SSW zone.",
+        design:["Ensure staircase turns clockwise as you walk up."] },
+      { id:"servant", pos:"BM", x:310, y:460, w:90, h:60, name:"SERVANT QUARTER", dim:"7'-9\" x 3'-8\"", c:C.defect,
+        critLeft:"ARCHITECTURAL FAILURE: Separated from the Store Room by the utility exit door, and only 3'-8\" wide under the stairs! Unlivable width.",
+        critTop:"ARCHITECTURAL FAILURE: 3'-8\" width is too narrow for a bed, and separated from Store Room by the back door.",
+        design:["Push outer Bottom wall out by 2ft into the 4'-6\" Utility Area so staff gets a 5'-8\" wide room."] },
+      { id:"kitchen", pos:"BR", x:400, y:260, w:110, h:190, name:"KITCHEN", dim:"10' x 16'", c:C.wet,
+        critLeft:"MAJOR VASTU DEFECT (If North=Left): The Bottom-Right corner is SOUTH-WEST (Nairutya)! Having a Kitchen in the South-West causes instability in Vastu. The Kitchen should be swapped with the Top-Right Drawing Room (South-East)!",
+        critTop:"100% VASTU COMPLIANT (If North=Top): Bottom-Right is the South-East (Agni) Fire corner.",
+        design:["If North=Left and Kitchen cannot be moved, paint kitchen walls yellow/earthy tones and place stove in the Top-Right (SE) corner of the kitchen room."] },
+      { id:"store", pos:"BR", x:400, y:450, w:110, h:70, name:"STORE ROOM", dim:"8' x 3'-10\"", c:C.store,
+        critLeft:"100% VASTU COMPLIANT: Heavy grain/food storage in the extreme South-West corner is auspicious.",
+        critTop:"COMPLIANT: Heavy storage in the South-East.",
+        design:["Heavy-duty pantry racks."] }
+    ],
+    reim: [
+      { id:"living_r", pos:"TL", x:60, y:90, w:140, h:170, name:"NE GARDEN LIVING & PUJA", dim:"12'-8\" x 14'-8\"", c:C.social,
+        critLeft:"100% VASTU OPTIMIZED: Sacred North-East corner kept pure and light. More importantly, we REMOVED the 1st-floor toilet from above this room!",
+        critTop:"100% VASTU OPTIMIZED: Removed the 1st-floor toilet overhead so no sewage pipes cross the living room ceiling.",
+        design:["Place a serene Northeast meditation/Puja alcove facing East (Top)."] },
+      { id:"dining_r", pos:"TM", x:200, y:90, w:180, h:170, name:"EAST ATRIUM DINING", dim:"15' x 14'-3\"", c:C.social,
+        critLeft:"100% VASTU OPTIMIZED: Expanded into a full 15-foot-wide sunlit East dining pavilion.",
+        critTop:"100% VASTU OPTIMIZED: Open North dining pavilion.",
+        design:["8-seater marble dining table aligned East-West."] },
+      { id:"kitchen_r", pos:"TR", x:380, y:90, w:120, h:170, name:"AGNI KITCHEN (MOVED TO SE)", dim:"10'-3\" x 14'-3\"", c:C.wet,
+        critLeft:"100% VASTU CORRECTION: Swapped with the Drawing Room so the Kitchen now sits in the true South-East (Agni/Fire) corner! Directly serves the adjacent Dining Area.",
+        critTop:"Note: If North=Top, keep Kitchen in Bottom-Right (SE) and keep Drawing Room here in Top-Right (NE).",
+        design:["L-shaped counter with hob on the Top (East) wall so the cook faces East."] },
+      { id:"bed1_r", pos:"BL", x:60, y:260, w:140, h:190, name:"GUEST BEDROOM 01 (NW)", dim:"12' x 14'-8\"", c:C.bed,
+        critLeft:"100% VASTU OPTIMIZED: North-West guest room with bed rotated to the Right (South) wall for Vastu-compliant sleep.",
+        critTop:"100% VASTU OPTIMIZED: Master Suite in SW.",
+        design:["Headboard anchored on the South (Right) wall."] },
+      { id:"wic1_r", pos:"BL", x:60, y:450, w:140, h:70, name:"WALK-IN CLOSET + BATH STACK", dim:"12' x 5'-3\"", c:C.store,
+        critLeft:"100% VASTU OPTIMIZED: Vertically aligned with the relocated 1st & 2nd floor North-West toilets!",
+        critTop:"100% VASTU OPTIMIZED: SW heavy storage.",
+        design:["Concealed plumbing duct on outer West wall."] },
+      { id:"core_r", pos:"BM", x:200, y:330, w:200, h:130, name:"WEST CORE (LIFT + STAIRS)", dim:"Aligned Vastu Core", c:C.core,
+        critLeft:"100% VASTU COMPLIANT: West core retained.",
+        critTop:"100% VASTU COMPLIANT: South core retained.",
+        design:["Keep area under stairs clutter-free."] },
+      { id:"servant_r", pos:"BM", x:310, y:460, w:90, h:80, name:"EXPANDED STAFF ROOM", dim:"7'-9\" x 5'-8\"", c:C.store,
+        critLeft:"ARCHITECTURAL FIX: Extended 2 feet into the West utility setback so the staff room is 5'-8\" wide without blocking the utility door!",
+        critTop:"ARCHITECTURAL FIX: Extended 2 feet into the South utility setback.",
+        design:["Fits a standard 3'x6'6\" single bed plus walkway."] },
+      { id:"master_draw_r", pos:"BR", x:400, y:260, w:110, h:260, name:"SW FORMAL LOUNGE / MASTER", dim:"10' x 20' (Merged)", c:C.social,
+        critLeft:"100% VASTU CORRECTION: Replaced the South-West Kitchen with a grand Formal Drawing Room (or SW Master Suite), anchoring the heavy Nairutya corner properly!",
+        critTop:"If North=Top, retain Open Island Kitchen + Pantry here in the SE corner.",
+        design:["Heavy L-shaped sofa anchored in the Bottom-Right (South-West) corner."] }
+    ]
+  },
+  ff: {
+    orig: [
+      { id:"toil2", pos:"TL", x:60, y:90, w:140, h:75, name:"TOILET (12' x 6')", dim:"12' x 6'", c:C.defect,
+        critLeft:"CRITICAL VASTU DEFECT: With North=Left, this Top-Left corner is NORTH-EAST (Ishanya)! A toilet in the North-East is the #1 most severe defect in Vastu Shastra—and it sits right over your Ground Floor Living Room!",
+        critTop:"VASTU & ENGINEERING FLAW: Sits in North-West, which is okay for a toilet on paper, EXCEPT it sits directly above your Ground Floor Living Room ceiling!",
+        design:["MUST BE RELOCATED in pre-construction, or treated with Vastu sea-salt/copper helix remedies and acoustic pipe insulation if already built."] },
+      { id:"wic2", pos:"ML", x:60, y:165, w:140, h:95, name:"WALK-IN CLOSET", dim:"12'-3\" x 7'-8\"", c:C.store,
+        critLeft:"BLOCKS NORTH LIGHT: Heavy windowless closets blocking the auspicious North wall.",
+        critTop:"Blocks West garden wall.",
+        design:["Use light-colored finishes."] },
+      { id:"void1", pos:"TM", x:200, y:90, w:130, h:170, name:"DOUBLE HEIGHT VOID", dim:"Over Dining", c:C.void,
+        critLeft:"100% VASTU COMPLIANT: Keeps East/Center Brahmasthan open and airy.",
+        critTop:"100% VASTU COMPLIANT: Keeps North/Center open.",
+        design:["Acoustic glass railing along 6' passage."] },
+      { id:"bed3", pos:"TR", x:330, y:90, w:170, h:170, name:"BEDROOM 03", dim:"14'-3\" x 14'-3\"", c:C.bed,
+        critLeft:"GOOD VASTU: Sits in South-East/East, and the bed head points South (Right)—which is 100% Vastu compliant for sleeping!",
+        critTop:"VASTU CAUTION: Sits in the sacred North-East corner (better suited for a meditation/lounge room than a bedroom).",
+        design:["Absorb the wasted 10'x5' Foyer into the room."] },
+      { id:"bed2", pos:"BL", x:60, y:260, w:140, h:260, name:"BEDROOM 02", dim:"12' x 20'-3\"", c:C.bed,
+        critLeft:"BED DIRECTION FLAW: Sits in North-West, and headboard is against the West (Bottom) wall. Rotate bed to face East or North.",
+        critTop:"100% VASTU COMPLIANT: Sits in the South-West Master corner with head pointing South.",
+        design:["Place headboard against Right (South) wall if North=Left."] },
+      { id:"foyer3", pos:"MR", x:400, y:260, w:100, h:70, name:"WASTED FOYER", dim:"10' x 5'", c:C.defect,
+        critLeft:"ARCHITECTURAL WASTE: 50 sq. ft. of dead internal corridor.",
+        critTop:"ARCHITECTURAL WASTE: 50 sq. ft. of dead internal corridor.",
+        design:["Move entrance door to passage edge to reclaim this space."] },
+      { id:"toil3", pos:"BR", x:400, y:330, w:100, h:190, name:"WIC (10x8'4) + TOILET (10x6)", dim:"Bottom-Right Corner", c:C.defect,
+        critLeft:"CRITICAL VASTU DEFECT (If North=Left): This Bottom-Right corner is SOUTH-WEST (Nairutya)! Having a 10'x6' Toilet in the exact South-West corner violates Vastu and wastes the Master Bedroom zone!",
+        critTop:"COMPLIANT (If North=Top): Bottom-Right is South-East, acceptable for a bathroom/dresser stack.",
+        design:["If North=Left, swap Bedroom 03 and its Toilet/Closet so the Master Bed is in the Bottom-Right (SW)!"] }
+    ],
+    reim: [
+      { id:"bed2_r", pos:"TL", x:60, y:90, w:140, h:240, name:"NE / NORTH GARDEN SUITE (BED 02)", dim:"12'-3\" x 20'-0\"", c:C.bed,
+        critLeft:"100% VASTU CORRECTION: Eliminated the forbidden North-East Toilet! This corner is now a clean, sunlit bedroom/lounge directly over the GF Living Room.",
+        critTop:"100% ENGINEERING CORRECTION: Eliminated the toilet over the GF Living Room.",
+        design:["Full-height windows on North and East walls."] },
+      { id:"wic_toil2_r", pos:"BL", x:60, y:330, w:140, h:190, name:"NW STACKED DRESS + BATH (12x6)", dim:"Relocated to NW/West", c:C.wet,
+        critLeft:"100% VASTU CORRECTION: Moved the 12'x6' Toilet and Walk-in Closet to the Bottom-Left (North-West / Vayu) corner—the textbook Vastu zone for a bathroom, stacked right over the GF bathroom!",
+        critTop:"Stacked cleanly over GF plumbing.",
+        design:["Zero sewage pipes over the Ground Floor Living Room."] },
+      { id:"void1_r", pos:"TM", x:200, y:90, w:130, h:170, name:"EAST ATRIUM VOID", dim:"11' x 14'-3\"", c:C.void,
+        critLeft:"100% VASTU COMPLIANT: Preserved open Brahmasthan.",
+        critTop:"100% VASTU COMPLIANT.",
+        design:["Acoustic glass overlook."] },
+      { id:"toil3_r", pos:"TR", x:330, y:90, w:170, h:150, name:"SE DRESSER & BATH + STUDY", dim:"14'-3\" x 12'-0\"", c:C.wet,
+        critLeft:"100% VASTU CORRECTION: Moved the Toilet/Dresser out of the South-West and placed it in the East-of-South-East (ESE) churning zone, freeing the South-West for the Master Bedroom!",
+        critTop:"Note: If North=Top, keep Bedroom 03 in Top-Right and Toilet in Bottom-Right.",
+        design:["Direct access to East and South balconies."] },
+      { id:"master3_r", pos:"BR", x:330, y:240, w:170, h:280, name:"TRUE SW MASTER SUITE (BED 03)", dim:"14'-3\" x 22'-0\" (With Foyer)", c:C.bed,
+        critLeft:"100% VASTU CORRECTION: Anchored the Master Bedroom in the auspicious Bottom-Right (South-West / Nairutya) corner and absorbed the 10'x5' Foyer!",
+        critTop:"Massive unified Master Suite with private study.",
+        design:["King bed placed with headboard against the Right (South) wall."] }
+    ]
+  },
+  sf: {
+    orig: [
+      { id:"toil4", pos:"TL", x:60, y:90, w:140, h:75, name:"TOILET (12' x 6')", dim:"12' x 6'", c:C.defect,
+        critLeft:"CRITICAL VASTU DEFECT: Second stacked toilet in the sacred North-East (Ishanya) corner!",
+        critTop:"Stacked over 1st-floor NW toilet.",
+        design:["Relocate to Bottom-Left (North-West) stack."] },
+      { id:"lounge", pos:"TM", x:200, y:90, w:170, h:170, name:"FAMILY LOUNGE", dim:"15' x 14'-3\"", c:C.social,
+        critLeft:"GOOD VASTU: Sits in the East zone, spanning the 11' dining void + 4' Puja grid below.",
+        critTop:"GOOD VASTU: Sits in the North zone.",
+        design:["Keep East wall fully glazed to let morning light in."] },
+      { id:"terrace", pos:"TR", x:370, y:90, w:195, h:240, name:"OPEN TERRACE", dim:"15'-10\" x 23'-3\"", c:C.outdoor,
+        critLeft:"VASTU WEIGHT IMBALANCE: Makes the South/South-East open and lower while the North-West (Bottom-Left) has a heavy 3-story bedroom tower. In Vastu, South/SW should be higher and heavier than North/NE.",
+        critTop:"100% VASTU COMPLIANT (If North=Top): An Open Terrace in the Top-Right (North-East) is textbook Vastu!",
+        design:["If North=Left, build a tall architectural pergola/solar roof over the South terrace to increase visual height in the South."] },
+      { id:"bed4", pos:"BL", x:60, y:260, w:140, h:260, name:"BEDROOM 04", dim:"12' x 20'-3\"", c:C.bed,
+        critLeft:"Same as Bedroom 02 below: Sits in NW with bed head pointing West.",
+        critTop:"100% VASTU COMPLIANT: Sits in SW Master zone.",
+        design:["Rotate bed head to South (Right) wall if North=Left."] },
+      { id:"store2", pos:"BM", x:200, y:390, w:60, h:130, name:"STORE ROOM", dim:"5'-2\" x 7'-10\"", c:C.defect,
+        critLeft:"LIFESTYLE FLAW: No Powder Room on the 2nd floor! Terrace guests have to walk through Bedroom 04 and its Walk-in Closet to use the toilet.",
+        critTop:"LIFESTYLE FLAW: Convert to Powder Room immediately.",
+        design:["Convert this West/SSW Store Room into a Vastu-compliant Powder Room for terrace guests."] },
+      { id:"cov_seat", pos:"BR", x:400, y:330, w:165, h:190, name:"COVERED OUTDOOR SEATING", dim:"10' x 13'-6\"", c:C.outdoor,
+        critLeft:"GOOD VASTU: Covered roof structure in the Bottom-Right (South-West) adds needed mass and height to the SW corner.",
+        critTop:"Covered gazebo in the SE corner.",
+        design:["Use heavy stone planters and solid pergola beams here to anchor the South-West."] }
+    ],
+    reim: [
+      { id:"bed4_r", pos:"TL", x:60, y:90, w:140, h:240, name:"NE / NORTH SUITE (BED 04)", dim:"12'-3\" x 20'-0\"", c:C.bed,
+        critLeft:"100% VASTU CORRECTION: Freed the North-East corner from the toilet!",
+        critTop:"Aligned with 1st Floor.",
+        design:["Panoramic North and East windows."] },
+      { id:"toil4_r", pos:"BL", x:60, y:330, w:140, h:190, name:"NW STACKED DRESS + BATH", dim:"12' x 13'-8\"", c:C.wet,
+        critLeft:"100% VASTU CORRECTION: Toilet sits in the North-West (Vayu) corner, stacked with GF and 1st Floor!",
+        critTop:"Aligned plumbing shaft.",
+        design:["Single vertical drainage shaft on West wall."] },
+      { id:"lounge_r", pos:"TM", x:200, y:90, w:170, h:170, name:"EAST FAMILY LOUNGE", dim:"15' x 14'-3\"", c:C.social,
+        critLeft:"100% VASTU COMPLIANT: Sunlit East family lounge.",
+        critTop:"100% VASTU COMPLIANT.",
+        design:["Bi-fold glass doors opening to terrace."] },
+      { id:"terrace_r", pos:"TR", x:370, y:90, w:195, h:240, name:"OPEN TERRACE + SOLAR PERGOLA", dim:"15'-10\" x 23'-3\"", c:C.outdoor,
+        critLeft:"100% VASTU OPTIMIZED: Added an elevated solar pergola along the Right (South) edge so the South remains taller than the North/East.",
+        critTop:"100% VASTU COMPLIANT.",
+        design:["Elevated solar panels facing South."] },
+      { id:"pwd2_r", pos:"BM", x:200, y:390, w:60, h:130, name:"WEST POWDER ROOM (NEW)", dim:"5'-2\" x 7'-10\"", c:C.wet,
+        critLeft:"100% VASTU & LIFESTYLE FIX: Converted Store Room into a West/WNW Powder Room for Lounge & Terrace guests!",
+        critTop:"100% VASTU & LIFESTYLE FIX: SSW Powder Room.",
+        design:["Direct door from 6' Wide Passage."] },
+      { id:"sw_pavilion", pos:"BR", x:400, y:330, w:165, h:190, name:"HEAVY SW ENCLOSED SKY LOUNGE", dim:"10' x 13'-6\"", c:C.social,
+        critLeft:"100% VASTU OPTIMIZED: Enclosed the Bottom-Right (South-West) Covered Seating with glass/masonry to ensure the South-West corner is the highest, heaviest, most anchored point of the villa!",
+        critTop:"Indoor-outdoor bar pavilion.",
+        design:["Raised roof parapet on the South-West corner."] }
+    ]
+  }
+};
+
+let curFloor = 'gf';
+let curMode = 'orig';
+let selectedId = null;
+
+function updateCompassLabels() {
+  if (compassMode === 'left') {
+    document.getElementById('lblLeft').textContent = "◀ NORTH (N)";
+    document.getElementById('lblTop').textContent = "▲ EAST (E)";
+    document.getElementById('lblRight').textContent = "SOUTH (S) ▶";
+    document.getElementById('lblBottom').textContent = "▼ WEST (W)";
+  } else {
+    document.getElementById('lblLeft').textContent = "◀ WEST (W)";
+    document.getElementById('lblTop').textContent = "▲ NORTH (N)";
+    document.getElementById('lblRight').textContent = "EAST (E) ▶";
+    document.getElementById('lblBottom').textContent = "▼ SOUTH (S)";
+  }
+}
+
+function render() {
+  updateCompassLabels();
+  const svg = document.getElementById('blueprint');
+  svg.innerHTML = '';
+  const rooms = DATA[curFloor][curMode];
+
+  rooms.forEach((r, idx) => {
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", r.x); rect.setAttribute("y", r.y);
+    rect.setAttribute("width", r.w); rect.setAttribute("height", r.h);
+    rect.setAttribute("fill", r.c);
+    rect.setAttribute("class", "room" + (selectedId === r.id ? " selected" : ""));
+    rect.onclick = () => selectRoom(r);
+    g.appendChild(rect);
+
+    const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    txt.setAttribute("x", r.x + r.w / 2);
+    txt.setAttribute("y", r.y + r.h / 2 - 8);
+    txt.setAttribute("class", "room-label");
+    txt.textContent = r.name;
+    g.appendChild(txt);
+
+    const dim = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    dim.setAttribute("x", r.x + r.w / 2);
+    dim.setAttribute("y", r.y + r.h / 2 + 6);
+    dim.setAttribute("class", "room-dim");
+    dim.textContent = r.dim;
+    g.appendChild(dim);
+
+    const vtag = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    vtag.setAttribute("x", r.x + r.w / 2);
+    vtag.setAttribute("y", r.y + r.h / 2 + 20);
+    vtag.setAttribute("class", "vastu-tag");
+    vtag.textContent = getZone(r.pos).split(" ")[0];
+    g.appendChild(vtag);
+
+    svg.appendChild(g);
+    if (idx === 0 && !selectedId) selectRoom(r);
+    else if (selectedId === r.id) updateSidebar(r);
+  });
+}
+
+function updateSidebar(r) {
+  const badge = document.getElementById('statusBadge');
+  badge.className = "badge " + curMode;
+  badge.textContent = curMode === 'orig' ? "ORIGINAL PLAN (VASTU AUDIT)" : "100% VASTU-REIMAGINED PLAN";
+  document.getElementById('rTitle').textContent = r.name;
+  document.getElementById('rDim').textContent = "Dimensions: " + r.dim;
+  document.getElementById('rVastu').textContent = "Vastu Zone: " + getZone(r.pos);
+  document.getElementById('rCritique').textContent = compassMode === 'left' ? r.critLeft : r.critTop;
+
+  const ul = document.getElementById('rDesign');
+  ul.innerHTML = '';
+  r.design.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    ul.appendChild(li);
+  });
+}
+
+function selectRoom(r) {
+  selectedId = r.id;
+  updateSidebar(r);
+  render();
+}
+
+function setCompass(c) {
+  compassMode = c;
+  const btns = document.getElementById('compassBtns').children;
+  btns[0].classList.toggle('active', c === 'left');
+  btns[1].classList.toggle('active', c === 'top');
+  render();
+}
+
+function setFloor(f) {
+  curFloor = f; selectedId = null;
+  const btns = document.getElementById('floorBtns').children;
+  btns[0].classList.toggle('active', f === 'gf');
+  btns[1].classList.toggle('active', f === 'ff');
+  btns[2].classList.toggle('active', f === 'sf');
+  render();
+}
+
+function setMode(m) {
+  curMode = m; selectedId = null;
+  const btns = document.getElementById('modeBtns').children;
+  btns[0].classList.toggle('active', m === 'orig');
+  btns[1].classList.toggle('active', m === 'reim');
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

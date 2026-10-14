@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Verified 4BHK Villa - 3D Vastu & Structural Visualizer</title>
+<style>
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; overflow: hidden; }
+  #ui { position: absolute; top: 15px; left: 15px; z-index: 10; background: rgba(15, 23, 42, 0.94); padding: 18px; border-radius: 10px; width: 370px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.6); max-height: 92vh; overflow-y: auto; }
+  h2 { margin: 0 0 6px 0; font-size: 15px; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .sub { font-size: 11px; color: #94a3b8; margin-bottom: 12px; }
+  .btn-group { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  button { flex: 1; padding: 8px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: 600; transition: 0.15s; }
+  button:hover { background: #334155; }
+  button.active { background: #0284c7; border-color: #38bdf8; color: #fff; }
+  button.mode-btn.active { background: #059669; border-color: #34d399; }
+  .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px; margin-bottom: 12px; padding-top: 8px; border-top: 1px solid #334155; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  #notes { font-size: 12px; line-height: 1.55; background: #1e293b; padding: 12px; border-radius: 6px; border-left: 3px solid #38bdf8; }
+  #compass { position: absolute; bottom: 20px; right: 20px; background: rgba(15, 23, 42, 0.9); padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; font-size: 12px; text-align: center; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+<div id="ui">
+  <h2>Triple-Checked 4BHK Villa 3D Model</h2>
+  <div class="sub">Exact Scale: 1 Unit = 1 Foot | Rotate: Left-Click | Zoom: Scroll</div>
+  
+  <div class="btn-group">
+    <button id="btn-f0" class="active" onclick="setFloor(0)">Ground</button>
+    <button id="btn-f1" onclick="setFloor(1)">1st Floor</button>
+    <button id="btn-f2" onclick="setFloor(2)">2nd Floor</button>
+    <button id="btn-fall" onclick="setFloor('all')">Stack All 3</button>
+  </div>
+
+  <div class="btn-group">
+    <button id="btn-re" class="mode-btn active" onclick="setMode('reimagined')">Verified Vastu Reimagined</button>
+    <button id="btn-orig" class="mode-btn" onclick="setMode('original')">Original PDF Layout</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="swatch" style="background:#3b82f6"></span>Living / Lounge / Dining</div>
+    <div class="legend-item"><span class="swatch" style="background:#8b5cf6"></span>Bedrooms (SW / NE)</div>
+    <div class="legend-item"><span class="swatch" style="background:#f59e0b"></span>Kitchen / Pantry / BBQ</div>
+    <div class="legend-item"><span class="swatch" style="background:#10b981"></span>Puja / Balconies / Terrace</div>
+    <div class="legend-item"><span class="swatch" style="background:#ef4444"></span>Toilets & Plumbing Duct</div>
+    <div class="legend-item"><span class="swatch" style="background:#64748b"></span>Closets / Lift / Stairs</div>
+  </div>
+
+  <div id="notes"></div>
+</div>
+
+<div id="compass">
+  <strong style="color:#38bdf8">VASTU ORIENTATION</strong><br>
+  ▲ NORTH (Top) | ▼ SOUTH (Bottom)<br>
+  ◄ WEST (Left) | ► EAST (Right)
+</div>
+
+<script>
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0f172a);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+camera.position.set(0, 68, 58);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.55);
+dirLight.position.set(35, 80, 45);
+scene.add(dirLight);
+
+const grid = new THREE.GridHelper(64, 64, 0x334155, 0x1e293b);
+scene.add(grid);
+
+let currentFloor = 0;
+let currentMode = 'reimagined';
+const floorGroup = new THREE.Group();
+scene.add(floorGroup);
+
+// Main Building Envelope: ~38' Wide (West to East) x ~34.5' Deep (North to South)
+const W_OFFSET = -20;
+const L_OFFSET = -17.5;
+
+const plans = {
+  reimagined: {
+    0: {
+      note: "<b>GROUND FLOOR (VERIFIED FIXES):</b><br>• <b>Powder Room Expanded (6'-8\" x 8'):</b> Deleted the useless 3' indoor servant corridor by flipping Servant Toilet access to the South Utility.<br>• <b>Habitable Staff Room (11'-9\" x 4'-6\"):</b> Merged 7'9\"x3'8\" Servant cell with half of Store Room + 8\" of South Utility.<br>• <b>Clockwise Staircase:</b> First riser starts on East flight (by Kitchen) going South $\\rightarrow$ turns West $\\rightarrow$ goes North.",
+      rooms: [
+        { name: "Living Room (NW)\n12'-8\" x 14'-8\"", x: 0, z: 0, w: 12.67, d: 14.67, c: 0x3b82f6, h: 3.5 },
+        { name: "Double Height Dining\n11' x 14'-3\"", x: 12.67, z: 0, w: 11, d: 14.25, c: 0x0ea5e9, h: 1.5 },
+        { name: "Puja (East Wall Idol)\n4' x 5'", x: 23.67, z: 0, w: 4, d: 5, c: 0x10b981, h: 3.5 },
+        { name: "Drawing Room (NE)\n10'-3\" x 14'-3\"", x: 27.67, z: 0, w: 10.25, d: 14.25, c: 0x3b82f6, h: 3.5 },
+        { name: "5'-5\" East Entrance", x: 37.92, z: 8.75, w: 4.5, d: 5.5, c: 0x10b981, h: 0.5 },
+        { name: "Bedroom 01 (SW)\n12' x 14'-8\"", x: 0, z: 14.67, w: 12, d: 14.67, c: 0x8b5cf6, h: 3.5 },
+        { name: "Walk-In Closet\n12' x 5'-3\"", x: 0, z: 29.34, w: 12, d: 5.25, c: 0x64748b, h: 3.5 },
+        { name: "Lift\n5' x 5'", x: 12, z: 18.5, w: 5, d: 5, c: 0x475569, h: 4 },
+        { name: "Bed 01 Toilet\n5'-7\" x 7'-10\"", x: 12, z: 23.5, w: 5.58, d: 7.83, c: 0xef4444, h: 3.5 },
+        { name: "Expanded Powder Rm\n6'-8\" x 8' (Absorbed Hall)", x: 17.58, z: 18.5, w: 6.67, d: 8, c: 0xef4444, h: 3.5 },
+        { name: "Ser. Toilet (Ext Door)\n3'-8\" x 6'", x: 17.58, z: 28.59, w: 3.67, d: 6, c: 0xef4444, h: 3.5 },
+        { name: "Clockwise Staircase\n(Up on East Flight)", x: 24.25, z: 18.5, w: 5.75, d: 12.25, c: 0x64748b, h: 3.5 },
+        { name: "Kitchen (SE)\n10' x 16'", x: 30, z: 14.25, w: 10, d: 16, c: 0xf59e0b, h: 3.5 },
+        { name: "Reach-in Kitchen Pantry\n4' x 3'-10\"", x: 33, z: 30.25, w: 7, d: 3.83, c: 0xf59e0b, h: 3.5 },
+        { name: "Expanded Staff Room\n11'-9\" x 4'-6\"", x: 21.25, z: 30.75, w: 11.75, d: 4.5, c: 0x14b8a6, h: 3.5 }
+      ]
+    },
+    1: {
+      note: "<b>1ST FLOOR (VERIFIED FIXES):</b><br>• <b>Why We Kept NW Toilet (12'x6'):</b> Both the Toilet (6') and Closet (7'-8\") sit within the 14'-8\" depth of the Living Room below! Swapping them ruins closet access and doesn't clear the Living Room. Instead, route soil pipes via an <b>Exterior NW Corner Duct</b>.<br>• <b>Bedroom 03 Expanded:</b> Absorbed the 10'x5' Foyer into the bedroom suite.",
+      rooms: [
+        { name: "Ext. NW Plumbing Duct", x: -1.5, z: 0, w: 1.5, d: 2, c: 0xef4444, h: 4 },
+        { name: "Toilet 02 (NW Exterior)\n12' x 6'", x: 0, z: 0, w: 12, d: 6, c: 0xef4444, h: 3.5 },
+        { name: "Walk-In Closet 02\n12'-3\" x 7'-8\"", x: 0, z: 6, w: 12.25, d: 7.67, c: 0x64748b, h: 3.5 },
+        { name: "Bedroom 02 (SW)\n12' x 20'-3\"", x: 0, z: 13.67, w: 12, d: 20.25, c: 0x8b5cf6, h: 3.5 },
+        { name: "Double Height Void\n11' x 14'-3\"", x: 12.67, z: 0, w: 11, d: 14.25, c: 0x1e293b, h: 0.2 },
+        { name: "6' Wide Passage", x: 12.25, z: 14.25, w: 15.75, d: 6, c: 0x475569, h: 1 },
+        { name: "Bedroom 03 + Foyer Merged\n14'-3\" x 19'-3\"", x: 23.67, z: 0, w: 14.25, d: 19.25, c: 0x8b5cf6, h: 3.5 },
+        { name: "4' Wide North Balcony", x: 23.67, z: -4, w: 14.25, d: 4, c: 0x10b981, h: 0.8 },
+        { name: "5'-2\" Wide East Balcony", x: 37.92, z: -4, w: 5.17, d: 34, c: 0x10b981, h: 0.8 },
+        { name: "Lift\n5' x 5'", x: 12, z: 20.25, w: 5, d: 5, c: 0x475569, h: 4 },
+        { name: "Linen Store\n5'-2\" x 7'-10\"", x: 12, z: 25.25, w: 5.17, d: 7.83, c: 0x64748b, h: 3.5 },
+        { name: "Clockwise Staircase", x: 17.5, z: 20.25, w: 10.5, d: 12.8, c: 0x64748b, h: 3.5 },
+        { name: "Walk-In Closet 03\n10' x 8'-4\"", x: 28, z: 19.25, w: 10, d: 8.33, c: 0x64748b, h: 3.5 },
+        { name: "Toilet 03 (SE)\n10' x 6'", x: 28, z: 27.58, w: 10, d: 6, c: 0xef4444, h: 3.5 }
+      ]
+    },
+    2: {
+      note: "<b>2ND FLOOR (VERIFIED FIXES):</b><br>• <b>Upstairs Wet Bar (5'-2\" x 7'-10\"):</b> Converted redundant 2nd-floor Store Room into a Pantry/Bar to serve the Lounge & Terrace.<br>• <b>Open Terrace (15'-10\" x 23'-3\"):</b> Connected to 15'x14'-3\" Family Lounge via sliding-folding glass wall.",
+      rooms: [
+        { name: "Ext. NW Plumbing Duct", x: -1.5, z: 0, w: 1.5, d: 2, c: 0xef4444, h: 4 },
+        { name: "Toilet 04 (NW Exterior)\n12' x 6'", x: 0, z: 0, w: 12, d: 6, c: 0xef4444, h: 3.5 },
+        { name: "Walk-In Closet 04\n12' x 7'-8\"", x: 0, z: 6, w: 12, d: 7.67, c: 0x64748b, h: 3.5 },
+        { name: "Bedroom 04 (SW)\n12' x 20'-3\"", x: 0, z: 13.67, w: 12, d: 20.25, c: 0x8b5cf6, h: 3.5 },
+        { name: "Family Lounge\n15' x 14'-3\"", x: 12, z: 0, w: 15, d: 14.25, c: 0x3b82f6, h: 3.5 },
+        { name: "Open Terrace (NE)\n15'-10\" x 23'-3\"", x: 27, z: -3, w: 15.83, d: 23.25, c: 0x10b981, h: 0.8 },
+        { name: "6' Wide Passage", x: 12, z: 14.25, w: 15, d: 6, c: 0x475569, h: 1 },
+        { name: "Lift\n5' x 5'", x: 12, z: 20.25, w: 5, d: 5, c: 0x475569, h: 4 },
+        { name: "Wet Bar / Pantry\n5'-2\" x 7'-10\"", x: 12, z: 25.25, w: 5.17, d: 7.83, c: 0xf59e0b, h: 3.5 },
+        { name: "Clockwise Staircase", x: 17.5, z: 20.25, w: 10.5, d: 12.8, c: 0x64748b, h: 3.5 },
+        { name: "Covered Outdoor BBQ (SE)\n10' x 13'-6\"", x: 28, z: 20.25, w: 10, d: 13.5, c: 0xf59e0b, h: 1.5 }
+      ]
+    }
+  },
+  original: {
+    0: {
+      note: "<b>ORIGINAL PDF GROUND FLOOR:</b><br>• Notice the wasted 3' passage between the 3'-8\"x8' Toilet and Staircase.<br>• Notice the unlivable 7'9\" x 3'-8\" Servant Quarter.<br>• Staircase ascends on West flight going South $\\rightarrow$ East $\\rightarrow$ North (Counter-Clockwise).",
+      rooms: [
+        { name: "Living Room\n12'-8\" x 14'-8\"", x: 0, z: 0, w: 12.67, d: 14.67, c: 0x3b82f6, h: 3.5 },
+        { name: "Double Height Dining\n11' x 14'-3\"", x: 12.67, z: 0, w: 11, d: 14.25, c: 0x0ea5e9, h: 1.5 },
+        { name: "Puja\n4' Wide", x: 23.67, z: 0, w: 4, d: 5, c: 0x10b981, h: 3.5 },
+        { name: "Drawing Room\n10'-3\" x 14'-3\"", x: 27.67, z: 0, w: 10.25, d: 14.25, c: 0x3b82f6, h: 3.5 },
+        { name: "Bedroom 01\n12' x 14'-8\"", x: 0, z: 14.67, w: 12, d: 14.67, c: 0x8b5cf6, h: 3.5 },
+        { name: "Walk-In Closet\n12' x 5'-3\"", x: 0, z: 29.34, w: 12, d: 5.25, c: 0x64748b, h: 3.5 },
+        { name: "Lift\n5' x 5'", x: 12, z: 18.5, w: 5, d: 5, c: 0x475569, h: 4 },
+        { name: "Toilet\n5'-7\" x 7'-10\"", x: 12, z: 23.5, w: 5.58, d: 7.83, c: 0xef4444, h: 3.5 },
+        { name: "Cramped Toilet\n3'-8\" x 8'", x: 17.58, z: 18.5, w: 3.67, d: 8, c: 0xef4444, h: 3.5 },
+        { name: "Wasted 3' Corridor", x: 21.25, z: 18.5, w: 3, d: 12, c: 0x334155, h: 1 },
+        { name: "Ser. Toilet\n3'-8\" x 6'", x: 17.58, z: 28.59, w: 3.67, d: 6, c: 0xef4444, h: 3.5 },
+        { name: "Counter-CW Stair", x: 24.25, z: 18.5, w: 5.75, d: 12.25, c: 0x64748b, h: 3.5 },
+        { name: "Kitchen\n10' x 16'", x: 30, z: 14.25, w: 10, d: 16, c: 0xf59e0b, h: 3.5 },
+        { name: "Servant Quarter\n7'9\" x 3'-8\"", x: 21.25, z: 30.75, w: 7.75, d: 3.67, c: 0xef4444, h: 3.5 },
+        { name: "Store Room\n8' x 3'-10\"", x: 29, z: 30.75, w: 8, d: 3.83, c: 0x64748b, h: 3.5 }
+      ]
+    },
+    1: {
+      note: "<b>ORIGINAL PDF 1ST FLOOR:</b><br>• Toilet (12'x6') + Closet (12'-3\"x7'-8\") both sit above the 14'-8\" deep Ground Living Room.<br>• Foyer (10'x5') wastes 50 sq.ft. outside Bedroom 03.",
+      rooms: [
+        { name: "Toilet\n12' x 6'", x: 0, z: 0, w: 12, d: 6, c: 0xef4444, h: 3.5 },
+        { name: "Walk-In Closet\n12'-3\" x 7'-8\"", x: 0, z: 6, w: 12.25, d: 7.67, c: 0x64748b, h: 3.5 },
+        { name: "Bedroom 02\n12' x 20'-3\"", x: 0, z: 13.67, w: 12, d: 20.25, c: 0x8b5cf6, h: 3.5 },
+        { name: "Dining Void", x: 12.67, z: 0, w: 11, d: 14.25, c: 0x1e293b, h: 0.2 },
+        { name: "6' Wide Passage", x: 12.25, z: 14.25, w: 15.75, d: 6, c: 0x475569, h: 1 },
+        { name: "Bedroom 03\n14'-3\" x 14'-3\"", x: 23.67, z: 0, w: 14.25, d: 14.25, c: 0x8b5cf6, h: 3.5 },
+        { name: "Foyer\n10' x 5'", x: 28, z: 14.25, w: 10, d: 5, c: 0x64748b, h: 1.5 },
+        { name: "4' Wide Balcony", x: 23.67, z: -4, w: 14.25, d: 4, c: 0x10b981, h: 0.8 },
+        { name: "5'-2\" Wide Balcony", x: 37.92, z: -4, w: 5.17, d: 34, c: 0x10b981, h: 0.8 },
+        { name: "Lift\n5' x 5'", x: 12, z: 20.25, w: 5, d: 5, c: 0x475569, h: 4 },
+        { name: "Store Room\n5'-2\" x 7'-10\"", x: 12, z: 25.25, w: 5.17, d: 7.83, c: 0x64748b, h: 3.5 },
+        { name: "Staircase", x: 17.5, z: 20.25, w: 10.5, d: 12.8, c: 0x64748b, h: 3.5 },
+        { name: "Walk-In Closet\n10' x 8'-4\"", x: 28, z: 19.25, w: 10, d: 8.33, c: 0x64748b, h: 3.5 },
+        { name: "Toilet\n10' x 6'", x: 28, z: 27.58, w: 10, d: 6, c: 0xef4444, h: 3.5 }
+      ]
+    },
+    2: {
+      note: "<b>ORIGINAL PDF 2ND FLOOR:</b><br>• Redundant Store Room (5'-2\"x7'-10\") instead of upstairs pantry.<br>• Solid East wall separates Family Lounge from Open Terrace.",
+      rooms: [
+        { name: "Toilet\n12' x 6'", x: 0, z: 0, w: 12, d: 6, c: 0xef4444, h: 3.5 },
+        { name: "Walk-In Closet\n12' x 7'-8\"", x: 0, z: 6, w: 12, d: 7.67, c: 0x64748b, h: 3.5 },
+        { name: "Bedroom 04\n12' x 20'-3\"", x: 0, z: 13.67, w: 12, d: 20.25, c: 0x8b5cf6, h: 3.5 },
+        { name: "Family Lounge\n15' x 14'-3\"", x: 12, z: 0, w: 15, d: 14.25, c: 0x3b82f6, h: 3.5 },
+        { name: "Open Terrace\n15'-10\" x 23'-3\"", x: 27, z: -3, w: 15.83, d: 23.25, c: 0x10b981, h: 0.8 },
+        { name: "6' Wide Passage", x: 12, z: 14.25, w: 15, d: 6, c: 0x475569, h: 1 },
+        { name: "Lift\n5' x 5'", x: 12, z: 20.25, w: 5, d: 5, c: 0x475569, h: 4 },
+        { name: "Store Room\n5'-2\" x 7'-10\"", x: 12, z: 25.25, w: 5.17, d: 7.83, c: 0x64748b, h: 3.5 },
+        { name: "Staircase", x: 17.5, z: 20.25, w: 10.5, d: 12.8, c: 0x64748b, h: 3.5 },
+        { name: "Covered Outdoor Seating\n10' x 13'-6\"", x: 28, z: 20.25, w: 10, d: 13.5, c: 0x64748b, h: 1.5 }
+      ]
+    }
+  }
+};
+
+function makeLabel(text) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256; canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+  ctx.fillRect(4, 4, 248, 120);
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(4, 4, 248, 120);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 19px sans-serif';
+  ctx.textAlign = 'center';
+  const lines = text.split('\n');
+  lines.forEach((l, i) => ctx.fillText(l, 128, 52 + i * 26));
+  const tex = new THREE.CanvasTexture(canvas);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
+  sprite.scale.set(6.2, 3.1, 1);
+  return sprite;
+}
+
+function buildScene() {
+  while(floorGroup.children.length > 0) floorGroup.remove(floorGroup.children[0]);
+  const floorsToDraw = currentFloor === 'all' ? [0, 1, 2] : [currentFloor];
+  
+  floorsToDraw.forEach(fIdx => {
+    const data = plans[currentMode][fIdx];
+    const yBase = currentFloor === 'all' ? fIdx * 12 : 0;
+    
+    data.rooms.forEach(r => {
+      const geo = new THREE.BoxGeometry(r.w - 0.15, r.h, r.d - 0.15);
+      const mat = new THREE.MeshLambertMaterial({ color: r.c, transparent: true, opacity: 0.85 });
+      const mesh = new THREE.Mesh(geo, mat);
+      const cx = W_OFFSET + r.x + r.w / 2;
+      const cz = L_OFFSET + r.z + r.d / 2;
+      mesh.position.set(cx, yBase + r.h / 2, cz);
+      floorGroup.add(mesh);
+
+      const edges = new THREE.EdgesGeometry(geo);
+      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xe2e8f0 }));
+      line.position.copy(mesh.position);
+      floorGroup.add(line);
+
+      if (currentFloor !== 'all' || fIdx === 2) {
+        const lbl = makeLabel(r.name);
+        lbl.position.set(cx, yBase + r.h + 1.8, cz);
+        floorGroup.add(lbl);
+      }
+    });
+  });
+
+  const noteFloor = currentFloor === 'all' ? 0 : currentFloor;
+  document.getElementById('notes').innerHTML = plans[currentMode][noteFloor].note;
+}
+
+function setFloor(f) {
+  currentFloor = f;
+  ['0','1','2','all'].forEach(id => {
+    const el = document.getElementById('btn-f' + id);
+    if(el) el.classList.toggle('active', id == f);
+  });
+  buildScene();
+}
+
+function setMode(m) {
+  currentMode = m;
+  document.getElementById('btn-re').classList.toggle('active', m === 'reimagined');
+  document.getElementById('btn-orig').classList.toggle('active', m === 'original');
+  buildScene();
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+buildScene();
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>
