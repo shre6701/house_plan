@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Villa Auro — Interior Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"}}
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050810;--surface:rgba(5,8,16,0.88);
+  --border:rgba(245,158,11,0.18);--border-dim:rgba(245,158,11,0.10);
+  --accent:#f59e0b;--text:#f1f5f9;--muted:#64748b;
+  --font-head:'Cinzel',Georgia,serif;--font-body:'Josefin Sans',sans-serif;
+}
+body{background:#050810;margin:0;overflow:hidden;font-family:var(--font-body);color:var(--text)}
+canvas{cursor:pointer;display:block}
+
+#loader{position:fixed;inset:0;z-index:2000;background:#050810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.ld-line{width:140px;height:1px;background:linear-gradient(90deg,transparent,#f59e0b,transparent);opacity:0;transform:scaleX(0);transform-origin:center}
+.ld-brand{font-family:var(--font-head);font-size:2.2rem;font-weight:600;letter-spacing:.2em;color:#f59e0b;opacity:0;transform:translateY(20px)}
+.ld-sub{font-family:var(--font-body);font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:#64748b;opacity:0}
+
+#hdr{position:fixed;top:0;left:0;right:0;height:52px;z-index:100;background:rgba(5,8,16,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border-dim);display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.logo{display:flex;flex-direction:column;gap:1px}
+.logo-title{font-family:var(--font-head);font-size:.82rem;font-weight:600;letter-spacing:.15em;color:#f59e0b}
+.logo-sub{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.mode-group{display:flex;gap:4px}
+.mode-btn{font-family:var(--font-body);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;border-radius:99px;padding:5px 14px;background:transparent;border:1px solid var(--border-dim);color:var(--muted);cursor:pointer;transition:all .22s ease;touch-action:manipulation;white-space:nowrap}
+.mode-btn:hover:not(.active){border-color:var(--border);color:#f59e0b}
+.mode-btn:focus-visible{outline:2px solid #f59e0b;outline-offset:2px}
+.mode-btn.active{background:#f59e0b;color:#050810;font-weight:700}
+#weather-badge{font-family:var(--font-body);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap;padding:4px 12px;border-radius:99px;border:1px solid var(--border-dim)}
+#breadcrumb{font-family:var(--font-body);font-size:.62rem;letter-spacing:.1em;color:#f59e0b;padding:5px 14px;border-radius:99px;border:1px solid var(--border-dim)}
+
+#dock{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:4px;align-items:center;background:rgba(5,8,16,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border-dim);border-radius:99px;padding:6px 12px;flex-wrap:nowrap;overflow-x:auto;max-width:calc(100vw - 32px)}
+#dock::-webkit-scrollbar{display:none}
+.dock-btn{font-family:var(--font-body);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:5px 11px;background:transparent;border:1px solid transparent;color:var(--muted);cursor:pointer;transition:all .2s ease;white-space:nowrap;touch-action:manipulation}
+.dock-btn:hover:not(.active){border-color:var(--border);color:#f59e0b}
+.dock-btn:focus-visible{outline:2px solid #f59e0b;outline-offset:2px}
+.dock-btn.active{background:#f59e0b;color:#050810;font-weight:700}
+
+#panel{position:fixed;right:0;top:52px;bottom:0;width:300px;background:rgba(5,8,16,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-left:1px solid var(--border-dim);padding:24px 20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;z-index:100;transform:translateX(300px)}
+#panel::-webkit-scrollbar{width:3px}
+#panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.p-badge{font-family:var(--font-head);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:#f59e0b;margin-bottom:4px}
+.p-name{font-family:var(--font-head);font-size:1.2rem;font-weight:600;letter-spacing:.06em;line-height:1.3}
+.p-desc{font-size:.75rem;color:var(--muted);line-height:1.65;margin-top:2px}
+.p-section-label{font-family:var(--font-head);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:#f59e0b;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.p-section-label::after{content:'';flex:1;height:1px;background:var(--border-dim)}
+.p-card{background:rgba(245,158,11,.04);border:1px solid var(--border-dim);border-radius:8px;padding:12px}
+.p-items-list{list-style:none;display:flex;flex-direction:column;gap:5px}
+.p-items-list li{font-size:.72rem;color:#cbd5e1;padding-left:14px;position:relative;line-height:1.4}
+.p-items-list li::before{content:'→';position:absolute;left:0;color:#f59e0b;font-size:.65rem}
+.p-light-text{font-size:.72rem;color:#cbd5e1;line-height:1.55}
+.p-sep{height:1px;background:var(--border-dim);margin:2px 0}
+#back-btn{margin-top:auto;font-family:var(--font-body);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;padding:9px 18px;border-radius:99px;border:1px solid var(--border);color:#f59e0b;background:transparent;cursor:pointer;transition:all .2s ease;touch-action:manipulation;align-self:flex-start}
+#back-btn:hover{background:rgba(245,158,11,.1)}
+#back-btn:focus-visible{outline:2px solid #f59e0b;outline-offset:2px}
+
+#hint{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(5,8,16,.75);backdrop-filter:blur(12px);border:1px solid var(--border-dim);border-radius:99px;padding:6px 18px;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);z-index:99;pointer-events:none;transition:opacity .4s}
+</style>
+</head>
+<body>
+
+<div id="loader" role="status" aria-label="Loading Villa Auro Interior">
+  <div class="ld-line"></div>
+  <div class="ld-brand">VILLA AURO</div>
+  <div class="ld-line"></div>
+  <div class="ld-sub">Interior · All 15 Rooms</div>
+</div>
+
+<header id="hdr">
+  <div class="logo">
+    <div class="logo-title">VILLA AURO</div>
+    <div class="logo-sub">Interior Walkthrough · Ground Floor</div>
+  </div>
+  <div class="hdr-right">
+    <div class="mode-group" role="group" aria-label="Time of day">
+      <button class="mode-btn active" id="mode-day" onclick="window.setTimeMode('day')">☀ Day</button>
+      <button class="mode-btn" id="mode-eve" onclick="window.setTimeMode('evening')">🌇 Evening</button>
+    </div>
+    <span id="weather-badge">☀ Daylight · Clear</span>
+    <div id="breadcrumb">Overview</div>
+  </div>
+</header>
+
+<div id="dock" role="navigation" aria-label="Room navigation">
+  <button class="dock-btn active" id="db-overview" onclick="window.flyToOverview()">Overview</button>
+  <button class="dock-btn" id="db-entrance"  onclick="window.flyToRoomById('entrance')">Entrance</button>
+  <button class="dock-btn" id="db-living"    onclick="window.flyToRoomById('living')">Living</button>
+  <button class="dock-btn" id="db-dining"    onclick="window.flyToRoomById('dining')">Dining</button>
+  <button class="dock-btn" id="db-puja"      onclick="window.flyToRoomById('puja')">Puja</button>
+  <button class="dock-btn" id="db-drawing"   onclick="window.flyToRoomById('drawing')">Drawing</button>
+  <button class="dock-btn" id="db-bedroom"   onclick="window.flyToRoomById('bedroom')">Bedroom</button>
+  <button class="dock-btn" id="db-kitchen"   onclick="window.flyToRoomById('kitchen')">Kitchen</button>
+  <button class="dock-btn" id="db-staff"     onclick="window.flyToRoomById('staff')">Staff Room</button>
+</div>
+
+<aside id="panel" aria-label="Room details">
+  <div class="p-badge" id="p-badge">Room</div>
+  <h2 class="p-name" id="p-name">—</h2>
+  <p class="p-desc" id="p-desc">—</p>
+  <div class="p-sep"></div>
+  <div class="p-card">
+    <div class="p-section-label">Furnishings</div>
+    <ul class="p-items-list" id="p-items"></ul>
+  </div>
+  <div class="p-card">
+    <div class="p-section-label">Lighting</div>
+    <p class="p-light-text" id="p-light">—</p>
+  </div>
+  <button id="back-btn" onclick="window.flyToOverview()" aria-label="Back to overview">← Back to Overview</button>
+</aside>
+
+<div id="hint">Click a room to explore · Drag to orbit</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ── Renderer ──────────────────────────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+document.body.appendChild(renderer.domElement);
+
+// ── Scene ─────────────────────────────────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87CEEB);
+scene.fog = new THREE.FogExp2(0xB0D8F0, 0.003);
+
+// ── Camera ────────────────────────────────────────────────────────────────────
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.3, 300);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 2;
+controls.maxDistance = 65;
+controls.maxPolarAngle = Math.PI / 2;
+
+// ── Global Lights ─────────────────────────────────────────────────────────────
+const ambient = new THREE.AmbientLight(0xF0F8FF, 0.55);
+scene.add(ambient);
+
+const sun = new THREE.DirectionalLight(0xFFF9EE, 1.1);
+sun.position.set(30, 40, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 150;
+sun.shadow.camera.left = -45; sun.shadow.camera.right = 45;
+sun.shadow.camera.top = 45; sun.shadow.camera.bottom = -45;
+sun.shadow.bias = -0.001;
+scene.add(sun);
+
+const fill = new THREE.DirectionalLight(0xD4EEFF, 0.3);
+fill.position.set(-20, 15, -15);
+scene.add(fill);
+
+// ── Room Lights (all defined before setTimeMode) ──────────────────────────────
+const lampLiving = new THREE.PointLight(0xFFBB66, 0.5, 14, 2); lampLiving.position.set(-19, 6.5, -3.5);
+const dine1      = new THREE.PointLight(0xFFCC66, 0.7, 10, 2); dine1.position.set(-2.5, 5.8, -10.37);
+const dine2      = new THREE.PointLight(0xFFCC66, 0.7, 10, 2); dine2.position.set(-1.0, 5.8, -10.37);
+const drawLight  = new THREE.PointLight(0xFFCC66, 0.6, 12, 2); drawLight.position.set(12.8, 6.5, -8.0);
+const pujaLight  = new THREE.PointLight(0xFFAA22, 0.8,  8, 2); pujaLight.position.set(5.67, 5.0, -14.5);
+const bLamp1     = new THREE.PointLight(0xFFAA66, 0.4,  9, 2); bLamp1.position.set(-18.5, 3.8, 1.5);
+const bLamp2     = new THREE.PointLight(0xFFAA66, 0.4,  9, 2); bLamp2.position.set(-9.5, 3.8, 1.5);
+const kitchLight = new THREE.PointLight(0xFFCC66, 0.6,  9, 2); kitchLight.position.set(15, 5.8, 1.5);
+const staffLight = new THREE.PointLight(0xFFCC66, 0.5,  8, 2); staffLight.position.set(7.125, 5.0, 15.5);
+[lampLiving, dine1, dine2, drawLight, pujaLight, bLamp1, bLamp2, kitchLight, staffLight].forEach(l => scene.add(l));
+
+// ── Materials ─────────────────────────────────────────────────────────────────
+const mats = {
+  wall:    new THREE.MeshStandardMaterial({color:0xF2EDE4, roughness:0.88}),
+  floor:   new THREE.MeshStandardMaterial({color:0x9B7D5A, roughness:0.72}),
+  ceiling: new THREE.MeshStandardMaterial({color:0xFBF8F4, roughness:0.9}),
+  sofa:    new THREE.MeshStandardMaterial({color:0x4A5568, roughness:0.88}),
+  bed:     new THREE.MeshStandardMaterial({color:0xF5EFE6, roughness:0.95}),
+  bedframe:new THREE.MeshStandardMaterial({color:0x2D1F0E, roughness:0.6, metalness:0.1}),
+  wood:    new THREE.MeshStandardMaterial({color:0x6B4423, roughness:0.72}),
+  metal:   new THREE.MeshStandardMaterial({color:0xC0A882, roughness:0.35, metalness:0.8}),
+  glass:   new THREE.MeshStandardMaterial({color:0xB8D8F0, roughness:0.05, transparent:true, opacity:0.22}),
+  rug:     new THREE.MeshStandardMaterial({color:0x7C3030, roughness:1.0}),
+  pillow:  new THREE.MeshStandardMaterial({color:0xECE0D4, roughness:0.95}),
+  lamp:    new THREE.MeshStandardMaterial({color:0xFFE8A0, roughness:0.25, emissive:new THREE.Color(0xFFCC44), emissiveIntensity:0.8}),
+  marble:  new THREE.MeshStandardMaterial({color:0xF0EDE8, roughness:0.12, metalness:0.05}),
+  dark:    new THREE.MeshStandardMaterial({color:0x111111, roughness:0.8}),
+  tv:      new THREE.MeshStandardMaterial({color:0x0A0A0A, roughness:0.1, metalness:0.9}),
+  tvscreen:new THREE.MeshStandardMaterial({color:0x001829, roughness:0.05, emissive:new THREE.Color(0x003050), emissiveIntensity:0.6}),
+  curtain: new THREE.MeshStandardMaterial({color:0xE4D5B8, roughness:0.98, side:THREE.DoubleSide}),
+  doormat: new THREE.MeshStandardMaterial({color:0x3A2D1E, roughness:1.0}),
+  sanitary:new THREE.MeshStandardMaterial({color:0xF5F0EB, roughness:0.15, metalness:0.05}),
+  tile:    new THREE.MeshStandardMaterial({color:0xE8E4DF, roughness:0.3}),
+  puja:    new THREE.MeshStandardMaterial({color:0xCC8800, roughness:0.4, metalness:0.3}),
+  steps:   new THREE.MeshStandardMaterial({color:0xD4C8B8, roughness:0.7}),
+  liftMet: new THREE.MeshStandardMaterial({color:0x8A9BA8, roughness:0.2, metalness:0.9}),
+  sunshaft:new THREE.MeshBasicMaterial({color:0xFFD880, transparent:true, opacity:0.04, side:THREE.DoubleSide, depthWrite:false}),
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function box(w,h,d,mat){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); m.castShadow=true; m.receiveShadow=true; return m; }
+function cyl(rt,rb,h,mat,s=16){ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,s),mat); m.castShadow=true; m.receiveShadow=true; return m; }
+function add(m,x,y,z){ m.position.set(x,y,z); scene.add(m); return m; }
+
+// ── Floor & Ceiling ───────────────────────────────────────────────────────────
+// Coordinate system: W_OFFSET=-20, L_OFFSET=-17.5, 1 unit=1 foot
+// North=-Z, South=+Z, West=-X, East=+X
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(46,38), mats.floor);
+floor.rotation.x=-Math.PI/2; floor.position.set(1,0,0); floor.receiveShadow=true;
+scene.add(floor);
+const ceil = new THREE.Mesh(new THREE.PlaneGeometry(46,38), mats.ceiling);
+ceil.rotation.x=Math.PI/2; ceil.position.set(1,9,0);
+scene.add(ceil);
+
+// ── Perimeter Walls ───────────────────────────────────────────────────────────
+const WBOT = 4.5;
+// North wall z=-17.5
+add(box(12,9,0.3,mats.wall),-14,WBOT,-17.5);
+add(box(9,9,0.3,mats.wall),-2.5,WBOT,-17.5);
+add(box(3.5,9,0.3,mats.wall),5.67,WBOT,-17.5);
+add(box(9,9,0.3,mats.wall),13,WBOT,-17.5);
+// North windows
+add(box(4,2.2,0.12,mats.glass),-14,5.5,-17.4);
+add(box(4,2.2,0.12,mats.glass),-1.83,5.5,-17.4);
+add(box(3,2.2,0.12,mats.glass),12.8,5.5,-17.4);
+// South wall z=+17.75
+add(box(44,9,0.3,mats.wall),1,WBOT,17.75);
+// West wall x=-20
+add(box(0.3,9,38,mats.wall),-20,WBOT,0);
+add(box(0.12,2.2,5,mats.glass),-19.9,5.5,-10.17);
+add(box(0.12,2.2,5,mats.glass),-19.9,5.5,4.5);
+// East wall x=22 (gap z≈-8.75 to -3.25 for entrance porch)
+add(box(0.3,9,9.5,mats.wall),22,WBOT,-13.1);
+add(box(0.3,9,21.5,mats.wall),22,WBOT,7.0);
+add(box(0.12,2.2,5,mats.glass),21.9,5.5,4.75);
+
+// ── Interior Walls ────────────────────────────────────────────────────────────
+// N/S divider at z=-2.83 (south edge of north zone rooms)
+add(box(12,9,0.3,mats.wall),-14,WBOT,-2.83);    // west: between Living & Bedroom
+add(box(14,9,0.3,mats.wall),15,WBOT,-2.83);     // east: between Drawing/Entrance & Kitchen
+// E/W walls between rooms
+add(box(0.3,9,15,mats.wall),-7.33,WBOT,-10.17); // Living/Dining divider
+add(box(0.3,9,5,mats.wall),3.67,WBOT,-15.0);    // Dining/Puja niche
+add(box(0.3,9,15,mats.wall),7.67,WBOT,-10.17);  // Puja+Drawing/Entrance divider
+add(box(0.3,9,21,mats.wall),-8,WBOT,7.5);       // Bedroom east / service west
+add(box(0.3,9,5,mats.wall),-3,WBOT,3.5);        // Lift east wall
+add(box(0.3,9,16.5,mats.wall),4.25,WBOT,9.25);  // Stair west / Powder east
+add(box(0.3,9,12,mats.wall),10,WBOT,7.5);       // Stair east / Kitchen west
+// Additional horizontal partitions
+add(box(12,9,0.3,mats.wall),-14,WBOT,11.84);    // Bedroom south / Closet north
+add(box(12,9,0.3,mats.wall),7.125,WBOT,13.25);  // Staff room north
+add(box(7,9,0.3,mats.wall),16.5,WBOT,12.75);    // Pantry north
+
+// ── 1. LIVING ROOM (NW) — cx=-13.67, cz=-10.17 ───────────────────────────────
+add(box(6,0.65,1.4,mats.sofa),-17,0.325,-8.0);
+add(box(6,0.8,0.32,mats.sofa),-17,1.05,-8.96);
+add(box(0.32,1.05,1.72,mats.sofa),-19.86,0.525,-8.0);
+add(box(1.4,0.65,4.0,mats.sofa),-14.5,0.325,-5.8);
+add(box(0.32,0.8,4.0,mats.sofa),-15.3,1.05,-5.8);
+add(box(2.8,0.1,1.4,mats.wood),-15.5,0.48,-7.5);
+[[-16.8,0.24,-6.85],[-14.2,0.24,-6.85],[-16.8,0.24,-8.15],[-14.2,0.24,-8.15]].forEach(([x,y,z])=>add(box(0.08,0.48,0.08,mats.wood),x,y,z));
+add(box(5,0.8,0.55,mats.wood),-13.67,0.4,-17.1);
+add(box(4.6,2.1,0.1,mats.tvscreen),-13.67,1.85,-17.15);
+add(box(4.7,2.15,0.14,mats.tv),-13.67,1.85,-17.18);
+add(cyl(0.22,0.28,0.12,mats.metal),-19,0.06,-3.5);
+add(cyl(0.04,0.04,5.6,mats.metal),-19,2.86,-3.5);
+add(cyl(0.0,0.55,0.45,mats.lamp,16),-19,5.8,-3.5);
+add(box(8,0.04,6,mats.rug),-14.5,0.02,-7.5);
+add(box(3,5,0.4,mats.wood),-8.2,2.5,-10.17);
+[1.2,2.5,3.8].forEach(y=>add(box(2.7,0.07,0.35,mats.wood),-8.2,y,-10.17));
+[0x8B3030,0x2D6040,0x1B3F72,0x7D3098,0xCA6010,0x148877].forEach((c,i)=>{
+  const bm=new THREE.MeshStandardMaterial({color:c,roughness:0.9});
+  add(box(0.1,0.3,0.3,bm),-9.4+i*0.42,1.48,-10.05);
+});
+add(box(1.2,3.2,0.08,mats.curtain),-16.7,4.8,-17.4);
+add(box(1.2,3.2,0.08,mats.curtain),-12.5,4.8,-17.4);
+const shaft=new THREE.Mesh(new THREE.BoxGeometry(0.05,5,9),mats.sunshaft);
+shaft.rotation.x=Math.PI/10; add(shaft,-19.5,5,-10);
+
+// ── 2. DINING (N centre) — cx=-1.83, cz=-10.37 ───────────────────────────────
+add(box(6,0.12,3.0,mats.wood),-1.83,3.0,-10.37);
+[[-4.5,1.5,-9.0],[-4.5,1.5,-11.74],[1.84,1.5,-9.0],[1.84,1.5,-11.74]].forEach(([x,y,z])=>add(cyl(0.08,0.08,3.0,mats.wood),x,y,z));
+[[-4.8,-9.0,0],[-4.8,-10.37,0],[-4.8,-11.74,0],[1.14,-9.0,Math.PI],[1.14,-10.37,Math.PI],[1.14,-11.74,Math.PI]].forEach(([cx2,cz2,ry])=>{
+  const g=new THREE.Group(); g.position.set(cx2,0,cz2); g.rotation.y=ry; scene.add(g);
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.08,0.52),mats.wood); seat.position.set(0,2.62,0); seat.castShadow=true; g.add(seat);
+  const back=new THREE.Mesh(new THREE.BoxGeometry(0.52,0.65,0.06),mats.wood); back.position.set(0,3.06,0.23); back.castShadow=true; g.add(back);
+  [[-0.2,1.28,-0.2],[0.2,1.28,-0.2],[-0.2,1.28,0.2],[0.2,1.28,0.2]].forEach(([lx,ly,lz])=>{
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,2.58,8),mats.wood); leg.position.set(lx,ly,lz); g.add(leg);
+  });
+});
+[-2.5,-1.0].forEach(px=>{
+  add(cyl(0.01,0.01,1.5,mats.metal),px,5.55,-10.37);
+  add(cyl(0.0,0.32,0.38,mats.lamp,16),px,4.82,-10.37);
+});
+add(box(4,1.1,0.55,mats.wood),-1.83,0.55,-17.1);
+add(box(3.8,0.07,0.5,mats.marble),-1.83,1.1,-17.1);
+add(box(0.22,0.42,0.22,mats.marble),-3.0,1.38,-17.1);
+add(box(0.18,0.55,0.18,mats.metal),-1.5,1.42,-17.1);
+add(box(1.0,3.2,0.08,mats.curtain),-3.5,4.8,-17.4);
+add(box(1.0,3.2,0.08,mats.curtain),-0.5,4.8,-17.4);
+
+// ── 3. PUJA ROOM — cx=5.67, cz=-15.0 ────────────────────────────────────────
+add(box(3.5,0.1,0.55,mats.wood),5.67,3.8,-17.1);
+add(box(2.2,2.2,0.3,mats.puja),5.67,4.9,-17.1);
+add(box(1.8,0.06,0.48,mats.puja),5.67,3.85,-17.05);
+add(cyl(0.2,0.15,0.8,mats.puja),5.67,4.35,-16.95);
+const diyaMat=new THREE.MeshStandardMaterial({color:0xFFCC00,emissive:new THREE.Color(0xFFAA00),emissiveIntensity:2.0,roughness:0.3});
+[4.9,6.44].forEach(dx=>add(cyl(0.1,0.08,0.06,diyaMat),dx,3.92,-16.9));
+add(cyl(0.04,0.04,0.3,mats.metal),5.67,3.95,-16.8);
+add(box(2.5,0.04,3.5,mats.rug),5.67,0.02,-14.5);
+add(box(0.5,3.2,0.08,mats.curtain),3.85,4.8,-17.4);
+add(box(0.5,3.2,0.08,mats.curtain),7.35,4.8,-17.4);
+
+// ── 4. DRAWING ROOM (NE) — cx=12.8, cz=-10.37 ───────────────────────────────
+[{dx:-1.8,dz:-1.5,ry:Math.PI/5},{dx:1.8,dz:-1.5,ry:-Math.PI/5}].forEach(({dx,dz,ry})=>{
+  const g=new THREE.Group(); g.position.set(12.8+dx,0,-10.4+dz); g.rotation.y=ry; scene.add(g);
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.08,0.85),mats.sofa); seat.position.set(0,2.62,0); seat.castShadow=true; g.add(seat);
+  const cush=new THREE.Mesh(new THREE.BoxGeometry(0.86,0.38,0.81),mats.sofa); cush.position.set(0,2.43,0); g.add(cush);
+  const bk=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.75,0.1),mats.sofa); bk.position.set(0,2.95,0.38); g.add(bk);
+  [-0.41,0.41].forEach(ax=>{const arm=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.22,0.85),mats.sofa); arm.position.set(ax,2.73,0); g.add(arm);});
+  [[-0.38,1.28,-0.35],[0.38,1.28,-0.35],[-0.38,1.28,0.35],[0.38,1.28,0.35]].forEach(([lx,ly,lz])=>{
+    const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,2.58,8),mats.wood); leg.position.set(lx,ly,lz); g.add(leg);
+  });
+});
+add(box(0.75,0.08,0.75,mats.wood),12.8,2.6,-12.1);
+[[-0.3,1.3,-0.3],[0.3,1.3,-0.3],[-0.3,1.3,0.3],[0.3,1.3,0.3]].forEach(([x,y,z])=>add(box(0.06,2.6,0.06,mats.metal),12.8+x,y,-12.1+z));
+add(box(0.2,0.3,0.2,mats.marble),12.8,2.78,-12.1);
+add(cyl(0.22,0.28,0.12,mats.metal),16.5,0.06,-4.5);
+add(cyl(0.04,0.04,5.6,mats.metal),16.5,2.86,-4.5);
+add(cyl(0.0,0.55,0.45,mats.lamp,16),16.5,5.8,-4.5);
+add(box(4.0,2.8,0.08,mats.sofa),12.8,5.2,-17.2);
+add(box(4,0.9,0.5,mats.wood),15.5,0.45,-10.4);
+add(box(3.8,0.07,0.46,mats.marble),15.5,0.9,-10.4);
+add(box(1.2,3.2,0.08,mats.curtain),11.3,4.8,-17.4);
+add(box(1.2,3.2,0.08,mats.curtain),14.3,4.8,-17.4);
+
+// ── 5. EAST ENTRANCE — cx=20.17, cz=-6.0 ────────────────────────────────────
+add(box(0.25,2.8,0.25,mats.wood),21.85,1.4,-7.2);
+add(box(0.25,2.8,0.25,mats.wood),21.85,1.4,-4.8);
+add(box(0.25,0.25,2.7,mats.wood),21.85,2.95,-6.0);
+const door=box(0.12,2.5,2.4,mats.wood); door.rotation.y=0.3; add(door,21.7,1.25,-5.5);
+add(new THREE.Mesh(new THREE.SphereGeometry(0.08,10,8),mats.metal),21.72,1.2,-5.7);
+add(box(1.8,0.06,1.2,mats.doormat),20.5,0.03,-6.0);
+add(box(2.2,0.08,0.5,mats.wood),20.0,2.1,-8.0);
+add(box(0.08,2.1,0.08,mats.wood),19.0,1.05,-7.8);
+add(box(0.08,2.1,0.08,mats.wood),21.0,1.05,-7.8);
+add(box(0.28,0.52,0.28,mats.marble),20.0,2.4,-8.0);
+add(box(1.8,1.6,0.06,mats.glass),20.0,3.1,-8.1);
+
+// ── 6. BEDROOM 01 (SW) — cx=-14.0, cz=4.505 ─────────────────────────────────
+add(box(8,0.3,9,mats.bedframe),-14,0.15,4.5);
+add(box(7.6,0.5,8.4,mats.bed),-14,0.55,4.5);
+add(box(8,1.8,0.22,mats.bedframe),-14,1.25,0.3);
+add(box(2.2,0.25,0.9,mats.pillow),-16,1.07,1.3);
+add(box(2.2,0.25,0.9,mats.pillow),-12,1.07,1.3);
+add(box(7.4,0.08,2.6,mats.rug),-14,0.84,4.5);
+[-18.5,-9.5].forEach(nx=>{
+  add(box(1.0,0.65,0.65,mats.wood),nx,0.325,1.5);
+  add(cyl(0.12,0.16,0.38,mats.metal),nx,0.68,1.5);
+  add(cyl(0.06,0.28,0.3,mats.lamp,12),nx,1.01,1.5);
+});
+add(box(3,0.08,1.2,mats.wood),-9.2,2.5,5.5);
+add(box(0.08,2.5,0.08,mats.wood),-8.0,1.25,5.0);
+add(box(0.08,2.5,0.08,mats.wood),-8.0,1.25,6.0);
+add(box(1.8,1.4,0.06,mats.glass),-8.1,3.8,5.5);
+add(box(6,0.45,1.3,mats.wood),-14,0.225,8.2);
+add(box(5.8,0.15,1.1,mats.sofa),-14,0.525,8.2);
+add(box(0.12,2.2,5,mats.glass),-19.9,5.5,4.5);
+add(box(0.08,3.2,1.5,mats.curtain),-19.85,4.9,2.0);
+add(box(0.08,3.2,1.5,mats.curtain),-19.85,4.9,7.0);
+const bs=new THREE.Mesh(new THREE.BoxGeometry(0.05,5,8),mats.sunshaft);
+bs.rotation.z=-0.15; add(bs,-19.5,5,4.5);
+
+// ── 7. WALK-IN CLOSET — cx=-14.0, cz=14.465 ─────────────────────────────────
+add(box(10,0.06,0.06,mats.metal),-14,6.5,12.5);
+for(let i=0;i<8;i++){
+  const clMat=new THREE.MeshStandardMaterial({color:[0x334466,0x553322,0x224433,0x443322,0x222244,0x334422,0x442233,0x333333][i],roughness:0.95});
+  add(box(0.6,1.6,0.12,clMat),-18.5+i*0.8,5.7,12.5);
+}
+add(box(10,5,0.4,mats.wood),-14,2.5,16.8);
+[1.0,2.5,4.0].forEach(y=>add(box(9.6,0.06,0.36,mats.wood),-14,y,16.8));
+add(box(10,0.06,1.2,mats.wood),-14,0.4,12.2);
+add(box(10,0.06,1.2,mats.wood),-14,0.9,12.2);
+add(box(0.06,4,3,mats.glass),-19.8,3.5,14.2);
+add(box(8,0.04,3,mats.rug),-14,0.02,13.5);
+
+// ── 8. LIFT — cx=-5.5, cz=3.5 ────────────────────────────────────────────────
+add(box(5,9,0.15,mats.liftMet),-5.5,WBOT,1.0);
+add(box(0.15,9,5,mats.liftMet),-8.0,WBOT,3.5);
+add(box(0.15,9,5,mats.liftMet),-3.0,WBOT,3.5);
+add(box(4.5,4,4.5,mats.liftMet),-5.5,2.0,3.5);
+add(box(0.1,3.5,1.8,mats.liftMet),-5.5,1.75,2.0);
+add(box(0.1,3.5,1.8,mats.liftMet),-5.5,1.75,5.0);
+add(box(0.4,0.5,0.06,mats.dark),-5.5,5.0,1.05);
+add(box(0.3,0.06,0.06,mats.metal),-5.5,5.15,1.05);
+
+// ── 9. BED 01 EN-SUITE — cx=-5.21, cz=9.915 ─────────────────────────────────
+add(cyl(0.32,0.32,0.04,mats.sanitary),-5.21,0.36,12.5);
+add(box(0.6,0.28,0.5,mats.sanitary),-5.21,0.5,12.5);
+add(box(0.55,0.14,0.18,mats.sanitary),-5.21,0.72,12.8);
+add(box(0.7,0.12,0.5,mats.sanitary),-5.21,2.6,7.5);
+add(cyl(0.25,0.25,0.04,mats.sanitary),-5.21,2.64,7.5);
+add(cyl(0.04,0.04,0.35,mats.metal),-4.9,2.85,7.3);
+add(box(2,0.06,2,mats.tile),-2.9,0.02,7.5);
+add(box(0.08,1.2,2,mats.glass),-1.95,0.6,7.5);
+add(box(5.5,0.04,7.8,mats.tile),-5.21,0.02,9.9);
+
+// ── 10. EXPANDED POWDER ROOM — cx=0.915, cz=5.0 ──────────────────────────────
+add(cyl(0.32,0.32,0.04,mats.sanitary),0.915,0.36,7.5);
+add(box(0.6,0.28,0.5,mats.sanitary),0.915,0.5,7.5);
+add(box(0.55,0.14,0.18,mats.sanitary),0.915,0.72,7.8);
+add(box(1.8,0.08,0.55,mats.marble),0.915,2.5,2.2);
+add(box(1.7,0.04,0.48,mats.sanitary),0.915,2.54,2.2);
+add(cyl(0.04,0.04,0.3,mats.metal),0.915,2.72,2.0);
+add(box(1.5,1.2,0.06,mats.glass),0.915,3.5,1.98);
+add(box(6.5,0.04,8,mats.tile),0.915,0.02,5.0);
+
+// ── 11. SERVICE TOILET — cx=-0.585, cz=14.09 ─────────────────────────────────
+add(box(0.55,0.28,0.45,mats.sanitary),-0.585,0.5,15.5);
+add(box(0.5,0.1,0.4,mats.sanitary),-0.585,2.55,12.5);
+add(box(3.5,0.04,6,mats.tile),-0.585,0.02,14.09);
+
+// ── 12. CLOCKWISE STAIRCASE — cx=7.125, cz=7.125 ─────────────────────────────
+for(let s=0;s<11;s++){
+  add(box(5.5,0.15,0.9,mats.steps),7.125,s*0.78+0.075,12.5-s*1.0);
+}
+add(box(0.08,0.08,12,mats.metal),9.8,5.0,7.0);
+[1.25,7.25,13.25].forEach(z=>add(cyl(0.04,0.04,5.5,mats.metal),9.8,2.75,z));
+
+// ── 13. KITCHEN (SE) — cx=15.0, cz=4.75 ─────────────────────────────────────
+add(box(9,0.1,0.6,mats.marble),15,1.05,-2.9);
+add(box(9,0.95,0.55,mats.wood),15,0.475,-2.9);
+add(box(0.1,1.05,9,mats.marble),19.7,0.525,1.5);
+add(box(0.55,0.95,9,mats.wood),19.45,0.475,1.5);
+add(box(9,1.3,0.45,mats.wood),15,5.5,-3.1);
+add(box(1.2,0.12,0.55,mats.metal),13.5,1.05,-2.9);
+add(box(1.4,0.06,0.6,mats.dark),15.5,1.06,-2.9);
+add(cyl(0.18,0.18,0.02,new THREE.MeshStandardMaterial({color:0x222222,roughness:0.2})),15.2,1.08,-2.7);
+add(cyl(0.18,0.18,0.02,new THREE.MeshStandardMaterial({color:0x222222,roughness:0.2})),15.8,1.08,-2.7);
+add(box(3,0.1,1.4,mats.marble),15,1.1,1.5);
+add(box(2.9,1.05,1.3,mats.wood),15,0.525,1.5);
+[13.8,16.2].forEach(sx=>{
+  add(cyl(0.22,0.22,0.07,mats.metal),sx,0.035,-0.4);
+  add(cyl(0.04,0.04,1.1,mats.metal),sx,0.6,-0.4);
+  add(box(0.5,0.08,0.5,mats.wood),sx,1.15,-0.4);
+});
+add(cyl(0.01,0.01,1.5,mats.metal),15,5.55,1.5);
+add(cyl(0.0,0.3,0.38,mats.lamp,16),15,4.82,1.5);
+add(box(0.08,3,1.4,mats.curtain),21.85,4.8,3.0);
+add(box(0.08,3,1.4,mats.curtain),21.85,4.8,6.5);
+
+// ── 14. KITCHEN PANTRY — cx=16.5, cz=14.665 ──────────────────────────────────
+add(box(6.5,5,0.3,mats.wood),16.5,2.5,16.5);
+[1.0,2.2,3.4,4.5].forEach(y=>add(box(6,0.06,0.28,mats.wood),16.5,y,16.5));
+[[0xCC4422,0.5],[0x44AA22,1.7],[0xCCA022,2.9],[0x2244CC,4.1]].forEach(([c,y])=>{
+  const m=new THREE.MeshStandardMaterial({color:c,roughness:0.8});
+  [14.5,15.8,17.0].forEach(px=>add(box(0.4,0.5,0.25,m),px,y,16.3));
+});
+
+// ── 15. EXPANDED STAFF ROOM — cx=7.125, cz=15.5 ──────────────────────────────
+add(box(4,0.2,2.4,mats.bedframe),5,0.1,15.5);
+add(box(3.8,0.3,2.2,mats.bed),5,0.35,15.5);
+add(box(4,0.9,0.18,mats.bedframe),5,0.65,14.35);
+add(box(1.5,0.18,0.7,mats.pillow),5,0.52,14.7);
+add(box(1.2,0.08,0.7,mats.wood),10,2.2,15.5);
+[9.5,10.5].forEach(lx=>[15.2,15.8].forEach(lz=>add(box(0.06,2.2,0.06,mats.wood),lx,1.1,lz)));
+add(cyl(0.0,0.25,0.2,mats.lamp,16),7.125,8.8,15.5);
+add(box(11.5,0.04,4,mats.rug),7.125,0.02,15.5);
+
+// ── Room Labels ───────────────────────────────────────────────────────────────
+function makeLabel(text) {
+  const c=document.createElement('canvas'); c.width=288; c.height=72;
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,288,72);
+  ctx.fillStyle='rgba(5,8,16,0.84)';
+  if(ctx.roundRect){ctx.roundRect(4,4,280,64,10);ctx.fill();ctx.strokeStyle='rgba(245,158,11,0.55)';ctx.lineWidth=1.5;ctx.roundRect(4,4,280,64,10);ctx.stroke();}
+  else{ctx.fillRect(4,4,280,64);ctx.fill();ctx.strokeStyle='rgba(245,158,11,0.55)';ctx.lineWidth=1.5;ctx.strokeRect(4,4,280,64);}
+  ctx.fillStyle='#f59e0b';
+  ctx.font='600 14px "Cinzel",Georgia,serif';
+  ctx.textAlign='center';
+  ctx.fillText(text,144,43);
+  const tex=new THREE.CanvasTexture(c);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false}));
+  sp.scale.set(5.8,1.45,1);
+  return sp;
+}
+const labelData=[
+  {text:'Living Room',   x:-13.67,z:-10.17},{text:'Dining',        x:-1.83, z:-10.37},
+  {text:'Puja',          x:  5.67,z:-15.0 },{text:'Drawing Room',  x: 12.8, z:-10.37},
+  {text:'Entrance',      x: 20.17,z: -6.0 },{text:'Bedroom 01',    x:-14.0, z:  4.5 },
+  {text:'Walk-In Closet',x:-14.0, z: 14.47},{text:'Lift',          x: -5.5, z:  3.5 },
+  {text:'En-Suite',      x: -5.21,z:  9.92},{text:'Powder Room',   x:  0.92,z:  5.0 },
+  {text:'Staircase',     x:  7.125,z: 7.125},{text:'Kitchen',      x: 15.0, z:  4.75},
+  {text:'Pantry',        x: 16.5, z: 14.67},{text:'Staff Room',    x:  7.125,z:15.5 },
+];
+const labels=[];
+labelData.forEach(l=>{const sp=makeLabel(l.text);sp.position.set(l.x,2.5,l.z);scene.add(sp);labels.push(sp);});
+
+// ── Interaction ───────────────────────────────────────────────────────────────
+const roomZones=[
+  {id:'entrance',label:'Entrance',     pos:new THREE.Vector3(17,  5.5,-4),   look:new THREE.Vector3(21,  2,-6)   },
+  {id:'living',  label:'Living Room',  pos:new THREE.Vector3(-13, 5.5,-5),   look:new THREE.Vector3(-14, 2,-11)  },
+  {id:'dining',  label:'Dining',       pos:new THREE.Vector3(-1.83,5.5,-4),  look:new THREE.Vector3(-1.83,2,-11) },
+  {id:'puja',    label:'Puja',         pos:new THREE.Vector3(5.67,4.0,-11.5),look:new THREE.Vector3(5.67,2,-16)  },
+  {id:'drawing', label:'Drawing Room', pos:new THREE.Vector3(12.8,5.5,-5),   look:new THREE.Vector3(12.8,2,-11)  },
+  {id:'bedroom', label:'Bedroom 01',   pos:new THREE.Vector3(-14, 5.5, 8),   look:new THREE.Vector3(-14, 2, 4)   },
+  {id:'kitchen', label:'Kitchen',      pos:new THREE.Vector3(15,  5.5, 9),   look:new THREE.Vector3(15,  2, 4)   },
+  {id:'staff',   label:'Staff Room',   pos:new THREE.Vector3(7.125,5.0,13.5),look:new THREE.Vector3(7.125,2,15.5)},
+];
+const overviewCam={pos:new THREE.Vector3(1,42,20),look:new THREE.Vector3(1,3,0)};
+
+const roomData={
+  entrance:{badge:'East Foyer',name:'Entrance',
+    desc:'East-facing vestibule with teak front door. East entrance is Vastu-auspicious — opens directly to the Drawing and Living halls.',
+    items:['Teak front door (ajar)','Welcome mat','Console table + vase','Framed wall mirror'],
+    light:'Natural east light (day) · Warm ambient (evening)'},
+  living:{badge:'NW · 12\'8" × 14\'8"',name:'Living Room',
+    desc:'NW Vayu zone — ideal for social spaces. L-shaped sofa faces the TV wall on the north. Floor lamp in SW corner. North + west windows.',
+    items:['L-shaped sectional sofa','Walnut coffee table','65" TV wall unit','Corner floor lamp','Crimson area rug','Walnut bookshelf'],
+    light:'North + west windows (day) · Corner floor lamp — warm amber (evening)'},
+  dining:{badge:'N · 11\' × 14\'3" (dbl ht)',name:'Dining Room',
+    desc:'Double-height dining hall in Kubera/north wealth zone. Twin pendants illuminate the 6-seat walnut table. North glazing for morning light.',
+    items:['6-seat walnut dining table','Twin pendant lights','Marble-top sideboard','Decorative accents'],
+    light:'Double-height north windows (day) · Twin pendants (evening)'},
+  puja:{badge:'NE · 4\' × 5\'',name:'Puja Room',
+    desc:'Puja niche in the Ishan (NE) corner — Vastu\'s most auspicious zone for divine energy and clarity. North-facing for the morning light ritual.',
+    items:['Brass mandir arch frame','Stone idol platform','Diya oil lamps × 2','Incense holder','Prayer mat'],
+    light:'North-facing niche (day) · Diya lamps + warm ambient (evening)'},
+  drawing:{badge:'NE · 10\'3" × 14\'3"',name:'Drawing Room',
+    desc:'Formal NE reception room in the Ishan zone — auspicious for welcoming guests. North glazing fills with soft morning light.',
+    items:['2 accent chairs (conversation)','Side table with marble decor','Corner floor lamp','Abstract artwork (north wall)','Console sideboard'],
+    light:'North window glazing (day) · Corner floor lamp — warm amber (evening)'},
+  bedroom:{badge:'SW · 12\' × 14\'8"',name:'Bedroom 01',
+    desc:'SW master bedroom in the Nairutya zone — Vastu\'s prescribed corner for the master of the house. King bed, dressing area, and en-suite bath.',
+    items:['King bed with teak headboard','Bedside lamps × 2','Dressing table + mirror','Foot-of-bed bench','West window + curtains'],
+    light:'West window (day) · Bedside table lamps — warm amber (evening)'},
+  kitchen:{badge:'SE · 10\' × 16\'',name:'Kitchen',
+    desc:'SE Agneya (fire) zone — the only Vastu-correct position for cooking. U-shaped marble counter, island, and east window for morning light.',
+    items:['U-shaped marble counter + hob','Kitchen island + 2 bar stools','Island pendant light','Upper wall cabinets','East window'],
+    light:'East window (day) · Island pendant — warm white (evening)'},
+  staff:{badge:'South · 11\'9" × 4\'6"',name:'Staff Room',
+    desc:'Expanded staff quarter replacing the original unlivable 7\'9"×3\'8" cell — a Vastu-Reimagined improvement for dignified accommodation.',
+    items:['Single bed with headboard','Desk + chair','Ceiling warm light','Adjacent service toilet'],
+    light:'South-facing (day) · Ceiling warm light (evening)'},
+};
+
+const triggers=[
+  {room:'entrance',x:20.17,z:-6.0, w:5,  d:8 },
+  {room:'living',  x:-13.67,z:-10.17,w:12,d:14},
+  {room:'dining',  x:-1.83,z:-10.37,w:10,d:13 },
+  {room:'puja',    x:5.67,z:-14.5,  w:4, d:5  },
+  {room:'drawing', x:12.8,z:-10.37, w:9.5,d:13},
+  {room:'bedroom', x:-14.0,z:4.5,   w:12,d:13 },
+  {room:'kitchen', x:15.0,z:4.75,   w:9, d:15 },
+  {room:'staff',   x:7.125,z:15.5,  w:11,d:4  },
+];
+const triggerMeshes=[];
+triggers.forEach(t=>{
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(t.w,t.d),new THREE.MeshBasicMaterial({transparent:true,opacity:0,side:THREE.DoubleSide}));
+  m.rotation.x=-Math.PI/2; m.position.set(t.x,0.1,t.z); m.userData.roomId=t.room;
+  scene.add(m); triggerMeshes.push(m);
+});
+
+camera.position.copy(overviewCam.pos);
+controls.target.copy(overviewCam.look);
+const camPos={x:overviewCam.pos.x,y:overviewCam.pos.y,z:overviewCam.pos.z};
+const camLook={x:overviewCam.look.x,y:overviewCam.look.y,z:overviewCam.look.z};
+let isInRoom=false;
+
+function updatePanel(room){
+  const d=roomData[room.id];
+  document.getElementById('p-badge').textContent=d.badge;
+  document.getElementById('p-name').textContent=d.name;
+  document.getElementById('p-desc').textContent=d.desc;
+  document.getElementById('p-items').innerHTML=d.items.map(i=>`<li>${i}</li>`).join('');
+  document.getElementById('p-light').textContent=d.light;
+  gsap.fromTo('#panel > *',{opacity:0,x:10},{opacity:1,x:0,duration:0.28,stagger:0.05,ease:'power2.out',delay:0.9});
+}
+function updateDock(id){
+  document.querySelectorAll('.dock-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById(id==='overview'?'db-overview':'db-'+id);
+  if(el)el.classList.add('active');
+}
+
+window.flyToRoom=function(room){
+  isInRoom=true;
+  labels.forEach(l=>{l.visible=false;});
+  document.getElementById('hint').style.opacity='0';
+  gsap.killTweensOf([camPos,camLook,'#panel']);
+  gsap.to(camPos,{x:room.pos.x,y:room.pos.y,z:room.pos.z,duration:1.8,ease:'power3.inOut',onUpdate:()=>{camera.position.set(camPos.x,camPos.y,camPos.z);}});
+  gsap.to(camLook,{x:room.look.x,y:room.look.y,z:room.look.z,duration:1.8,ease:'power3.inOut',onUpdate:()=>{controls.target.set(camLook.x,camLook.y,camLook.z);controls.update();}});
+  gsap.to('#panel',{x:0,duration:0.5,delay:1.0,ease:'power2.out'});
+  updatePanel(room); updateDock(room.id);
+  document.getElementById('breadcrumb').textContent='Overview → '+room.label;
+};
+window.flyToRoomById=function(id){const r=roomZones.find(z=>z.id===id);if(r)window.flyToRoom(r);};
+window.flyToOverview=function(){
+  isInRoom=false;
+  labels.forEach(l=>{l.visible=true;});
+  document.getElementById('hint').style.opacity='1';
+  gsap.killTweensOf([camPos,camLook,'#panel']);
+  gsap.to('#panel',{x:300,duration:0.35,ease:'power2.in'});
+  gsap.to(camPos,{x:overviewCam.pos.x,y:overviewCam.pos.y,z:overviewCam.pos.z,duration:1.8,ease:'power3.inOut',onUpdate:()=>{camera.position.set(camPos.x,camPos.y,camPos.z);}});
+  gsap.to(camLook,{x:overviewCam.look.x,y:overviewCam.look.y,z:overviewCam.look.z,duration:1.8,ease:'power3.inOut',onUpdate:()=>{controls.target.set(camLook.x,camLook.y,camLook.z);controls.update();}});
+  updateDock('overview');
+  document.getElementById('breadcrumb').textContent='Overview';
+};
+
+const raycaster=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+renderer.domElement.addEventListener('click',e=>{
+  if(isInRoom)return;
+  mouse.x=(e.clientX/window.innerWidth)*2-1;
+  mouse.y=-(e.clientY/window.innerHeight)*2+1;
+  raycaster.setFromCamera(mouse,camera);
+  const hits=raycaster.intersectObjects(triggerMeshes);
+  if(hits.length>0){const rid=hits[0].object.userData.roomId;const room=roomZones.find(r=>r.id===rid);if(room)window.flyToRoom(room);}
+});
+gsap.set('#panel',{x:300});
+
+// ── Day / Evening Mode ────────────────────────────────────────────────────────
+const _dayBg  =new THREE.Color(0x87CEEB);
+const _eveBg  =new THREE.Color(0x1B1535);
+const _dayFog =new THREE.Color(0xB0D8F0);
+const _eveFog =new THREE.Color(0x1B1535);
+const _dayAmb =new THREE.Color(0xF0F8FF);
+const _eveAmb =new THREE.Color(0x0D1525);
+const _daySun =new THREE.Color(0xFFF9EE);
+const _eveSun =new THREE.Color(0xFFBB44);
+const _dayFill=new THREE.Color(0xD4EEFF);
+const _eveFill=new THREE.Color(0x050810);
+let timeMode='day';
+
+window.setTimeMode=function(mode){
+  if(timeMode===mode)return;
+  timeMode=mode;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mode-'+(mode==='day'?'day':'eve')).classList.add('active');
+  const wb=document.getElementById('weather-badge');
+  if(wb)wb.textContent=mode==='day'?'☀ Daylight · Clear':'🌇 Golden Hour · Dusk';
+  const isEve=(mode==='evening');
+  const bg =isEve?_eveBg :_dayBg;
+  const fg =isEve?_eveFog:_dayFog;
+  const amb=isEve?_eveAmb:_dayAmb;
+  const sn =isEve?_eveSun:_daySun;
+  const fl =isEve?_eveFill:_dayFill;
+  gsap.to(scene.background,{r:bg.r,g:bg.g,b:bg.b,duration:1.6,ease:'power2.inOut'});
+  gsap.to(scene.fog.color, {r:fg.r,g:fg.g,b:fg.b,duration:1.6,ease:'power2.inOut'});
+  gsap.to(scene.fog,{density:isEve?0.007:0.003,duration:1.6,ease:'power2.inOut'});
+  gsap.to(ambient.color,{r:amb.r,g:amb.g,b:amb.b,duration:1.6,ease:'power2.inOut'});
+  gsap.to(ambient,{intensity:isEve?0.2:0.55,duration:1.6,ease:'power2.inOut'});
+  gsap.to(sun.color,{r:sn.r,g:sn.g,b:sn.b,duration:1.6,ease:'power2.inOut'});
+  gsap.to(sun,{intensity:isEve?0.15:1.1,duration:1.6,ease:'power2.inOut'});
+  if(isEve)sun.position.set(40,2,-15); else sun.position.set(30,40,20);
+  gsap.to(fill.color,{r:fl.r,g:fl.g,b:fl.b,duration:1.6,ease:'power2.inOut'});
+  gsap.to(fill,{intensity:isEve?0.02:0.3,duration:1.6,ease:'power2.inOut'});
+  gsap.to(lampLiving,{intensity:isEve?1.8:0.5, duration:1.6,ease:'power2.inOut'});
+  gsap.to(dine1,     {intensity:isEve?2.5:0.7, duration:1.6,ease:'power2.inOut'});
+  gsap.to(dine2,     {intensity:isEve?2.5:0.7, duration:1.6,ease:'power2.inOut'});
+  gsap.to(drawLight, {intensity:isEve?2.0:0.6, duration:1.6,ease:'power2.inOut'});
+  gsap.to(pujaLight, {intensity:isEve?2.5:0.8, duration:1.6,ease:'power2.inOut'});
+  gsap.to(bLamp1,    {intensity:isEve?1.6:0.4, duration:1.6,ease:'power2.inOut'});
+  gsap.to(bLamp2,    {intensity:isEve?1.6:0.4, duration:1.6,ease:'power2.inOut'});
+  gsap.to(kitchLight,{intensity:isEve?2.0:0.6, duration:1.6,ease:'power2.inOut'});
+  gsap.to(staffLight,{intensity:isEve?1.5:0.5, duration:1.6,ease:'power2.inOut'});
+  gsap.to(renderer,{toneMappingExposure:isEve?0.9:1.0,duration:1.6,ease:'power2.inOut'});
+  gsap.to(mats.sunshaft,{opacity:isEve?0.0:0.04,duration:1.0,ease:'power2.inOut',
+    onComplete:()=>{shaft.visible=!isEve;bs.visible=!isEve;}});
+  if(!isEve){shaft.visible=true;bs.visible=true;}
+};
+
+// Apply initial day values directly
+(()=>{
+  scene.background.copy(_dayBg);
+  scene.fog.color.copy(_dayFog); scene.fog.density=0.003;
+  ambient.color.copy(_dayAmb); ambient.intensity=0.55;
+  sun.color.copy(_daySun); sun.intensity=1.1; sun.position.set(30,40,20);
+  fill.color.copy(_dayFill); fill.intensity=0.3;
+  lampLiving.intensity=0.5; dine1.intensity=0.7; dine2.intensity=0.7;
+  drawLight.intensity=0.6; pujaLight.intensity=0.8;
+  bLamp1.intensity=0.4; bLamp2.intensity=0.4;
+  kitchLight.intensity=0.6; staffLight.intensity=0.5;
+  renderer.toneMappingExposure=1.0;
+  shaft.visible=true; bs.visible=true;
+})();
+
+// ── GSAP Loader ───────────────────────────────────────────────────────────────
+const mm=gsap.matchMedia();
+mm.add("(prefers-reduced-motion: no-preference)",()=>{
+  gsap.timeline()
+    .to('.ld-line',{scaleX:1,opacity:1,duration:0.7,stagger:0.2,ease:'power2.inOut'})
+    .to('.ld-brand',{opacity:1,y:0,duration:0.6,ease:'power3.out'},'-=0.4')
+    .to('.ld-sub',{opacity:1,duration:0.4},'-=0.1')
+    .to('#loader',{opacity:0,duration:0.6,delay:0.6,onComplete:()=>{document.getElementById('loader').style.display='none';}});
+  gsap.from('#hdr',{opacity:0,y:-10,duration:0.5,delay:1.8});
+  gsap.from('#dock',{opacity:0,y:20,duration:0.6,delay:2.0,ease:'power2.out'});
+  gsap.from('#hint',{opacity:0,duration:0.5,delay:2.4});
+});
+mm.add("(prefers-reduced-motion: reduce)",()=>{document.getElementById('loader').style.display='none';});
+
+// ── Render Loop ───────────────────────────────────────────────────────────────
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  const t=Date.now()*0.002;
+  const lBase =timeMode==='evening'?1.3:0.7;
+  const lPulse=timeMode==='evening'?0.22:0.1;
+  mats.lamp.emissiveIntensity=lBase+lPulse*Math.sin(t);
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+</script>
+</body>
+</html>

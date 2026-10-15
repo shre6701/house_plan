@@ -2,61 +2,244 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Verified 4BHK Villa - 3D Vastu & Structural Visualizer</title>
-<style>
-  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; overflow: hidden; }
-  #ui { position: absolute; top: 15px; left: 15px; z-index: 10; background: rgba(15, 23, 42, 0.94); padding: 18px; border-radius: 10px; width: 370px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.6); max-height: 92vh; overflow-y: auto; }
-  h2 { margin: 0 0 6px 0; font-size: 15px; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; }
-  .sub { font-size: 11px; color: #94a3b8; margin-bottom: 12px; }
-  .btn-group { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-  button { flex: 1; padding: 8px; border: 1px solid #475569; background: #1e293b; color: #e2e8f0; cursor: pointer; border-radius: 5px; font-size: 11px; font-weight: 600; transition: 0.15s; }
-  button:hover { background: #334155; }
-  button.active { background: #0284c7; border-color: #38bdf8; color: #fff; }
-  button.mode-btn.active { background: #059669; border-color: #34d399; }
-  .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px; margin-bottom: 12px; padding-top: 8px; border-top: 1px solid #334155; }
-  .legend-item { display: flex; align-items: center; gap: 6px; }
-  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-  #notes { font-size: 12px; line-height: 1.55; background: #1e293b; padding: 12px; border-radius: 6px; border-left: 3px solid #38bdf8; }
-  #compass { position: absolute; bottom: 20px; right: 20px; background: rgba(15, 23, 42, 0.9); padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; font-size: 12px; text-align: center; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Villa Auro — 3D Structural Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #050810;
+  color: #f1f5f9;
+  font-family: 'Josefin Sans', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* ── Panel ── */
+#ui {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  width: 340px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: rgba(5,8,16,0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(245,158,11,0.15);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(245,158,11,0.06);
+}
+#ui::-webkit-scrollbar { width: 3px; }
+#ui::-webkit-scrollbar-track { background: transparent; }
+#ui::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.3); border-radius: 2px; }
+
+/* ── Panel Logo Header ── */
+.panel-logo {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(245,158,11,0.10);
+}
+.panel-logo-title {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: #f59e0b;
+  line-height: 1.2;
+}
+.panel-logo-sub {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+/* ── Pill Buttons ── */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.btn-row.mode-row { margin-bottom: 14px; }
+
+button {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 99px;
+  border: 1px solid rgba(148,163,184,0.18);
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+button:hover:not(.active) {
+  border-color: rgba(245,158,11,0.4);
+  color: #f59e0b;
+}
+button:focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+button.active {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #050810;
+  font-weight: 700;
+}
+button.mode-btn.active {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #050810;
+}
+
+/* ── Legend ── */
+.legend-sep {
+  height: 1px;
+  background: rgba(245,158,11,0.10);
+  margin-bottom: 12px;
+}
+.legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── Notes ── */
+#notes {
+  background: rgba(245,158,11,0.04);
+  border: 1px solid rgba(245,158,11,0.12);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.65;
+  color: #cbd5e1;
+}
+#notes b { color: #f59e0b; font-weight: 600; }
+
+/* ── Compass ── */
+#compass {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10;
+  background: rgba(5,8,16,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(245,158,11,0.15);
+  border-radius: 10px;
+  padding: 10px 16px;
+  text-align: center;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: #f59e0b;
+  line-height: 1.8;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+#compass strong {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+  letter-spacing: 0.12em;
+}
+
+/* ── Hint tag ── */
+.hint-tag {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(100,116,139,0.6);
+  pointer-events: none;
+}
+</style>
 </head>
 <body>
 
+<!-- Loading Screen -->
+<div id="loader" style="position:fixed;inset:0;z-index:1000;background:#050810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:none;">
+  <div style="width:100px;height:1px;background:linear-gradient(90deg,transparent,#f59e0b,transparent);transform:scaleX(0);opacity:0" id="l-line"></div>
+  <div style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:600;color:#f59e0b;letter-spacing:0.15em;opacity:0;transform:translateY(16px)" id="l-title">VILLA AURO</div>
+  <div style="width:100px;height:1px;background:linear-gradient(90deg,transparent,#f59e0b,transparent);transform:scaleX(0);opacity:0" id="l-line2"></div>
+  <div style="font-family:'Josefin Sans',sans-serif;font-size:0.65rem;letter-spacing:0.28em;text-transform:uppercase;color:#64748b;opacity:0" id="l-sub">3D Structural Reference</div>
+</div>
+
+<!-- Main Panel -->
 <div id="ui">
-  <h2>Triple-Checked 4BHK Villa 3D Model</h2>
-  <div class="sub">Exact Scale: 1 Unit = 1 Foot | Rotate: Left-Click | Zoom: Scroll</div>
-  
-  <div class="btn-group">
+  <div class="panel-logo">
+    <div class="panel-logo-title">VILLA AURO</div>
+    <div class="panel-logo-sub">3D Structural Reference · 1 Unit = 1 Foot</div>
+  </div>
+
+  <div class="btn-row" id="floor-row">
     <button id="btn-f0" class="active" onclick="setFloor(0)">Ground</button>
     <button id="btn-f1" onclick="setFloor(1)">1st Floor</button>
     <button id="btn-f2" onclick="setFloor(2)">2nd Floor</button>
-    <button id="btn-fall" onclick="setFloor('all')">Stack All 3</button>
+    <button id="btn-fall" onclick="setFloor('all')">All Floors</button>
   </div>
 
-  <div class="btn-group">
-    <button id="btn-re" class="mode-btn active" onclick="setMode('reimagined')">Verified Vastu Reimagined</button>
-    <button id="btn-orig" class="mode-btn" onclick="setMode('original')">Original PDF Layout</button>
+  <div class="btn-row mode-row">
+    <button id="btn-re" class="mode-btn active" onclick="setMode('reimagined')">Vastu Reimagined</button>
+    <button id="btn-orig" class="mode-btn" onclick="setMode('original')">Original PDF</button>
   </div>
+
+  <div class="legend-sep"></div>
 
   <div class="legend">
-    <div class="legend-item"><span class="swatch" style="background:#3b82f6"></span>Living / Lounge / Dining</div>
-    <div class="legend-item"><span class="swatch" style="background:#8b5cf6"></span>Bedrooms (SW / NE)</div>
-    <div class="legend-item"><span class="swatch" style="background:#f59e0b"></span>Kitchen / Pantry / BBQ</div>
-    <div class="legend-item"><span class="swatch" style="background:#10b981"></span>Puja / Balconies / Terrace</div>
-    <div class="legend-item"><span class="swatch" style="background:#ef4444"></span>Toilets & Plumbing Duct</div>
-    <div class="legend-item"><span class="swatch" style="background:#64748b"></span>Closets / Lift / Stairs</div>
+    <div class="legend-item"><span class="swatch" style="background:#3b82f6"></span>Living / Lounge</div>
+    <div class="legend-item"><span class="swatch" style="background:#8b5cf6"></span>Bedrooms</div>
+    <div class="legend-item"><span class="swatch" style="background:#f59e0b"></span>Kitchen / Pantry</div>
+    <div class="legend-item"><span class="swatch" style="background:#10b981"></span>Puja / Terraces</div>
+    <div class="legend-item"><span class="swatch" style="background:#ef4444"></span>Toilets / Ducts</div>
+    <div class="legend-item"><span class="swatch" style="background:#64748b"></span>Closets / Stairs</div>
   </div>
 
   <div id="notes"></div>
 </div>
 
 <div id="compass">
-  <strong style="color:#38bdf8">VASTU ORIENTATION</strong><br>
-  ▲ NORTH (Top) | ▼ SOUTH (Bottom)<br>
-  ◄ WEST (Left) | ► EAST (Right)
+  <strong>VASTU ORIENTATION</strong>
+  ▲ NORTH (Top) &nbsp;|&nbsp; ▼ SOUTH<br>
+  ◄ WEST (Left) &nbsp;|&nbsp; ► EAST
 </div>
+
+<div class="hint-tag">Drag to rotate · Scroll to zoom · Right-drag to pan</div>
 
 <script>
 const scene = new THREE.Scene();
@@ -91,7 +274,7 @@ const L_OFFSET = -17.5;
 const plans = {
   reimagined: {
     0: {
-      note: "<b>GROUND FLOOR (VERIFIED FIXES):</b><br>• <b>Powder Room Expanded (6'-8\" x 8'):</b> Deleted the useless 3' indoor servant corridor by flipping Servant Toilet access to the South Utility.<br>• <b>Habitable Staff Room (11'-9\" x 4'-6\"):</b> Merged 7'9\"x3'8\" Servant cell with half of Store Room + 8\" of South Utility.<br>• <b>Clockwise Staircase:</b> First riser starts on East flight (by Kitchen) going South $\\rightarrow$ turns West $\\rightarrow$ goes North.",
+      note: "<b>GROUND FLOOR (VERIFIED FIXES):</b><br>• <b>Powder Room Expanded (6'-8\" x 8'):</b> Deleted the useless 3' indoor servant corridor by flipping Servant Toilet access to the South Utility.<br>• <b>Habitable Staff Room (11'-9\" x 4'-6\"):</b> Merged 7'9\"x3'8\" Servant cell with half of Store Room + 8\" of South Utility.<br>• <b>Clockwise Staircase:</b> First riser starts on East flight (by Kitchen) going South → turns West → goes North.",
       rooms: [
         { name: "Living Room (NW)\n12'-8\" x 14'-8\"", x: 0, z: 0, w: 12.67, d: 14.67, c: 0x3b82f6, h: 3.5 },
         { name: "Double Height Dining\n11' x 14'-3\"", x: 12.67, z: 0, w: 11, d: 14.25, c: 0x0ea5e9, h: 1.5 },
@@ -102,7 +285,7 @@ const plans = {
         { name: "Walk-In Closet\n12' x 5'-3\"", x: 0, z: 29.34, w: 12, d: 5.25, c: 0x64748b, h: 3.5 },
         { name: "Lift\n5' x 5'", x: 12, z: 18.5, w: 5, d: 5, c: 0x475569, h: 4 },
         { name: "Bed 01 Toilet\n5'-7\" x 7'-10\"", x: 12, z: 23.5, w: 5.58, d: 7.83, c: 0xef4444, h: 3.5 },
-        { name: "Expanded Powder Rm\n6'-8\" x 8' (Absorbed Hall)", x: 17.58, z: 18.5, w: 6.67, d: 8, c: 0xef4444, h: 3.5 },
+        { name: "Expanded Powder Rm\n6'-8\" x 8'", x: 17.58, z: 18.5, w: 6.67, d: 8, c: 0xef4444, h: 3.5 },
         { name: "Ser. Toilet (Ext Door)\n3'-8\" x 6'", x: 17.58, z: 28.59, w: 3.67, d: 6, c: 0xef4444, h: 3.5 },
         { name: "Clockwise Staircase\n(Up on East Flight)", x: 24.25, z: 18.5, w: 5.75, d: 12.25, c: 0x64748b, h: 3.5 },
         { name: "Kitchen (SE)\n10' x 16'", x: 30, z: 14.25, w: 10, d: 16, c: 0xf59e0b, h: 3.5 },
@@ -148,7 +331,7 @@ const plans = {
   },
   original: {
     0: {
-      note: "<b>ORIGINAL PDF GROUND FLOOR:</b><br>• Notice the wasted 3' passage between the 3'-8\"x8' Toilet and Staircase.<br>• Notice the unlivable 7'9\" x 3'-8\" Servant Quarter.<br>• Staircase ascends on West flight going South $\\rightarrow$ East $\\rightarrow$ North (Counter-Clockwise).",
+      note: "<b>ORIGINAL PDF GROUND FLOOR:</b><br>• Notice the wasted 3' passage between the 3'-8\"x8' Toilet and Staircase.<br>• Notice the unlivable 7'9\" x 3'-8\" Servant Quarter.<br>• Staircase ascends on West flight going South → East → North (Counter-Clockwise).",
       rooms: [
         { name: "Living Room\n12'-8\" x 14'-8\"", x: 0, z: 0, w: 12.67, d: 14.67, c: 0x3b82f6, h: 3.5 },
         { name: "Double Height Dining\n11' x 14'-3\"", x: 12.67, z: 0, w: 11, d: 14.25, c: 0x0ea5e9, h: 1.5 },
@@ -208,16 +391,16 @@ function makeLabel(text) {
   const canvas = document.createElement('canvas');
   canvas.width = 256; canvas.height = 128;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+  ctx.fillStyle = 'rgba(5,8,16,0.90)';
   ctx.fillRect(4, 4, 248, 120);
-  ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 2;
   ctx.strokeRect(4, 4, 248, 120);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 19px sans-serif';
+  ctx.fillStyle = '#f1f5f9';
+  ctx.font = 'bold 18px "Josefin Sans", sans-serif';
   ctx.textAlign = 'center';
   const lines = text.split('\n');
-  lines.forEach((l, i) => ctx.fillText(l, 128, 52 + i * 26));
+  lines.forEach((l, i) => ctx.fillText(l, 128, 50 + i * 26));
   const tex = new THREE.CanvasTexture(canvas);
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
   sprite.scale.set(6.2, 3.1, 1);
@@ -227,11 +410,11 @@ function makeLabel(text) {
 function buildScene() {
   while(floorGroup.children.length > 0) floorGroup.remove(floorGroup.children[0]);
   const floorsToDraw = currentFloor === 'all' ? [0, 1, 2] : [currentFloor];
-  
+
   floorsToDraw.forEach(fIdx => {
     const data = plans[currentMode][fIdx];
     const yBase = currentFloor === 'all' ? fIdx * 12 : 0;
-    
+
     data.rooms.forEach(r => {
       const geo = new THREE.BoxGeometry(r.w - 0.15, r.h, r.d - 0.15);
       const mat = new THREE.MeshLambertMaterial({ color: r.c, transparent: true, opacity: 0.85 });
@@ -242,7 +425,7 @@ function buildScene() {
       floorGroup.add(mesh);
 
       const edges = new THREE.EdgesGeometry(geo);
-      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xe2e8f0 }));
+      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xe2e8f0, opacity: 0.4, transparent: true }));
       line.position.copy(mesh.position);
       floorGroup.add(line);
 
@@ -265,6 +448,9 @@ function setFloor(f) {
     if(el) el.classList.toggle('active', id == f);
   });
   buildScene();
+  if (typeof gsap !== 'undefined') {
+    gsap.from('#notes', { opacity: 0, y: 6, duration: 0.3, ease: 'power2.out' });
+  }
 }
 
 function setMode(m) {
@@ -272,6 +458,9 @@ function setMode(m) {
   document.getElementById('btn-re').classList.toggle('active', m === 'reimagined');
   document.getElementById('btn-orig').classList.toggle('active', m === 'original');
   buildScene();
+  if (typeof gsap !== 'undefined') {
+    gsap.from('#notes', { opacity: 0, y: 6, duration: 0.3, ease: 'power2.out' });
+  }
 }
 
 window.addEventListener('resize', () => {
@@ -287,6 +476,27 @@ function animate() {
   renderer.render(scene, camera);
 }
 animate();
+</script>
+
+<script>
+// ── GSAP Loading & Entrance ───────────────────────────────────────────────────
+const mm = gsap.matchMedia();
+mm.add("(prefers-reduced-motion: no-preference)", () => {
+  gsap.timeline()
+    .to('#l-line',  { scaleX: 1, opacity: 1, duration: 0.6, ease: 'power2.inOut' })
+    .to('#l-title', { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, '-=0.3')
+    .to('#l-line2', { scaleX: 1, opacity: 1, duration: 0.5, ease: 'power2.inOut' }, '-=0.2')
+    .to('#l-sub',   { opacity: 1, duration: 0.4 }, '-=0.1')
+    .to('#loader',  { opacity: 0, duration: 0.55, delay: 0.5,
+        onComplete: () => { document.getElementById('loader').style.display = 'none'; }
+    });
+  gsap.from('#ui',      { opacity: 0, x: -24, duration: 0.65, delay: 1.7, ease: 'power2.out' });
+  gsap.from('#compass', { opacity: 0, y: 12,  duration: 0.5,  delay: 1.9, ease: 'power2.out' });
+  gsap.from('.hint-tag',{ opacity: 0,         duration: 0.4,  delay: 2.1, ease: 'none' });
+});
+mm.add("(prefers-reduced-motion: reduce)", () => {
+  document.getElementById('loader').style.display = 'none';
+});
 </script>
 </body>
 </html>

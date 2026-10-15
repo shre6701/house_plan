@@ -3,298 +3,1106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>4BHK Villa - Interactive Architectural & Interior Plan</title>
+<title>Villa 4BHK — Architectural Floor Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Josefin+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"}}
+</script>
 <style>
-  :root {
-    --bg: #0f172a;
-    --panel: #1e293b;
-    --text: #f8fafc;
-    --muted: #94a3b8;
-    --accent: #38bdf8;
-    --warn: #f43f5e;
-    --good: #10b981;
-    --border: #334155;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-  header { padding: 14px 24px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
-  .controls { display: flex; gap: 12px; align-items: center; }
-  .btn-group { display: flex; background: var(--bg); border-radius: 6px; padding: 3px; border: 1px solid var(--border); }
-  button { background: transparent; color: var(--muted); border: none; padding: 7px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; }
-  button.active { background: var(--accent); color: #0f172a; font-weight: 600; }
-  button.mode-orig.active { background: var(--warn); color: white; }
-  button.mode-reim.active { background: var(--good); color: #0f172a; }
-  .workspace { display: flex; flex: 1; overflow: hidden; }
-  .canvas-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; padding: 20px; background: radial-gradient(circle, #1e293b 1px, transparent 1px); background-size: 20px 20px; }
-  svg { max-width: 100%; max-height: 100%; width: 680px; height: 680px; background: #0b1120; border: 2px solid var(--border); border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-  .room { cursor: pointer; transition: all 0.2s ease; stroke: #475569; stroke-width: 2; }
-  .room:hover { filter: brightness(1.25); stroke: #fff; stroke-width: 2.5; }
-  .room.selected { stroke: var(--accent); stroke-width: 3.5; }
-  .room-label { fill: #f8fafc; font-size: 11px; font-weight: 600; text-anchor: middle; pointer-events: none; }
-  .room-dim { fill: #cbd5e1; font-size: 9.5px; text-anchor: middle; pointer-events: none; }
-  .sidebar { width: 380px; background: var(--panel); border-left: 1px solid var(--border); padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
-  .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
-  .badge.orig { background: rgba(244, 63, 94, 0.2); color: var(--warn); border: 1px solid var(--warn); }
-  .badge.reim { background: rgba(16, 185, 129, 0.2); color: var(--good); border: 1px solid var(--good); }
-  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
-  .card h3 { font-size: 13px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-  .card p, .card li { font-size: 13.5px; line-height: 1.5; color: #e2e8f0; }
-  .card ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
-  .compass { position: absolute; top: 30px; right: 30px; background: var(--panel); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; color: var(--accent); }
-  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); }
-  .legend span { display: flex; align-items: center; gap: 5px; }
-  .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #050810;
+  --surface: rgba(5,8,16,0.82);
+  --surface2: rgba(245,158,11,0.05);
+  --border: rgba(245,158,11,0.18);
+  --border-dim: rgba(245,158,11,0.12);
+  --accent: #f59e0b;
+  --text: #f1f5f9;
+  --muted: #64748b;
+  --muted2: #475569;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Josefin Sans', sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* HEADER */
+#header {
+  background: rgba(5,8,16,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-dim);
+  padding: 0 24px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.h-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  color: #f59e0b;
+  white-space: nowrap;
+}
+.h-title span { color: #f1f5f9; }
+.h-tabs { display: flex; gap: 6px; }
+
+/* Floor tabs */
+.tab-btn {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 99px;
+  background: transparent;
+  border: 1px solid rgba(148,163,184,0.2);
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  touch-action: manipulation;
+}
+.tab-btn.active {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #050810;
+  font-weight: 700;
+}
+.tab-btn:hover:not(.active) {
+  border-color: rgba(245,158,11,0.5);
+  color: #f59e0b;
+}
+
+.h-toggle { display: flex; gap: 4px; }
+
+/* Mode toggle */
+.mode-btn {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(148,163,184,0.2);
+  color: #64748b;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.22s;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+.mode-btn.active {
+  background: rgba(245,158,11,0.15);
+  border-color: #f59e0b;
+  color: #f59e0b;
+  font-weight: 600;
+}
+.mode-btn:hover:not(.active) {
+  border-color: rgba(245,158,11,0.4);
+  color: #94a3b8;
+}
+
+/* LAYOUT */
+#main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+
+/* LEFT SIDEBAR */
+#sidebar-left {
+  width: 240px;
+  flex-shrink: 0;
+  background: rgba(5,8,16,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(245,158,11,0.12);
+  padding: 20px 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sb-section {
+  border-bottom: 1px solid rgba(245,158,11,0.08);
+  padding-bottom: 16px;
+}
+.sb-section:last-child { border-bottom: none; }
+.sb-label {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+/* Stats cards */
+.stat-card {
+  background: rgba(245,158,11,0.05);
+  border: 1px solid rgba(245,158,11,0.15);
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: all 0.22s;
+  margin-bottom: 8px;
+}
+.stat-card:last-child { margin-bottom: 0; }
+.stat-card:hover { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.35); }
+.stat-value { font-family: 'Cinzel', serif; font-size: 1.1rem; color: #f59e0b; line-height: 1.2; }
+.stat-label { font-family: 'Josefin Sans', sans-serif; font-size: 0.6rem; letter-spacing: 0.14em; color: #64748b; text-transform: uppercase; margin-top: 2px; }
+
+.compass-wrap { display: flex; justify-content: center; padding: 4px 0; }
+.legend-item {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 7px; font-size: 0.7rem; color: var(--muted);
+  font-family: 'Josefin Sans', sans-serif;
+}
+.leg-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; opacity: 0.8; }
+#mode-desc {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+/* CENTER */
+#canvas-wrap {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 40% 40%, rgba(245,158,11,0.04) 0%, transparent 60%),
+              #050810;
+  position: relative;
+}
+#fp-3d { width: 100%; height: 100%; position: relative; }
+
+/* RIGHT PANEL */
+#panel-right {
+  width: 280px;
+  flex-shrink: 0;
+  background: rgba(5,8,16,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-left: 1px solid rgba(245,158,11,0.15);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  gap: 0;
+}
+
+.pr-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: var(--muted); font-size: 0.75rem;
+  font-family: 'Josefin Sans', sans-serif;
+  letter-spacing: 0.05em;
+  text-align: center; padding: 24px; gap: 10px;
+}
+.pr-empty svg { opacity: 0.18; margin-bottom: 6px; }
+
+.pr-label {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+#pr-name {
+  font-family: 'Cinzel', serif;
+  color: #f1f5f9;
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+#pr-dims {
+  font-family: 'Josefin Sans', sans-serif;
+  color: #f59e0b;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 20px;
+  margin-bottom: 2px;
+}
+.pr-divider {
+  height: 1px;
+  background: rgba(245,158,11,0.12);
+  margin: 14px 0;
+}
+#pr-note {
+  font-family: 'Josefin Sans', sans-serif;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+#pr-vastu {
+  font-family: 'Josefin Sans', sans-serif;
+  color: #64748b;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(245,158,11,0.05);
+  border-radius: 8px;
+  border-left: 2px solid rgba(245,158,11,0.3);
+}
+#pr-badge {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.pr-section-label {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  margin-top: 14px;
+}
+
+/* LOADER */
+#loader {
+  position: fixed; inset: 0; z-index: 2000;
+  background: #050810;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  pointer-events: none;
+}
+.ld-logo {
+  font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 600;
+  letter-spacing: 0.2em; color: #f59e0b;
+  opacity: 0; transform: translateY(20px);
+}
+.ld-line {
+  width: 140px; height: 1px;
+  background: linear-gradient(90deg, transparent, #f59e0b, transparent);
+  opacity: 0; transform: scaleX(0);
+}
+.ld-sub {
+  font-family: 'Josefin Sans', sans-serif; font-size: 0.7rem;
+  letter-spacing: 0.3em; text-transform: uppercase; color: #64748b; opacity: 0;
+}
+/* INTERACTION POLISH */
+.tab-btn:focus-visible, .mode-btn:focus-visible { outline: 2px solid #f59e0b; outline-offset: 3px; }
+.tab-btn:active, .mode-btn:active { transform: scale(0.96); }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>4BHK VILLA ARCHITECTURAL STUDIO</h1>
-  <div class="controls">
-    <div class="btn-group" id="floorBtns">
-      <button class="active" onclick="setFloor('gf')">Ground Floor</button>
-      <button onclick="setFloor('ff')">1st Floor</button>
-      <button onclick="setFloor('sf')">2nd Floor</button>
+<div id="loader" aria-hidden="true">
+  <div class="ld-line"></div>
+  <div class="ld-logo">VILLA AURO</div>
+  <div class="ld-line"></div>
+  <div class="ld-sub">Architectural Floor Plan Studio</div>
+</div>
+
+<div id="header">
+  <div style="display:flex;flex-direction:column;gap:1px">
+    <div class="h-title">VILLA <span>AURO</span></div>
+    <div style="font-family:'Josefin Sans',sans-serif;font-size:0.58rem;letter-spacing:0.22em;color:#64748b;text-transform:uppercase">Architectural Floor Plan Studio</div>
+  </div>
+  <div class="h-tabs">
+    <button class="tab-btn active" onclick="setFloor('gf',this)">Ground Floor</button>
+    <button class="tab-btn" onclick="setFloor('ff',this)">1st Floor</button>
+    <button class="tab-btn" onclick="setFloor('sf',this)">2nd Floor</button>
+    <button class="tab-btn" onclick="setPlanView(this)">Plan View</button>
+  </div>
+  <div class="h-toggle">
+    <button class="mode-btn active" onclick="setMode('orig',this)">Original Plan</button>
+    <button class="mode-btn" onclick="setMode('reim',this)">Vastu Reimagined</button>
+  </div>
+</div>
+
+<div id="main">
+  <div id="sidebar-left">
+    <div class="sb-section">
+      <div class="sb-label">Orientation</div>
+      <div class="compass-wrap">
+        <svg width="84" height="84" viewBox="0 0 84 84" fill="none">
+          <circle cx="42" cy="42" r="40" stroke="rgba(245,158,11,0.12)" stroke-width="1"/>
+          <circle cx="42" cy="42" r="28" stroke="rgba(245,158,11,0.07)" stroke-width="1" stroke-dasharray="3 4"/>
+          <polygon points="42,4 46.5,40 42,36 37.5,40" fill="#f59e0b"/>
+          <polygon points="42,80 37.5,44 42,48 46.5,44" fill="rgba(255,255,255,0.2)"/>
+          <circle cx="80" cy="42" r="2.5" fill="rgba(245,158,11,0.25)"/>
+          <circle cx="4" cy="42" r="2.5" fill="rgba(245,158,11,0.25)"/>
+          <text x="42" y="2" font-family="Cinzel,serif" font-size="9" fill="#f59e0b" text-anchor="middle" font-weight="600">N</text>
+          <text x="42" y="84" font-family="Josefin Sans,sans-serif" font-size="9" fill="rgba(255,255,255,0.35)" text-anchor="middle">S</text>
+          <text x="84" y="45" font-family="Josefin Sans,sans-serif" font-size="9" fill="rgba(255,255,255,0.35)" text-anchor="end">E</text>
+          <text x="0" y="45" font-family="Josefin Sans,sans-serif" font-size="9" fill="rgba(255,255,255,0.35)">W</text>
+          <circle cx="42" cy="42" r="2.5" fill="rgba(245,158,11,0.5)"/>
+        </svg>
+      </div>
+      <div style="font-family:'Josefin Sans',sans-serif;font-size:0.65rem;color:var(--muted);text-align:center;margin-top:4px;letter-spacing:0.05em">Entrance → East side</div>
     </div>
-    <div class="btn-group" id="modeBtns">
-      <button class="mode-orig active" onclick="setMode('orig')">Original Plan (Flawed)</button>
-      <button class="mode-reim" onclick="setMode('reim')">Reimagined (Optimized)</button>
+
+    <div class="sb-section">
+      <div class="sb-label">Floor Info</div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-floor">Ground</div>
+        <div class="stat-label">Current Floor</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-beds">1</div>
+        <div class="stat-label">Bedrooms</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-baths">2</div>
+        <div class="stat-label">Bathrooms</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-feature" style="font-size:0.8rem">Dbl Height</div>
+        <div class="stat-label">Feature</div>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Legend</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#10b981"></div>Bedroom</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#3b82f6"></div>Living / Drawing</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#8b5cf6"></div>Dining / Lounge</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#f97316"></div>Kitchen</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#f59e0b"></div>Puja / Sacred</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#059669"></div>Terrace / Balcony</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#475569"></div>Closet / Storage</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#334155"></div>Toilet / Utility</div>
+      <div class="legend-item"><div class="leg-dot" style="background:#0ea5e9"></div>Guest Powder Room</div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Mode</div>
+      <div id="mode-desc">
+        Original plan from the PDF. Click any room for Vastu analysis.
+      </div>
     </div>
   </div>
-</header>
 
-<div class="workspace">
-  <div class="canvas-area">
-    <div class="compass">▲ NORTH</div>
-    <svg id="blueprint" viewBox="0 0 600 600"></svg>
+  <div id="canvas-wrap">
+    <div id="fp-3d" style="width:100%;height:100%;position:relative"></div>
   </div>
-  <div class="sidebar">
-    <div id="roomDetails">
-      <span class="badge orig" id="statusBadge">ORIGINAL PLAN</span>
-      <h2 id="rTitle" style="font-size: 20px; margin-bottom: 4px;">Select a Room</h2>
-      <p id="rDim" style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Click any zone on the blueprint to inspect dimensions & advisor critique.</p>
-      
-      <div class="card" style="margin-bottom: 12px;">
-        <h3>Senior Advisor Critique</h3>
-        <p id="rCritique">Use the top buttons to switch floors or toggle between your original attached layout and the reimagined architectural layout.</p>
-      </div>
 
-      <div class="card">
-        <h3>Interior & Spatial Directives</h3>
-        <ul id="rDesign">
-          <li>Click any room on the interactive map to view tailored furniture, lighting, and structural adjustments.</li>
-        </ul>
-      </div>
+  <div id="panel-right">
+    <div class="pr-empty" id="pr-empty">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 9h6M9 12h6M9 15h4"/>
+      </svg>
+      Click any room to view details
     </div>
-
-    <div class="legend">
-      <span><i class="dot" style="background:#1e3a5f"></i> Living/Social</span>
-      <span><i class="dot" style="background:#312e81"></i> Bedrooms</span>
-      <span><i class="dot" style="background:#115e59"></i> Wet Areas/Toilets</span>
-      <span><i class="dot" style="background:#78350f"></i> Closets/Store</span>
-      <span><i class="dot" style="background:#374151"></i> Core/Stairs/Lift</span>
-      <span><i class="dot" style="background:#14532d"></i> Outdoor/Terrace</span>
+    <div id="pr-content" style="display:none">
+      <div id="pr-badge"></div>
+      <div id="pr-name"></div>
+      <div id="pr-dims"></div>
+      <div class="pr-divider"></div>
+      <div class="pr-section-label">Description</div>
+      <div id="pr-note"></div>
+      <div class="pr-section-label">Vastu Analysis</div>
+      <div id="pr-vastu"></div>
     </div>
   </div>
 </div>
 
 <script>
-const C = {
-  social: "#1e3a5f", bed: "#312e81", wet: "#115e59",
-  store: "#78350f", core: "#374151", outdoor: "#14532d", void: "#090d16"
-};
-
+// ─── ROOM DATA (from actual PDF floor plans) ──────────────────────────────────
 const DATA = {
   gf: {
-    orig: [
-      { id:"garden", x:20, y:20, w:300, h:70, name:"LAWN / GARDEN", dim:"North-West Lawn", c:C.outdoor, critique:"Good perimeter buffer, but cut off from the main entrance view by internal walls.", design:["Plant native low-maintenance shrubs along West boundary.","Install warm 2700K bollard lighting."] },
-      { id:"parking", x:320, y:20, w:260, h:70, name:"CAR PARKING", dim:"Front Porch", c:C.core, critique:"Tight turning radius if a second car is parked outside.", design:["Use permeable pavers to prevent waterlogging.","Add EV charger point on East pillar."] },
-      { id:"living", x:60, y:90, w:140, h:170, name:"LIVING ROOM", dim:"12'-8\" x 14'-8\"", c:C.social, critique:"WARNING: Isolated in the back corner. Guests have to walk past the dining table to reach the main sofa. Also sits directly underneath the 1st-floor toilet.", design:["Current L-sofa blocks garden access.","Needs acoustic ceiling insulation due to toilet above."] },
-      { id:"dining", x:200, y:90, w:130, h:170, name:"DOUBLE HEIGHT DINING", dim:"11' x 14'-3\"", c:C.social, critique:"Acts as a noise and cooking-odor chimney straight into the 1st-floor bedrooms.", design:["Requires a high-suction silent chimney in the kitchen.","Use acoustic wall panels to dampen echo."] },
-      { id:"puja", x:330, y:90, w:50, h:70, name:"PUJA", dim:"4' WIDE", c:C.store, critique:"Blocks the natural flow between the Drawing Room and Dining Area.", design:["Ventilation is poor for incense smoke; keep open to dining."] },
-      { id:"drawing", x:380, y:90, w:120, h:170, name:"DRAWING ROOM", dim:"10'-3\" x 14'-3\"", c:C.social, critique:"Too narrow (10'3\"). Once you put a sofa and coffee table, walking space is cramped. Redundant when you already have a Living Room.", design:["Use slim-profile armchairs instead of bulky sofas."] },
-      { id:"ent", x:500, y:90, w:80, h:170, name:"ENTRANCE VERANDAH", dim:"5'-5\" WIDE", c:C.outdoor, critique:"Side-facing entrance is functional, but opens into a boxy 10'3\" room.", design:["Add concealed shoe cabinetry along the steps."] },
-      { id:"bed1", x:60, y:260, w:140, h:190, name:"BEDROOM 01", dim:"12' x 14'-8\"", c:C.bed, critique:"Decent size, but wardrobe placement eats into circulation space.", design:["Use sliding wardrobe shutters to save floor clearance."] },
-      { id:"wic1", x:60, y:450, w:140, h:70, name:"WALK-IN CLOSET", dim:"12' x 5'-3\"", c:C.store, critique:"Generous storage, though a 5'3\" width only allows wardrobe depth on one side (2ft) leaving 3'3\" walkway.", design:["Install full-height mirrors at the end to visually widen."] },
-      { id:"lift", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Well-positioned central vertical core.", design:["Choose a gearless traction home lift to avoid pit/headroom issues."] },
-      { id:"toil1", x:200, y:390, w:65, h:100, name:"ATTACHED TOILET", dim:"5'-7\" x 7'-10\"", c:C.wet, critique:"Door placement is awkward next to the lift shaft.", design:["Wall-mounted WC and glass shower partition."] },
-      { id:"pwd", x:265, y:330, w:45, h:90, name:"COMMON TOILET", dim:"3'-8\" x 8'", c:C.wet, critique:"3'8\" is tight. Your elbows will feel the walls.", design:["Use a corner or narrow-depth floating vanity basin."] },
-      { id:"ser_t", x:265, y:420, w:45, h:100, name:"SER. TOILET", dim:"3'-8\" x 6'", c:C.wet, critique:"Functional for staff, shares plumbing wall with common toilet.", design:["Durable ceramic tile finish."] },
-      { id:"stairs", x:310, y:330, w:90, h:130, name:"STAIRCASE", dim:"U-Turn Stairs", c:C.core, critique:"Good central location, keeps circulation compact.", design:["Use open risers or glass balustrade to let light pass through."] },
-      { id:"servant", x:310, y:460, w:90, h:60, name:"SERVANT QUARTER", dim:"7'-9\" x 3'-8\"", c:C.store, critique:"MAJOR FLAW: 3'-8\" wide is unlivable. That is the width of a corridor, not a bedroom. A human cannot live here.", design:["Must be merged with adjacent Store Room immediately."] },
-      { id:"kitchen", x:400, y:260, w:110, h:190, name:"KITCHEN", dim:"10' x 16'", c:C.wet, critique:"Good size, but completely boxed in by walls. Cuts off the cook from the family.", design:["Parallel counter layout works best for a 10' width."] },
-      { id:"store", x:400, y:450, w:110, h:70, name:"STORE ROOM", dim:"8' x 3'-10\"", c:C.store, critique:"Wasted partition wall separating this from the tiny servant quarter.", design:["Heavy-duty slotted angle shelving."] },
-      { id:"util_e", x:510, y:260, w:70, h:260, name:"EAST UTILITY", dim:"5'-6\" WIDE", c:C.outdoor, critique:"Very useful wet-work zone for laundry and heavy dishwashing.", design:["Place washing machine, dryer, and secondary sink here."] },
-      { id:"util_s", x:60, y:520, w:520, h:50, name:"SOUTH UTILITY PASSAGE", dim:"4'-6\" WIDE", c:C.outdoor, critique:"Good ventilation corridor for southern plumbing shafts.", design:["Keep clear for AC outdoor units and piping access."] }
+    label:'Ground Floor', beds:1, baths:2, feature:'Dbl Height Dining',
+    orig:[
+      {id:'living',  label:'Living Room',    dims:"12'8\"×14'8\"", x:40,  y:42,  w:143,h:168, color:'#3b82f6',
+       note:"Grand NW living room with sofa wall on West. Connects to dining via wide arch. Adjacent to Bedroom 01.",
+       vastu:"NW — Vayu zone. Social/gathering spaces align with wind energy. Acceptable placement."},
+      {id:'dining',  label:'Dining Area',    dims:"11'×14'3\" (DH)",x:183, y:42, w:128,h:163, color:'#8b5cf6',
+       note:"Double-height dining void with dramatic ceiling. 8-seat marble dining table. Skylight potential above.",
+       vastu:"Centre Brahmasthan — transitional/dining in centre is acceptable. Void above improves energy flow."},
+      {id:'drawing', label:'Drawing Room',   dims:"10'3\"×14'3\"", x:311, y:42,  w:129,h:163, color:'#3b82f6',
+       note:"East-facing drawing room directly adjacent to main entrance (5'5\" door on East). Guest sofa arrangement.",
+       vastu:"NE/E — Indra zone. East drawing room receives morning sun. Auspicious for welcoming guests."},
+      {id:'puja',    label:'Puja Room',      dims:"4' Wide",        x:311, y:42,  w:50, h:50,  color:'#f59e0b',
+       note:"Sacred alcove, 4' wide niche in NE corner of the drawing room. Idols on West wall, devotee faces East.",
+       vastu:"✓ NE Ishanya — most sacred corner. Perfect Puja placement. Morning sun energises the altar daily."},
+      {id:'bed1',    label:'Bedroom 01',     dims:"12'×14'8\"",    x:40,  y:210, w:140,h:168, color:'#10b981',
+       note:"Ground floor master bedroom in SW. Queen bed with headboard on South wall. Walk-in closet attached.",
+       vastu:"SW Nairutya — Earth zone. Ideal for master bedroom. Stability and grounding energy."},
+      {id:'closet1', label:'Walk-In Closet', dims:"12'×5'3\"",     x:40,  y:378, w:140,h:60,  color:'#475569',
+       note:"Attached walk-in closet for Bedroom 01. Full-length wardrobe on three walls. Direct access from bedroom.",
+       vastu:"SW continuation — acceptable for storage/dressing."},
+      {id:'lift',    label:'Lift',           dims:"5'×5'",          x:186, y:254, w:55, h:55,  color:'#1e293b',
+       note:"Home elevator, centre core. 5'×5' — fits a wheelchair. Adjacent to staircase.",
+       vastu:"Centre — neutral core position. Avoid blocking Brahmasthan with heavy machinery."},
+      {id:'toilet1', label:'Toilet',         dims:"3'8\"×8'",       x:241, y:247, w:44, h:90,  color:'#334155',
+       note:"Guest toilet adjacent to lift. 3'8\" width is minimal — tight after tiling (leaves ~2'8\" clear).",
+       vastu:"⚠ Centre-North — toilet in N/NE area is not ideal Vastu. Consider relocating to NW if possible."},
+      {id:'toilet2', label:'Toilet',         dims:"5'7\"×7'10\"",  x:183, y:337, w:58, h:98,  color:'#334155',
+       note:"Second toilet, 5'7\" wide — comfortable. Between lift and staircase zone.",
+       vastu:"NW-Centre — NW toilets are acceptable. Better placement than the first toilet."},
+      {id:'stair',   label:'Staircase',      dims:"Centre-South",   x:248, y:312, w:95, h:128, color:'#1e293b',
+       note:"Main staircase connecting all three floors. Centre-South position. Direction per Vastu should be clockwise.",
+       vastu:"⚠ Staircase direction should be clockwise (E→S→W→N). Verify with GC."},
+      {id:'sertol',  label:'Servant Toilet', dims:"3'8\"×6'",       x:248, y:440, w:44, h:38,  color:'#374151',
+       note:"Servant toilet, South utility zone. 3'8\" — minimal clearance. Adjacent to servant quarter.",
+       vastu:"South — Yama zone. Service utilities in South are acceptable."},
+      {id:'servant', label:'Servant Quarter',dims:"7'9\"×3'8\"",    x:292, y:430, w:90, h:48,  color:'#374151',
+       note:"⚠ Width 3'8\" is sub-standard — narrower than a single bed (3'3\"). Not a livable room per NBC norms.",
+       vastu:"South service zone — acceptable direction but width must be corrected for habitability."},
+      {id:'store',   label:'Store Room',     dims:"8'×3'10\"",      x:382, y:415, w:58, h:30,  color:'#374151',
+       note:"South store room adjacent to servant quarter and kitchen service area.",
+       vastu:"South-SE — storage in this zone is acceptable."},
+      {id:'kitchen', label:'Kitchen',        dims:"10'×16'",        x:370, y:224, w:100,h:184, color:'#f97316',
+       note:"SE kitchen with 5'6\" utility area on East exterior. Platform on East and South walls. 10'×16' — spacious.",
+       vastu:"✓ SE Agni zone — ideal placement. Cooking platform on East wall means cook faces East. Auspicious."},
     ],
-    reim: [
-      { id:"garden", x:20, y:20, w:300, h:70, name:"LANDSCAPED DECK & LAWN", dim:"Extended Indoor-Outdoor", c:C.outdoor, critique:"OPTIMIZED: Now connects directly to the expansive Great Room via sliding glass walls.", design:["Flush threshold trackless sliders connecting indoor tile to outdoor deck."] },
-      { id:"parking", x:320, y:20, w:260, h:70, name:"COVERED PORTICO", dim:"2-Car Optimized", c:C.core, critique:"OPTIMIZED: Widened gate approach for effortless parking.", design:["Architectural pergola overhead with integrated linear LEDs."] },
-      { id:"bed1_new", x:60, y:90, w:140, h:210, name:"BEDROOM 01 (GARDEN SUITE)", dim:"12'-8\" x 18'-0\"", c:C.bed, critique:"OPTIMIZED: Moved to the quiet NW garden corner. No longer suffers from 1st-floor toilet pipes overhead (since 1st-floor toilet was also relocated).", design:["Floor-to-ceiling corner glass overlooking private garden.","Built-in wardrobe wall along South partition."] },
-      { id:"great_room", x:200, y:90, w:300, h:170, name:"GRAND GREAT ROOM (LIVING + DINING)", dim:"25'-3\" x 14'-3\"", c:C.social, critique:"OPTIMIZED: Demolished the walls between Drawing Room, Puja, and Dining. You now have a true 25-foot luxury entertaining pavilion instead of two cramped boxes.", design:["10-seater dining table under double-height chandelier.","Floating low-back modular sofa facing both garden and TV wall.","Sculptural glass Puja niche integrated into East wall."] },
-      { id:"ent", x:500, y:90, w:80, h:170, name:"FOYER DECK", dim:"5'-5\" WIDE", c:C.outdoor, critique:"OPTIMIZED: Opens directly into a sweeping 25-foot vista instead of a narrow wall.", design:["Pivot main entrance door in teakwood."] },
-      { id:"lounge_den", x:60, y:300, w:140, h:130, name:"MEDIA DEN / STUDY", dim:"12' x 11'-6\"", c:C.social, critique:"OPTIMIZED: Replaces the awkward middle bedroom space with an acoustic TV den/home office.", design:["Acoustic fabric wall panels and concealed sliding pocket doors."] },
-      { id:"toil1_new", x:60, y:430, w:140, h:90, name:"MASTER BATH + DRESS", dim:"12' x 7'-6\"", c:C.wet, critique:"OPTIMIZED: Vertically aligned with 1st and 2nd floor SW wet stacks. Zero pipes over living rooms.", design:["His & Hers vanity + walk-in rain shower."] },
-      { id:"lift", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Retained in central structural core.", design:["Glass door cabin."] },
-      { id:"pwd", x:200, y:390, w:110, h:65, name:"POWDER ROOM", dim:"8' x 5'-6\"", c:C.wet, critique:"OPTIMIZED: Reoriented to give a wider, hotel-grade powder room for guests.", design:["Backlit onyx feature wall behind vanity."] },
-      { id:"ser_t", x:200, y:455, w:110, h:65, name:"STAFF BATH", dim:"8' x 5'-0\"", c:C.wet, critique:"OPTIMIZED: Properly proportioned staff washroom accessed from South corridor.", design:["Anti-skid vitrified tiles."] },
-      { id:"stairs", x:310, y:330, w:90, h:130, name:"SCULPTURAL STAIRS", dim:"Open Tread", c:C.core, critique:"Retained structural core.", design:["Cantilevered wood treads with concealed LED strip lighting."] },
-      { id:"kitchen", x:400, y:260, w:110, h:175, name:"OPEN ISLAND KITCHEN", dim:"10' x 14'-6\"", c:C.wet, critique:"OPTIMIZED: Removed the North partition wall and added a breakfast island overlooking the Great Room. Heavy frying moves to the East Utility.", design:["Quartz waterfall island seating 4.","Integrated appliances (refrigerator & ovens flush with cabinetry)."] },
-      { id:"staff_new", x:310, y:460, w:200, h:60, name:"CONSOLIDATED STAFF ROOM", dim:"15'-9\" x 5'-6\" (Merged)", c:C.store, critique:"OPTIMIZED: Merged the unlivable 3'8\" Servant Quarter with the Store Room to create an actual bedroom that fits a single bed, wardrobe, and fan comfortably.", design:["Built-in Murphy bed or single divan with overhead storage."] },
-      { id:"util_e", x:510, y:260, w:70, h:260, name:"WET KITCHEN & LAUNDRY", dim:"5'-6\" WIDE", c:C.outdoor, critique:"OPTIMIZED: Enclosed with UPVC glazing to serve as the heavy spice/frying kitchen + laundry.", design:["Heavy-duty gas hob, commercial chimney, and laundry stack."] },
-      { id:"util_s", x:60, y:520, w:520, h:50, name:"SOUTH SERVICE CORRIDOR", dim:"4'-6\" WIDE", c:C.outdoor, critique:"Service access for staff and MEP maintenance.", design:["Motion-sensor security lighting."] }
+    reim:[
+      {id:'living',  label:'Living Room',    dims:"12'8\"×14'8\"", x:40,  y:42,  w:143,h:168, color:'#3b82f6',
+       note:"✓ Unchanged — NW Living Room is correctly placed in Vayu zone.",
+       vastu:"✓ NW Vayu zone — no change needed. Wind energy supports social interaction."},
+      {id:'dining',  label:'Dining Area',    dims:"11'×14'3\"",    x:183, y:42,  w:128,h:163, color:'#8b5cf6',
+       note:"Double-height dining retained. Dining table centred under void/skylight.",
+       vastu:"✓ Centre — transitional dining zone acceptable in Brahmasthan."},
+      {id:'drawing', label:'Drawing Room',   dims:"10'3\"×14'3\"", x:311, y:42,  w:129,h:163, color:'#3b82f6',
+       note:"✓ East drawing room unchanged — morning light, guest-facing East orientation.",
+       vastu:"✓ NE/E Indra — correct for guest reception."},
+      {id:'puja',    label:'Puja Room',      dims:"4' Wide",        x:311, y:42,  w:50, h:50,  color:'#f59e0b',
+       note:"✓ NE Puja alcove retained and unchanged. Idols face West so devotee faces East.",
+       vastu:"✓ NE Ishanya — most sacred corner. No change needed."},
+      {id:'bed1',    label:'Bedroom 01',     dims:"12'×14'8\"",    x:40,  y:210, w:140,h:168, color:'#10b981',
+       note:"✓ SW master bedroom unchanged. Headboard on South wall, sleep with head pointing South.",
+       vastu:"✓ SW Nairutya — ideal for master bedroom."},
+      {id:'powder',  label:'Powder Room',    dims:"6'8\"×8'",      x:40,  y:378, w:140,h:80,  color:'#475569',
+       note:"✓ Expanded: former walk-in closet area reconfigured. Absorbed the 3' indoor servant corridor to create 6'8\"×8' full guest bath.",
+       vastu:"W/NW zone — acceptable for bathrooms. Expanded footprint improves function."},
+      {id:'lift',    label:'Lift',           dims:"5'×5'",          x:186, y:254, w:55, h:55,  color:'#1e293b',
+       note:"Home elevator retained in centre core.",
+       vastu:"Centre — neutral."},
+      {id:'toilet1', label:'Toilet',         dims:"3'8\"×8'",       x:241, y:247, w:44, h:90,  color:'#334155',
+       note:"Guest toilet retained. Consider enlarging if budget allows.",
+       vastu:"⚠ Centre-North — minor concern. Keep clean and well-lit."},
+      {id:'toilet2', label:'Toilet',         dims:"5'7\"×7'10\"",  x:183, y:337, w:58, h:98,  color:'#334155',
+       note:"✓ NW toilet retained.",
+       vastu:"✓ NW — acceptable zone for utilities."},
+      {id:'stair',   label:'Staircase ✓',   dims:"Clockwise E→N", x:248, y:312, w:95, h:128, color:'#1e293b',
+       note:"✓ Corrected to clockwise ascent: first riser on East flight adjacent to Kitchen wall, ascending South → mid-landing West → ascending North. 15 steps (odd).",
+       vastu:"✓ Clockwise E→S→W→N — Vastu-compliant staircase direction. Odd step count preferred."},
+      {id:'sertol',  label:'Servant Toilet', dims:"3'8\"×6'",       x:248, y:440, w:44, h:38,  color:'#374151',
+       note:"✓ Servant toilet retained in South utility zone.",
+       vastu:"South Yama — service utilities in South are acceptable."},
+      {id:'servant', label:'Servant Qtr ✓', dims:"7'9\"×5'8\"",    x:292, y:416, w:90, h:72,  color:'#374151',
+       note:"✓ Width expanded from 3'8\" to 5'8\" by utilizing 2' of the 4'6\" South Utility setback. No room merger — Store Room stays independent. Now a viable single room with proper human clearance. Exterior utility exit door passage preserved.",
+       vastu:"✓ South service zone — correct direction. 5'8\" width achieved by pushing into setback margin, not merging with store room. Habitable per NBC norms."},
+      {id:'store',   label:'Store Room',     dims:"8'×3'10\"",      x:382, y:415, w:58, h:30,  color:'#374151',
+       note:"✓ Store room retained as independent storage — not absorbed into servant quarter.",
+       vastu:"South-SE — storage in South zone acceptable. Remains independent."},
+      {id:'kitchen', label:'Kitchen',        dims:"10'×16'",        x:370, y:224, w:100,h:184, color:'#f97316',
+       note:"✓ SE Kitchen unchanged — correct Agni zone. 5'6\" external utility area retained on East.",
+       vastu:"✓ SE Agni — ideal kitchen placement. Cook faces East. No change needed."},
     ]
   },
+
   ff: {
-    orig: [
-      { id:"toil2", x:60, y:90, w:140, h:75, name:"TOILET (BED 02)", dim:"12' x 6'", c:C.wet, critique:"MAJOR FLAW: Sits directly over the Ground Floor Living Room! Flushing noise and potential leaks will ruin your main living ceiling.", design:["Requires suspended false ceiling below to hide soil pipes."] },
-      { id:"wic2", x:60, y:165, w:140, h:95, name:"WALK-IN CLOSET", dim:"12'-3\" x 7'-8\"", c:C.store, critique:"Blocks the best North-West garden view that the bedroom should be enjoying.", design:["L-shaped wardrobe layout."] },
-      { id:"void1", x:200, y:90, w:130, h:170, name:"DOUBLE HEIGHT VOID", dim:"Open to Dining Below", c:C.void, critique:"Transmits kitchen smells and dining noise directly into the 1st-floor bedrooms.", design:["Install a tall statement pendant light dropping from ceiling."] },
-      { id:"bed3", x:330, y:90, w:170, h:170, name:"BEDROOM 03", dim:"14'-3\" x 14'-3\"", c:C.bed, critique:"Good square room, but cut off from its bathroom by a massive wasted foyer.", design:["King bed on East wall facing TV unit."] },
-      { id:"balc_n", x:360, y:40, w:200, h:50, name:"NORTH BALCONY", dim:"4' WIDE", c:C.outdoor, critique:"Nice street-facing sit-out.", design:["Toughened glass railing with wooden handrail."] },
-      { id:"balc_e", x:500, y:90, w:65, h:430, name:"EAST BALCONY", dim:"5'-2\" WIDE", c:C.outdoor, critique:"Long linear balcony; half of it runs alongside the bathroom/closet wall where it can't even be accessed.", design:["Add planter boxes for privacy from neighbors."] },
-      { id:"bed2", x:60, y:260, w:140, h:260, name:"BEDROOM 02", dim:"12' x 20'-3\"", c:C.bed, critique:"Long tunnel-like proportion (12' wide by 20' long). Pushed to the South side while its toilet hogs the prime North garden view.", design:["Divide into sleeping zone and seating lounge."] },
-      { id:"pass1", x:200, y:260, w:200, h:70, name:"PASSAGE", dim:"6' WIDE", c:C.core, critique:"Generous width, acts as bridge across the double-height dining room.", design:["Console table along wall."] },
-      { id:"foyer3", x:400, y:260, w:100, h:70, name:"FOYER", dim:"10' x 5'", c:C.core, critique:"MAJOR FLAW: 50 sq. ft. of pure wasted corridor inside Bedroom 03's suite just to connect the bedroom to the closet.", design:["Completely unnecessary partition walls."] },
-      { id:"lift1", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Aligned with GF.", design:["Standard landing door."] },
-      { id:"store1", x:200, y:390, w:60, h:130, name:"STORE ROOM", dim:"5'-2\" x 7'-10\"", c:C.store, critique:"Useful linen closet, sits over GF toilet.", design:["Floor-to-ceiling linen cabinets."] },
-      { id:"stairs1", x:260, y:330, w:140, h:190, name:"STAIRCASE", dim:"Central Core", c:C.core, critique:"Aligned with GF.", design:["Skylight illumination from above."] },
-      { id:"wic3", x:400, y:330, w:100, h:110, name:"WALK-IN CLOSET", dim:"10' x 8'-4\"", c:C.store, critique:"Good size, but blocks access to the southern half of the East balcony.", design:["His & Hers parallel wardrobes."] },
-      { id:"toil3", x:400, y:440, w:100, h:80, name:"TOILET (BED 03)", dim:"10' x 6'", c:C.wet, critique:"Sits over the Ground Floor Store/Kitchen—acceptable plumbing stack.", design:["Double vanity and walk-in shower."] }
+    label:'1st Floor', beds:2, baths:2, feature:'4\' N + 5\'2\" E Balcony',
+    orig:[
+      {id:'toil3',  label:'Toilet',         dims:"12'×6'",         x:40,  y:52,  w:140,h:68,  color:'#334155',
+       note:"PDF original: Toilet at TOP-LEFT of west wing. Under N=Left plan orientation (per PDF compass), top-left is the NE (Ishanya) sacred zone. Plumbing soil pipe runs through the floor slab directly over the GF Living Room ceiling.",
+       vastu:"⚠ VIOLATION: Toilet in NE zone (top-left, N=Left). NE Ishanya is the most sacred corner — waste disposal here creates severe energy conflict. Reimagined mode relocates toilet to NW (bottom-left) aligning soil stack over GF wet core."},
+      {id:'clos2',  label:'Walk-In Closet', dims:"12'3\"×7'8\"",  x:40,  y:120, w:140,h:88,  color:'#475569',
+       note:"Walk-in closet in middle of west wing — as per the actual PDF layout. Between the toilet above and bedroom below.",
+       vastu:"North/Central-West zone — transitional dressing area. Acceptable between toilet stack and bedroom."},
+      {id:'bed2',   label:'Bedroom 02',     dims:"12'×20'3\"",    x:40,  y:208, w:140,h:232, color:'#10b981',
+       note:"PDF original: Bedroom 02 at BOTTOM of west wing, 20'3\" length. Spacious room positioned in NW zone (bottom-left under N=Left). Sleep quality acceptable but NE (top) is more auspicious.",
+       vastu:"NW/W zone (bottom-left, N=Left). Acceptable for bedroom. Reimagined mode promotes bedroom to NE (top-left) for better Vastu alignment and morning sun."},
+      {id:'void',   label:'↕ Dining Void', dims:"11'×14'3\"",     x:183, y:52,  w:128,h:163, color:'#0f172a',
+       note:"Double-height void above GF Dining Area. Glass railing on mezzanine edge. Skylight above creates vertical light shaft.",
+       vastu:"✓ Centre void left open — ideal Vastu. Brahmasthan above should be light/open."},
+      {id:'bed3',   label:'Bedroom 03',     dims:"14'3\"×14'3\"", x:318, y:52,  w:147,h:163, color:'#10b981',
+       note:"NE bedroom with private 4' North balcony and 5'2\" East balcony. Suite with foyer and dual walk-ins.",
+       vastu:"NE zone — ideal for guest or prayer bedroom. Morning sun enters through East balcony."},
+      {id:'foyer',  label:'Bedroom Foyer',  dims:"10'×5'",         x:318, y:215, w:147,h:57,  color:'#6b7280',
+       note:"Private foyer for Bedroom 03. 10'×5' buffer before the suite. Access from central passage.",
+       vastu:"⚠ 50 sq ft foyer is a transitional space — could be absorbed into bedroom to gain usable area."},
+      {id:'clos3',  label:'Walk-In Closet', dims:"10'×8'4\"",      x:338, y:272, w:115,h:97,  color:'#475569',
+       note:"SE walk-in closet, 10'×8'4\" — generous size for a 2nd bedroom.",
+       vastu:"SE zone — acceptable for dressing room storage."},
+      {id:'toil4',  label:'Toilet',         dims:"10'×6'",          x:338, y:369, w:115,h:68,  color:'#334155',
+       note:"SE toilet for Bedroom 03 suite. Well-sized at 10'×6'.",
+       vastu:"⚠ SE Agni zone — toilet in fire zone is not ideal. Plumbing should route via NW exterior duct."},
+      {id:'pass',   label:'Passage',         dims:"6' Wide",         x:183, y:248, w:135,h:68,  color:'#1e293b',
+       note:"6' wide central passage connecting all 1st floor rooms. Lift and staircase on this level.",
+       vastu:"Centre — passage through Brahmasthan. Keep uncluttered and well-lit."},
+      {id:'lift2',  label:'Lift',            dims:"5'×5'",           x:183, y:254, w:55, h:55,  color:'#1e293b',
+       note:"Lift on 1st floor, centre core.",
+       vastu:"Centre — neutral."},
+      {id:'store2', label:'Store Room',      dims:"5'2\"×7'10\"",   x:183, y:369, w:60, h:68,  color:'#374151',
+       note:"1st floor store room, centre-South position.",
+       vastu:"South — Yama zone. Storage in South is acceptable."},
+      {id:'stair2', label:'Staircase',       dims:"",                x:243, y:316, w:87, h:128, color:'#1e293b',
+       note:"Staircase between GF, 1F and 2F. Centre-South core.",
+       vastu:"South-centre — acceptable."},
+      {id:'balcN',  label:'Balcony North',   dims:"4' Wide",         x:183, y:12,  w:135,h:40,  color:'#059669',
+       note:"4' wide North balcony attached to Bedroom 03. Views to front garden and parking.",
+       vastu:"✓ N Kubera zone — open North is highly Vastu-positive. Wealth direction kept open."},
+      {id:'balcE',  label:'Balcony East',    dims:"5'2\" Wide",      x:465, y:52,  w:50, h:163, color:'#059669',
+       note:"5'2\" East balcony attached to Bedroom 03. Morning sunrise light enters bedroom.",
+       vastu:"✓ E Indra zone — East sunrise energy entering bedroom daily is auspicious."},
     ],
-    reim: [
-      { id:"bed2_new", x:60, y:90, w:140, h:240, name:"BEDROOM 02 (NORTH-WEST SUITE)", dim:"12'-3\" x 20'-0\"", c:C.bed, critique:"OPTIMIZED: Flipped the suite! The bedroom now enjoys the quiet North-West garden view instead of giving the best view to the toilet.", design:["Bed faces North garden window.","Private reading lounge in center of room."] },
-      { id:"wic2_new", x:60, y:330, w:140, h:95, name:"WALK-IN DRESSER", dim:"12' x 8'-0\"", c:C.store, critique:"OPTIMIZED: Acts as an acoustic buffer between the sleeping area and the bathroom/lift core.", design:["Fluted glass wardrobe doors with internal sensor lighting."] },
-      { id:"toil2_new", x:60, y:425, w:140, h:95, name:"MASTER BATH 02 (STACKED)", dim:"12' x 8'-0\"", c:C.wet, critique:"OPTIMIZED: Relocated to the South-West corner directly above the Ground Floor bathroom! Zero drainage pipes over any living room.", design:["Freestanding soaking tub + rain shower enclosure."] },
-      { id:"void1", x:200, y:90, w:130, h:170, name:"ACOUSTIC GLAZED ATRIUM", dim:"11' x 14'-3\"", c:C.void, critique:"OPTIMIZED: Enclosed the 1st-floor passage overlook with floor-to-ceiling acoustic glass. You keep the dramatic visual volume and daylight, but block 100% of kitchen odors and noise.", design:["Frameless laminated acoustic glass partition."] },
-      { id:"bed3_new", x:330, y:90, w:170, h:240, name:"BEDROOM 03 + STUDY LOUNGE", dim:"14'-3\" x 19'-3\"", c:C.bed, critique:"OPTIMIZED: Absorbed the useless 10' x 5' Foyer directly into Bedroom 03! The suite now has a dedicated work-from-home study nook opening onto the East Balcony.", design:["Executive study desk overlooking East balcony.","King bed with upholstered full-height headboard."] },
-      { id:"balc_n", x:360, y:40, w:200, h:50, name:"NORTH BALCONY", dim:"4' WIDE", c:C.outdoor, critique:"Retained.", design:["Outdoor lounge chairs."] },
-      { id:"balc_e", x:500, y:90, w:65, h:430, name:"EAST WRAP BALCONY", dim:"5'-2\" WIDE", c:C.outdoor, critique:"OPTIMIZED: Now accessible from both the bedroom and the new study nook.", design:["Vertical garden wall along southern end."] },
-      { id:"pass1", x:200, y:260, w:130, h:70, name:"GALLERY BRIDGE", dim:"6' WIDE", c:C.core, critique:"OPTIMIZED: Shortened the corridor by moving Bedroom 03's entrance door west, giving more private space to the suite.", design:["Art gallery lighting along passage."] },
-      { id:"lift1", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Aligned.", design:["Aligned."] },
-      { id:"store1", x:200, y:390, w:60, h:130, name:"UTILITY / LINEN CLOSET", dim:"5'-2\" x 7'-10\"", c:C.store, critique:"Retained.", design:["Add mini-fridge/coffee station inside corridor niche so you don't walk downstairs at night."] },
-      { id:"stairs1", x:260, y:330, w:140, h:190, name:"STAIRCASE", dim:"Central Core", c:C.core, critique:"Aligned.", design:["Aligned."] },
-      { id:"wic3", x:400, y:330, w:100, h:110, name:"WALK-IN CLOSET 03", dim:"10' x 8'-4\"", c:C.store, critique:"Direct entry from the expanded Bedroom 03 study zone.", design:["Island dresser drawer in center."] },
-      { id:"toil3", x:400, y:440, w:100, h:80, name:"TOILET (BED 03)", dim:"10' x 6'", c:C.wet, critique:"Stacked cleanly over GF kitchen/utility wet wall.", design:["Skylight or high louver window facing East."] }
+    reim:[
+      {id:'bed2',   label:'Bedroom 02',     dims:"12'×20'3\"",    x:40,  y:52,  w:140,h:232, color:'#10b981',
+       note:"✓ CORRECTED: Bedroom 02 promoted to TOP-LEFT (NE zone, N=Left). Full 20'3\" sleeping area now in the auspicious NE Ishanya zone — morning sun enters from East. Toilet relocated to NW (bottom-left).",
+       vastu:"✓ NE zone (top-left, N=Left) — Bedroom in NE is excellent for light, morning energy, and sacred zone harmony. Significant improvement over original NW/West placement."},
+      {id:'clos2',  label:'Walk-In Closet', dims:"12'3\"×7'8\"",  x:40,  y:284, w:140,h:88,  color:'#475569',
+       note:"✓ Walk-in closet in middle position — between bedroom above and toilet below. Same proportional position as original.",
+       vastu:"✓ Central-west — transitional dressing area between bedroom and toilet stack. Acceptable."},
+      {id:'toil3',  label:'Toilet',         dims:"12'×6'",         x:40,  y:372, w:140,h:68,  color:'#334155',
+       note:"✓ Toilet relocated to BOTTOM-LEFT (NW zone, N=Left). Soil stack now aligns vertically over GF wet core — no soil pipes crossing GF Living Room ceiling. Exterior NW column duct confirmed.",
+       vastu:"✓ NW Vayu zone (bottom-left, N=Left) — correct Vastu zone for sanitation. Plumbing alignment over GF wet core eliminates soil pipe crossing living area ceiling structure."},
+      {id:'void',   label:'↕ Dining Void', dims:"11'×14'3\"",     x:183, y:52,  w:128,h:163, color:'#0f172a',
+       note:"✓ Void retained — open Brahmasthan above GF dining.",
+       vastu:"✓ Open void above centre — Vastu ideal for vertical energy flow."},
+      {id:'bed3',   label:'Bedroom 03 ✓',  dims:"14'3\"×19'3\"", x:318, y:52,  w:147,h:220, color:'#10b981',
+       note:"✓ Expanded: 10'×5' foyer eliminated (+50 sq ft absorbed). Suite now 14'3\"×19'3\". Former foyer area becomes study/dressing nook at bedroom entrance. Direct access from passage to the 5'2\" East Balcony — no foyer detour. Head of bed on South wall.",
+       vastu:"NE — ideal guest/secondary bedroom. Expanded without Vastu compromise. Direct East balcony access improves morning light and cross-ventilation."},
+      {id:'clos3',  label:'Walk-In Closet', dims:"10'×8'4\"",      x:338, y:272, w:115,h:97,  color:'#475569',
+       note:"✓ SE walk-in retained for Bedroom 03.",
+       vastu:"SE — acceptable for storage."},
+      {id:'toil4',  label:'Toilet (NW duct)',dims:"10'×6'",         x:338, y:369, w:115,h:68,  color:'#334155',
+       note:"Toilet retained. Plumbing rerouted: exterior NW column duct on West wall carries soil pipe down outside the building. GF living room ceiling unaffected.",
+       vastu:"SE zone concern mitigated by exterior duct routing. Soil pipe exits building via NW column, not through floor slab over living room."},
+      {id:'pass',   label:'Passage',         dims:"6' Wide",         x:183, y:248, w:135,h:68,  color:'#1e293b',
+       note:"✓ 6' passage unchanged. Clear circulation between suites.",
+       vastu:"Centre — keep open and well-lit."},
+      {id:'lift2',  label:'Lift',            dims:"5'×5'",           x:183, y:254, w:55, h:55,  color:'#1e293b',
+       note:"Lift core unchanged.",
+       vastu:"Centre — neutral."},
+      {id:'store2', label:'Store Room',      dims:"5'2\"×7'10\"",   x:183, y:369, w:60, h:68,  color:'#374151',
+       note:"Store room retained South position.",
+       vastu:"✓ South — acceptable for storage."},
+      {id:'stair2', label:'Staircase ✓',    dims:"Clockwise",       x:243, y:316, w:87, h:128, color:'#1e293b',
+       note:"✓ Clockwise staircase ascent continues from GF. Consistent E→S→W→N pattern.",
+       vastu:"✓ Clockwise ascent continued from GF."},
+      {id:'balcN',  label:'Balcony North',   dims:"4' Wide",         x:183, y:12,  w:135,h:40,  color:'#059669',
+       note:"✓ North balcony retained.",
+       vastu:"✓ N Kubera — open North is Vastu-positive."},
+      {id:'balcE',  label:'Balcony East',    dims:"5'2\" Wide",      x:465, y:52,  w:50, h:163, color:'#059669',
+       note:"✓ East balcony retained.",
+       vastu:"✓ E Indra — morning sun energy."},
     ]
   },
+
   sf: {
-    orig: [
-      { id:"toil4", x:60, y:90, w:140, h:75, name:"TOILET (BED 04)", dim:"12' x 6'", c:C.wet, critique:"Same issue as 1st floor—positioned in the prime North-West garden corner.", design:["Standard fixtures."] },
-      { id:"wic4", x:60, y:165, w:140, h:95, name:"WALK-IN CLOSET", dim:"12' x 7'-8\"", c:C.store, critique:"Same as 1st floor.", design:["L-shaped cabinetry."] },
-      { id:"lounge", x:200, y:90, w:170, h:170, name:"FAMILY LOUNGE", dim:"15' x 14'-3\"", c:C.social, critique:"MAJOR STRUCTURAL FLAW: This heavy room sits directly over the empty air of the Ground/1st Floor Double-Height Dining Void! Requires expensive deep transfer beams and blocks natural skylight from reaching the center of the house.", design:["Two facing 3-seater sofas."] },
-      { id:"terrace", x:370, y:90, w:195, h:240, name:"OPEN TERRACE", dim:"15'-10\" x 23'-3\"", c:C.outdoor, critique:"Great size, but disconnected from the Covered Outdoor Seating by the staircase wall.", design:["Outdoor deck tiles with proper slope toward rainwater harvesting drains."] },
-      { id:"bed4", x:60, y:260, w:140, h:260, name:"BEDROOM 04", dim:"12' x 20'-3\"", c:C.bed, critique:"Identical to Bedroom 02 below.", design:["Penthouse suite styling."] },
-      { id:"pass2", x:200, y:260, w:170, h:70, name:"PASSAGE", dim:"6' WIDE", c:C.core, critique:"Connects lift/stairs to terrace.", design:["Weatherproof sliding door to terrace."] },
-      { id:"lift2", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Top landing.", design:["Ensure terrace slab waterproofs lift machine room/headroom."] },
-      { id:"store2", x:200, y:390, w:60, h:130, name:"STORE ROOM", dim:"5'-2\" x 7'-10\"", c:C.store, critique:"Good storage for outdoor terrace cushions and maintenance gear.", design:["Heavy shelving."] },
-      { id:"stairs2", x:260, y:330, w:140, h:190, name:"STAIRCASE", dim:"Top Landing", c:C.core, critique:"Aligned.", design:["Add skylight above stairwell."] },
-      { id:"cov_seat", x:400, y:330, w:165, h:190, name:"COVERED OUTDOOR SEATING", dim:"10' x 13'-6\"", c:C.outdoor, critique:"Nice semi-open gazebo space, though slightly isolated in the SE corner.", design:["Curved outdoor sectional sofa and bar counter."] }
+    label:'2nd Floor', beds:1, baths:1, feature:'Open Terrace 15\'10\"×23\'3\"',
+    orig:[
+      {id:'toil5',  label:'Toilet',         dims:"12'×6'",            x:40,  y:52,  w:140,h:68,  color:'#334155',
+       note:"PDF original: Toilet at TOP-LEFT of 2nd floor west wing — same position as 1F toilet. Vertical wet stack: 2F toilet over 1F toilet over GF wet core. NE zone violation matches 1F.",
+       vastu:"⚠ VIOLATION: Toilet in NE (top-left) zone per N=Left orientation. Directly above the 1F toilet stack. Correcting both floors in Reimagined mode aligns the full 3-floor wet stack without crossing any living area ceiling."},
+      {id:'clos4',  label:'Walk-In Closet', dims:"12'×7'8\"",        x:40,  y:120, w:140,h:88,  color:'#475569',
+       note:"Walk-in closet in middle of 2nd floor west wing. Between toilet above and bedroom below — matching PDF layout.",
+       vastu:"Central-west zone — transitional dressing area. Acceptable placement."},
+      {id:'bed4',   label:'Bedroom 04',     dims:"12'×20'3\"",      x:40,  y:208, w:140,h:232, color:'#10b981',
+       note:"PDF original: Bedroom 04 at BOTTOM of west wing, 20'3\" length. Quieter level with treetop views West. NW/West zone under N=Left.",
+       vastu:"NW/W zone (bottom-left, N=Left). Good for bedroom. Reimagined mode promotes Bedroom 04 to NE (top-left) for better Vastu alignment."},
+      {id:'lounge', label:'Family Lounge',  dims:"15'×14'3\"",       x:183, y:52,  w:170,h:163, color:'#8b5cf6',
+       note:"Centre-NE family lounge — private gathering space separate from GF drawing room. Possible media room.",
+       vastu:"Centre-NE — light multipurpose lounge in Brahmasthan zone is acceptable."},
+      {id:'terrace',label:'Open Terrace',   dims:"15'10\"×23'3\"",   x:353, y:52,  w:185,h:265, color:'#059669',
+       note:"Large East-facing open terrace (~370 sq ft). Deck timber flooring, perimeter planters, pergola on South end.",
+       vastu:"✓ E/SE terrace — East open space is Vastu-positive. Lower East side correct."},
+      {id:'seating',label:'Covered Seating',dims:"10'×13'6\"",        x:353, y:317, w:115,h:143, color:'#0d9488',
+       note:"SE covered outdoor seating area — pergola/canopy. Curved sofa arrangement. 10'×13'6\".",
+       vastu:"SE Agni zone — covered seating. Use warm/amber lighting to harmonise fire element."},
+      {id:'pass2',  label:'Passage',         dims:"6' Wide",           x:183, y:248, w:135,h:68,  color:'#1e293b',
+       note:"6' wide central passage on 2nd floor.",
+       vastu:"Centre — keep uncluttered."},
+      {id:'lift3',  label:'Lift',            dims:"5'×5'",             x:183, y:254, w:55, h:55,  color:'#1e293b',
+       note:"Lift on 2nd floor.",
+       vastu:"Centre — neutral."},
+      {id:'store3', label:'Store Room',      dims:"5'2\"×7'10\"",     x:183, y:369, w:60, h:70,  color:'#374151',
+       note:"2nd floor store room — same footprint as 1F store. Potential for conversion to wet bar/pantry for terrace use.",
+       vastu:"South — acceptable for storage."},
+      {id:'stair3', label:'Staircase',       dims:"",                  x:243, y:316, w:87, h:128, color:'#1e293b',
+       note:"Staircase access to 2nd floor. From 2nd floor, stair access continues to roof level.",
+       vastu:"South-centre — acceptable."},
     ],
-    reim: [
-      { id:"bed4_new", x:60, y:90, w:140, h:240, name:"PENTHOUSE MASTER (BED 04)", dim:"12'-3\" x 20'-0\"", c:C.bed, critique:"OPTIMIZED: Stacked identically with the corrected 1st Floor Bedroom 02. Enjoys panoramic North-West views.", design:["Private coffee bar and acoustic sliding door."] },
-      { id:"wic4_new", x:60, y:330, w:140, h:95, name:"WALK-IN DRESSER 04", dim:"12' x 8'-0\"", c:C.store, critique:"OPTIMIZED: Aligned with 1st floor.", design:["Skylight tube in ceiling for natural daytime dressing light."] },
-      { id:"toil4_new", x:60, y:425, w:140, h:95, name:"PENTHOUSE SPA BATH (STACKED)", dim:"12' x 8'-0\"", c:C.wet, critique:"OPTIMIZED: Vertically aligned with GF and 1st Floor SW wet stack. Single vertical plumbing shaft for all 3 floors!", design:["Steam shower + frosted glass skylight."] },
-      { id:"skylight_void", x:200, y:90, w:130, h:170, name:"ZENITHAL SKYLIGHT ATRIUM", dim:"11' x 14'-3\" (Glass Roof)", c:C.void, critique:"OPTIMIZED: Instead of pouring a heavy concrete floor over the double-height dining void, we cap it with a solar-control glass skylight! Floods all 3 floors with natural daylight and saves massive structural steel costs.", design:["Double-glazed heat-reflective laminated skylight with automated sun-blinds."] },
-      { id:"lounge_new", x:330, y:90, w:235, h:190, name:"GLASS PAVILION LOUNGE & BAR", dim:"19'-6\" x 15'-0\"", c:C.social, critique:"OPTIMIZED: Shifted the Family Lounge East so it sits directly over the solid structural walls of Bedroom 03 below! Wraps into the terrace with bi-fold glass doors.", design:["Wet bar counter on West wall.","Home theater projector drop-screen + modular lounge pit."] },
-      { id:"pass2", x:200, y:260, w:130, h:70, name:"SKY BRIDGE", dim:"6' WIDE", c:C.core, critique:"Overlooks the 3-story sunlit atrium.", design:["Glass balustrade."] },
-      { id:"lift2", x:200, y:330, w:60, h:60, name:"LIFT", dim:"5' x 5'", c:C.core, critique:"Top landing.", design:["Aligned."] },
-      { id:"pwd2", x:200, y:390, w:60, h:130, name:"TERRACE POWDER ROOM + PANTRY", dim:"5'-2\" x 7'-10\"", c:C.wet, critique:"OPTIMIZED: Converted the redundant 2nd-floor Store Room into a Powder Room + Bar Pantry! In your original plan, guests on the terrace had to walk through a private bedroom just to use the toilet.", design:["WC + washbasin + bar sink/ice-maker."] },
-      { id:"stairs2", x:260, y:330, w:140, h:190, name:"STAIRCASE", dim:"Central Core", c:C.core, critique:"Aligned.", design:["Aligned."] },
-      { id:"terrace_new", x:330, y:280, w:235, h:240, name:"UNIFIED SKY DECK & PERGOLA", dim:"19'-6\" x 20'-0\"", c:C.outdoor, critique:"OPTIMIZED: Combined the Open Terrace and Covered Seating into a cohesive South-East entertainment deck connected directly to the Glass Pavilion Lounge.", design:["Motorized bioclimatic louver pergola.","Outdoor BBQ kitchen counter and sunken fire-pit seating."] }
+    reim:[
+      {id:'bed4',   label:'Bedroom 04',     dims:"12'×20'3\"",      x:40,  y:52,  w:140,h:232, color:'#10b981',
+       note:"✓ SW Bedroom 04 unchanged — correct zone.",
+       vastu:"✓ SW Nairutya — ideal upper floor bedroom."},
+      {id:'clos4',  label:'Walk-In Closet', dims:"12'×7'8\"",        x:40,  y:284, w:140,h:88,  color:'#475569',
+       note:"✓ NW walk-in unchanged.",
+       vastu:"✓ NW — acceptable."},
+      {id:'toil5',  label:'Toilet',         dims:"12'×6'",            x:40,  y:372, w:140,h:68,  color:'#334155',
+       note:"✓ NW toilet for Bedroom 04.",
+       vastu:"✓ NW — correct zone for bathroom."},
+      {id:'lounge', label:'Family Lounge',  dims:"15'×14'3\"",       x:183, y:52,  w:170,h:163, color:'#8b5cf6',
+       note:"✓ Family Lounge unchanged.",
+       vastu:"✓ Centre-NE — acceptable light lounge."},
+      {id:'terrace',label:'Open Terrace',   dims:"15'10\"×23'3\"",   x:353, y:52,  w:185,h:265, color:'#059669',
+       note:"✓ East open terrace retained. 12 solar panels at 20° tilt on South pergola. NE corner kept open and unshaded.",
+       vastu:"✓ E terrace open — Vastu-positive. Solar panels on South roof pergola is correct — heavy structure in South."},
+      {id:'seating',label:'Covered Seating',dims:"10'×13'6\"",        x:353, y:317, w:115,h:143, color:'#0d9488',
+       note:"✓ SE covered seating unchanged. Warm amber lighting for Agni zone harmony.",
+       vastu:"SE Agni — warm lighting, fire-element decor appropriate."},
+      {id:'pass2',  label:'Passage',         dims:"6' Wide",           x:183, y:248, w:135,h:68,  color:'#1e293b',
+       note:"✓ Passage unchanged.",
+       vastu:"Centre — keep open."},
+      {id:'lift3',  label:'Lift',            dims:"5'×5'",             x:183, y:254, w:55, h:55,  color:'#1e293b',
+       note:"Lift on 2nd floor.",
+       vastu:"Centre — neutral."},
+      {id:'powder2',label:'Guest Powder Room',dims:"5'2\"×7'10\"",    x:183, y:369, w:60, h:70,  color:'#0ea5e9',
+       note:"✓ Former store room converted to dedicated Guest Powder Room (WC + basin). Terrace and Family Lounge guests can now access a restroom directly from the passage — without walking through Bedroom 04 or its walk-in closet. Preserves bedroom suite privacy completely.",
+       vastu:"South-Centre zone — utility bathroom in South acceptable. Guest restroom access resolved: terrace visitors no longer breach private bedroom circulation."},
+      {id:'stair3', label:'Staircase ✓',    dims:"Clockwise",         x:243, y:316, w:87, h:128, color:'#1e293b',
+       note:"✓ Clockwise staircase ascent completed on 2nd floor. Consistent pattern across all floors.",
+       vastu:"✓ Clockwise E→S→W→N maintained across all three floors."},
     ]
   }
 };
 
-let curFloor = 'gf';
-let curMode = 'orig';
-let selectedId = null;
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let curFloor = 'gf', curMode = 'orig';
+let selRect = null, selRoom = null;
 
-function render() {
-  const svg = document.getElementById('blueprint');
-  svg.innerHTML = '';
-  const rooms = DATA[curFloor][curMode];
-
-  // Outer plot boundary
-  const plot = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  plot.setAttribute("x", 15); plot.setAttribute("y", 15);
-  plot.setAttribute("width", 570); plot.setAttribute("height", 560);
-  plot.setAttribute("fill", "none"); plot.setAttribute("stroke", "#334155");
-  plot.setAttribute("stroke-dasharray", "6,6");
-  svg.appendChild(plot);
-
-  rooms.forEach((r, idx) => {
-    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("x", r.x); rect.setAttribute("y", r.y);
-    rect.setAttribute("width", r.w); rect.setAttribute("height", r.h);
-    rect.setAttribute("fill", r.c);
-    rect.setAttribute("class", "room" + (selectedId === r.id ? " selected" : ""));
-    rect.onclick = () => selectRoom(r);
-    g.appendChild(rect);
-
-    // Text label
-    const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    txt.setAttribute("x", r.x + r.w / 2);
-    txt.setAttribute("y", r.y + r.h / 2 - 4);
-    txt.setAttribute("class", "room-label");
-    txt.textContent = r.name;
-    g.appendChild(txt);
-
-    // Dim label
-    const dim = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    dim.setAttribute("x", r.x + r.w / 2);
-    dim.setAttribute("y", r.y + r.h / 2 + 12);
-    dim.setAttribute("class", "room-dim");
-    dim.textContent = r.dim;
-    g.appendChild(dim);
-
-    svg.appendChild(g);
-    if (idx === 2 && !selectedId) selectRoom(r);
-  });
+function hex2rgba(hex, a) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
 }
 
-function selectRoom(r) {
-  selectedId = r.id;
-  const badge = document.getElementById('statusBadge');
-  badge.className = "badge " + curMode;
-  badge.textContent = curMode === 'orig' ? "ORIGINAL PLAN (FLAWED)" : "REIMAGINED PLAN (OPTIMIZED)";
-  
-  document.getElementById('rTitle').textContent = r.name;
-  document.getElementById('rDim').textContent = "Dimensions: " + r.dim;
-  document.getElementById('rCritique').textContent = r.critique;
-  
-  const ul = document.getElementById('rDesign');
-  ul.innerHTML = '';
-  r.design.forEach(item => {
-    const li = document.createElement('li');
-    li.textContent = item;
-    ul.appendChild(li);
-  });
-  render();
+// ─── PANEL ───────────────────────────────────────────────────────────────────
+function showPanel(room) {
+  document.getElementById('pr-empty').style.display = 'none';
+  document.getElementById('pr-content').style.display = 'block';
+  const floorLabel = DATA[curFloor].label + ' · ' + (curMode==='orig'?'Original':'Vastu Reimagined');
+  document.getElementById('pr-badge').textContent = floorLabel;
+  document.getElementById('pr-name').textContent = room.label;
+  document.getElementById('pr-dims').textContent = room.dims || '—';
+  document.getElementById('pr-note').textContent = room.note || '—';
+  document.getElementById('pr-vastu').textContent = room.vastu || '—';
+  // GSAP panel animation
+  if (typeof gsap !== 'undefined') {
+    gsap.fromTo('#pr-name, #pr-dims, #pr-note, #pr-vastu',
+      { opacity: 0, x: 8 },
+      { opacity: 1, x: 0, duration: 0.28, stagger: 0.06, ease: 'power2.out' }
+    );
+  }
+}
+function hidePanel() {
+  document.getElementById('pr-empty').style.display = 'flex';
+  document.getElementById('pr-content').style.display = 'none';
 }
 
-function setFloor(f) {
+// ─── CONTROLS ────────────────────────────────────────────────────────────────
+function updateStats() {
+  const fd = DATA[curFloor];
+  document.getElementById('stat-floor').textContent = fd.label;
+  document.getElementById('stat-beds').textContent = fd.beds;
+  document.getElementById('stat-baths').textContent = fd.baths;
+  document.getElementById('stat-feature').textContent = fd.feature;
+  document.getElementById('mode-desc').textContent = curMode === 'orig'
+    ? 'Original plan from PDF. Click any room for Vastu analysis.'
+    : 'Vastu Reimagined: key improvements shown. ✓ = correct · ⚠ = concern.';
+  // Animate stats
+  if (typeof gsap !== 'undefined') {
+    gsap.from('.stat-card', { opacity: 0, y: 5, duration: 0.22, stagger: 0.05, ease: 'power1.out', delay: 0.1 });
+  }
+}
+
+function setFloor(f, btn) {
   curFloor = f;
-  selectedId = null;
-  const btns = document.getElementById('floorBtns').children;
-  btns[0].classList.toggle('active', f === 'gf');
-  btns[1].classList.toggle('active', f === 'ff');
-  btns[2].classList.toggle('active', f === 'sf');
-  render();
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (typeof buildScene === 'function') buildScene();
 }
-
-function setMode(m) {
+function setMode(m, btn) {
   curMode = m;
-  selectedId = null;
-  const btns = document.getElementById('modeBtns').children;
-  btns[0].classList.toggle('active', m === 'orig');
-  btns[1].classList.toggle('active', m === 'reim');
-  render();
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (typeof buildScene === 'function') buildScene();
+}
+function setPlanView(btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (window._camera && window._controls) {
+    window._camera.position.set(0, 32, 0.5);
+    window._controls.target.set(0, 0, 0);
+    window._controls.update();
+  }
+  if (typeof gsap !== 'undefined') {
+    gsap.from('.stat-card', { opacity:0, y:5, duration:0.22, stagger:0.05, ease:'power1.out' });
+  }
 }
 
-render();
+// ─── LOADER ANIMATION ─────────────────────────────────────────────────────────
+function initLoader() {
+  const mm = gsap.matchMedia();
+  mm.add('(prefers-reduced-motion: no-preference)', () => {
+    gsap.timeline()
+      .to('.ld-line', {scaleX:1, opacity:1, duration:0.7, stagger:0.15, ease:'power2.inOut'})
+      .to('.ld-logo', {opacity:1, y:0, duration:0.6, ease:'power3.out'}, '-=0.4')
+      .to('.ld-sub',  {opacity:1, duration:0.45}, '-=0.15')
+      .to('#loader',  {opacity:0, duration:0.55, delay:0.45,
+        onComplete: () => { document.getElementById('loader').style.display = 'none'; }
+      });
+  });
+  mm.add('(prefers-reduced-motion: reduce)', () => {
+    document.getElementById('loader').style.display = 'none';
+  });
+}
+initLoader();
+
+// ─── MAGNETIC HOVER ON BUTTONS ────────────────────────────────────────────────
+if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+  document.querySelectorAll('.tab-btn, .mode-btn').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const x = (e.clientX - r.left - r.width  / 2) * 0.25;
+      const y = (e.clientY - r.top  - r.height / 2) * 0.25;
+      gsap.to(btn, { x, y, duration: 0.2, ease: 'power1.out', overwrite: 'auto' });
+    });
+    btn.addEventListener('mouseleave', () => {
+      gsap.to(btn, { x: 0, y: 0, duration: 0.35, ease: 'elastic.out(1,0.5)', overwrite: 'auto' });
+    });
+  });
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ─── SCENE SETUP ──────────────────────────────────────────────────────────────
+const container = document.getElementById('fp-3d');
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(devicePixelRatio);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+renderer.setClearColor(0x050810, 1);
+container.appendChild(renderer.domElement);
+
+// Accessibility
+renderer.domElement.setAttribute('role', 'img');
+renderer.domElement.setAttribute('aria-label', 'Interactive 3D villa floor plan. Drag to orbit, scroll to zoom.');
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x050810, 0.016);
+
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+camera.position.set(0, 16, 14);
+camera.lookAt(0, 0, 0);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minPolarAngle = 0.1;
+controls.maxPolarAngle = Math.PI / 2.1;
+controls.target.set(0, 0, 0);
+
+// ─── LIGHTING ─────────────────────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0xe2e8f0, 0.55));
+const hemi = new THREE.HemisphereLight(0x1e3a8a, 0x374151, 0.8);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff8e7, 1.4);
+sun.position.set(8, 18, 10);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 60;
+sun.shadow.camera.left = -20; sun.shadow.camera.right = 20;
+sun.shadow.camera.top = 20; sun.shadow.camera.bottom = -20;
+scene.add(sun);
+const ptA = new THREE.PointLight(0xf59e0b, 0.7, 40);
+ptA.position.set(-12, 8, 0);
+scene.add(ptA);
+const ptB = new THREE.PointLight(0xf59e0b, 0.7, 40);
+ptB.position.set(12, 8, 0);
+scene.add(ptB);
+const ptC = new THREE.PointLight(0x60a5fa, 0.3, 30);
+ptC.position.set(0, 12, -10);
+scene.add(ptC);
+
+// ─── GROUND ───────────────────────────────────────────────────────────────────
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(60, 60),
+  new THREE.MeshStandardMaterial({color:0x0a0f1a, roughness:1, metalness:0})
+);
+ground.rotation.x = -Math.PI/2;
+ground.position.y = -0.06;
+ground.receiveShadow = true;
+scene.add(ground);
+scene.add(new THREE.GridHelper(60, 60, 0x1a2744, 0x0d1828));
+
+// ─── COORDINATE MAPPING ───────────────────────────────────────────────────────
+const SCALE = 0.055;
+function roomToWorld(room) {
+  return {
+    x: (room.x + room.w/2 - 300) * SCALE,
+    z: (room.y + room.h/2 - 260) * SCALE,
+    w: room.w * SCALE,
+    d: room.h * SCALE
+  };
+}
+
+// ─── ROOM HEIGHT BY TYPE ──────────────────────────────────────────────────────
+function getRoomH(room) {
+  const id = room.id||'', lbl = (room.label||'').toLowerCase();
+  if(id==='void') return 4.8;
+  if(lbl.includes('dining') && lbl.includes('dh')) return 4.8;
+  if(id.includes('balc')||lbl.includes('terrace')||id==='terrace') return 0.25;
+  if(id.includes('toil')||id.includes('sertol')||lbl.includes('powder')) return 1.6;
+  if(id.includes('clos')||id.includes('closet')) return 1.8;
+  if(id.includes('store')||id==='store') return 1.6;
+  if(id.includes('lift')) return 3.0;
+  if(id.includes('stair')) return 2.2;
+  if(id.includes('pass')) return 2.2;
+  if(id.includes('bed')) return 2.6;
+  if(id.includes('kitchen')||id.includes('dining')) return 2.4;
+  if(id.includes('living')||id.includes('drawing')||id.includes('lounge')) return 2.8;
+  if(id.includes('servant')||id.includes('staff')) return 2.2;
+  if(id.includes('puja')) return 2.4;
+  if(id.includes('powder')) return 1.6;
+  return 2.2;
+}
+
+// ─── LABEL SPRITE ─────────────────────────────────────────────────────────────
+function makeLabelSprite(text, colorHex, dimsText) {
+  const c = document.createElement('canvas');
+  c.width = 320; c.height = 72;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, 320, 72);
+  ctx.fillStyle = 'rgba(5,8,16,0.94)';
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(2, 2, 316, 68, 10); else ctx.rect(2, 2, 316, 68);
+  ctx.fill();
+  ctx.strokeStyle = colorHex || '#f59e0b';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(2, 2, 316, 68, 10); else ctx.rect(2, 2, 316, 68);
+  ctx.stroke();
+  ctx.font = '600 15px "Cinzel",serif';
+  ctx.fillStyle = '#f1f5f9';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText(text.slice(0, 22), 160, 32);
+  if (dimsText) {
+    ctx.font = '400 11px "Josefin Sans",sans-serif';
+    ctx.fillStyle = colorHex || '#f59e0b';
+    ctx.fillText(dimsText.slice(0, 24), 160, 54);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.needsUpdate = true;
+  const mat = new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false});
+  const sp = new THREE.Sprite(mat);
+  sp.scale.set(3.2, 0.72, 1);
+  return sp;
+}
+
+// ─── FLOOR BASE SLAB ──────────────────────────────────────────────────────────
+function addFloorBase(scene) {
+  const slab = new THREE.Mesh(
+    new THREE.BoxGeometry(24, 0.1, 20),
+    new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      roughness: 0.95,
+      emissive: new THREE.Color(0xf59e0b),
+      emissiveIntensity: 0.03
+    })
+  );
+  slab.position.set(0, -0.1, 0);
+  slab.receiveShadow = true;
+  scene.add(slab);
+  // Amber perimeter glow line
+  const perimPts = [
+    new THREE.Vector3(-12, 0.02, -10),
+    new THREE.Vector3(12, 0.02, -10),
+    new THREE.Vector3(12, 0.02, 10),
+    new THREE.Vector3(-12, 0.02, 10),
+    new THREE.Vector3(-12, 0.02, -10)
+  ];
+  const perimGeo = new THREE.BufferGeometry().setFromPoints(perimPts);
+  scene.add(new THREE.Line(perimGeo, new THREE.LineBasicMaterial({color: 0xf59e0b, transparent: true, opacity: 0.45})));
+}
+
+// ─── COMPASS ──────────────────────────────────────────────────────────────────
+function addCompass(scene) {
+  ['N', 'S', 'E', 'W'].forEach((dir, i) => {
+    const angles = [0, Math.PI, -Math.PI/2, Math.PI/2];
+    const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, 64, 64);
+    ctx.font = 'bold 28px Cinzel,serif';
+    ctx.fillStyle = dir === 'N' ? '#f59e0b' : '#64748b';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(dir, 32, 32);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false}));
+    sp.scale.set(1, 1, 1);
+    const d = 13;
+    sp.position.set(Math.sin(angles[i]) * d, 0.3, Math.cos(angles[i]) * d);
+    scene.add(sp);
+  });
+}
+
+// ─── RAYCASTER & INTERACTION ──────────────────────────────────────────────────
+const roomMeshes = [];
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let hoveredMesh = null, selectedMesh = null;
+
+// ─── BUILD SCENE ─────────────────────────────────────────────────────────────
+function buildScene() {
+  // Remove old room meshes
+  roomMeshes.forEach(m => scene.remove(m));
+  roomMeshes.length = 0;
+  selRect = null; selRoom = null;
+  if (selectedMesh) { selectedMesh = null; }
+  if (hoveredMesh) { hoveredMesh = null; }
+  hidePanel();
+
+  const rooms = DATA[curFloor][curMode === 'orig' ? 'orig' : 'reim'];
+
+  rooms.forEach(room => {
+    const pos = roomToWorld(room);
+    const h = getRoomH(room);
+    const isVoid = room.id === 'void';
+    const geo = new THREE.BoxGeometry(Math.max(pos.w - 0.06, 0.1), h, Math.max(pos.d - 0.06, 0.1));
+
+    // A — Boosted vibrancy materials
+    const baseCol = new THREE.Color(room.color);
+    const brightCol = baseCol.clone().multiplyScalar(1.15);
+    const mat = new THREE.MeshStandardMaterial({
+      color: brightCol,
+      roughness: 0.72,
+      metalness: 0.06,
+      emissive: baseCol,
+      emissiveIntensity: 0.12,
+      transparent: isVoid,
+      opacity: isVoid ? 0.12 : 0.96
+    });
+
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(pos.x, h/2, pos.z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData.room = room;
+    mesh.userData.baseEmissive = 0.12;
+    scene.add(mesh);
+    roomMeshes.push(mesh);
+
+    // B — EdgesGeometry outlines for room definition
+    const edges = new THREE.EdgesGeometry(geo);
+    const edgeColor = new THREE.Color(room.color).lerp(new THREE.Color(0xffffff), 0.45);
+    const edgeMat = new THREE.LineBasicMaterial({
+      color: edgeColor,
+      transparent: true,
+      opacity: isVoid ? 0.08 : 0.5
+    });
+    const edgeLines = new THREE.LineSegments(edges, edgeMat);
+    edgeLines.position.copy(mesh.position);
+    edgeLines.userData.isEdge = true;
+    scene.add(edgeLines);
+    roomMeshes.push(edgeLines);
+
+    // D — Bigger, more readable label with dims
+    const sprite = makeLabelSprite(room.label, room.color, room.dims);
+    sprite.position.set(pos.x, h + 0.5, pos.z);
+    scene.add(sprite);
+    roomMeshes.push(sprite);
+  });
+
+  // C — Floor base plate
+  addFloorBase(scene);
+
+  // E — Compass
+  addCompass(scene);
+
+  updateStats();
+}
+
+// Expose globals so non-module script can call them
+window.buildScene = buildScene;
+window._camera   = camera;
+window._controls = controls;
+
+// ─── MOUSE EVENTS ─────────────────────────────────────────────────────────────
+renderer.domElement.addEventListener('pointermove', e => {
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(roomMeshes.filter(m => m.isMesh));
+  if (hits.length > 0) {
+    const m = hits[0].object;
+    if (hoveredMesh && hoveredMesh !== m && hoveredMesh !== selectedMesh) {
+      hoveredMesh.material.emissiveIntensity = hoveredMesh.userData.baseEmissive || 0.12;
+    }
+    hoveredMesh = m;
+    if (m !== selectedMesh) m.material.emissiveIntensity = 0.38;
+    renderer.domElement.style.cursor = 'pointer';
+  } else {
+    if (hoveredMesh && hoveredMesh !== selectedMesh) {
+      hoveredMesh.material.emissiveIntensity = hoveredMesh.userData.baseEmissive || 0.12;
+    }
+    hoveredMesh = null;
+    renderer.domElement.style.cursor = 'default';
+  }
+});
+
+renderer.domElement.addEventListener('click', e => {
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(roomMeshes.filter(m => m.isMesh));
+  if (hits.length > 0) {
+    const m = hits[0].object;
+    if (selectedMesh && selectedMesh !== m) {
+      selectedMesh.material.emissiveIntensity = selectedMesh.userData.baseEmissive || 0.12;
+    }
+    selectedMesh = m;
+    m.material.emissiveIntensity = 0.62;
+    selRoom = m.userData.room;
+    showPanel(selRoom);
+  } else {
+    if (selectedMesh) {
+      selectedMesh.material.emissiveIntensity = selectedMesh.userData.baseEmissive || 0.12;
+    }
+    selectedMesh = null; selRoom = null;
+    hidePanel();
+  }
+});
+
+// ─── RESIZE ───────────────────────────────────────────────────────────────────
+function resize() {
+  const el = document.getElementById('fp-3d');
+  const w = el.clientWidth, h = el.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ─── ANIMATION LOOP ───────────────────────────────────────────────────────────
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+// ─── INITIAL BUILD ────────────────────────────────────────────────────────────
+buildScene();
 </script>
 </body>
 </html>

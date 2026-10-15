@@ -1,0 +1,56 @@
+# Architectural source drawings — confidential
+*.pdf
+villa 4bhk.pdf
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE / editor files
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# Node / package managers (if ever used)
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Build / dist output
+dist/
+build/
+out/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary / backup files
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Claude internal
+.claude/worktrees/
