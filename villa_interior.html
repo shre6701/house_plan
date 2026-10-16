@@ -65,6 +65,7 @@ canvas{cursor:pointer;display:block}
 #back-btn:focus-visible{outline:2px solid #f59e0b;outline-offset:2px}
 
 #hint{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(5,8,16,.75);backdrop-filter:blur(12px);border:1px solid var(--border-dim);border-radius:99px;padding:6px 18px;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);z-index:99;pointer-events:none;transition:opacity .4s}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 </style>
 </head>
 <body>
@@ -120,10 +121,33 @@ canvas{cursor:pointer;display:block}
 </aside>
 
 <div id="hint">Click a room to explore · Drag to orbit</div>
+<div id="model-toast" style="position:fixed;bottom:80px;right:24px;z-index:200;background:rgba(5,8,16,0.88);border:1px solid rgba(245,158,11,0.2);backdrop-filter:blur(16px);border-radius:8px;padding:10px 16px;font-family:'Josefin Sans',sans-serif;font-size:12px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;transition:opacity 0.4s;pointer-events:none;opacity:0;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:pulse 1s infinite;"></span>Loading 3D models…</div>
 
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+/*
+ * ─── FREE GLTF MODEL SOURCES ─────────────────────────────────────────────────
+ *
+ * CDN (loads automatically, no download):
+ *   • SheenChair.glb — Three.js examples — Drawing Room chairs
+ *
+ * Download these from polyhaven.com → format: GLTF → resolution: 2K → extract ZIP:
+ *
+ *   polyhaven.com/sofa_03                → models/sofa_03/            (Living Room sofa)
+ *   polyhaven.com/modern_coffee_table_01 → models/modern_coffee_table_01/ (Living Room table)
+ *   polyhaven.com/dining_table           → models/dining_table/        (Dining table)
+ *   polyhaven.com/dining_chair_02        → models/dining_chair_02/     (Dining chairs ×6)
+ *   polyhaven.com/modern_arm_chair_01    → models/modern_arm_chair_01/ (Drawing armchairs)
+ *   polyhaven.com/ClassicNightstand_01   → models/ClassicNightstand_01/ (Bedroom nightstands)
+ *   polyhaven.com/bar_chair_round_01     → models/bar_chair_round_01/  (Kitchen bar stools)
+ *
+ * Each missing model falls back to the existing procedural geometry — safe to add one at a time.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 
 // ── Renderer ──────────────────────────────────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -139,6 +163,12 @@ document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
 scene.fog = new THREE.FogExp2(0xB0D8F0, 0.003);
+
+// ── GLTF / DRACO Loaders ──────────────────────────────────────────────────────
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/libs/draco/');
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
 
 // ── Camera ────────────────────────────────────────────────────────────────────
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.3, 300);
@@ -211,6 +241,19 @@ const mats = {
 function box(w,h,d,mat){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); m.castShadow=true; m.receiveShadow=true; return m; }
 function cyl(rt,rb,h,mat,s=16){ const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,s),mat); m.castShadow=true; m.receiveShadow=true; return m; }
 function add(m,x,y,z){ m.position.set(x,y,z); scene.add(m); return m; }
+function loadModelAt(url,{x,y,z,scale=1,rx=0,ry=0,rz=0,castShadow=true,receiveShadow=true}={}){
+  return new Promise((resolve,reject)=>{
+    gltfLoader.load(url,(gltf)=>{
+      const model=gltf.scene;
+      model.position.set(x,y,z);
+      model.scale.setScalar(scale);
+      model.rotation.set(rx,ry,rz);
+      model.traverse(child=>{if(child.isMesh){child.castShadow=castShadow;child.receiveShadow=receiveShadow;}});
+      scene.add(model);
+      resolve(model);
+    },undefined,(err)=>{console.warn('GLTF load failed:',url,err);reject(err);});
+  });
+}
 
 // ── Floor & Ceiling ───────────────────────────────────────────────────────────
 // Coordinate system: W_OFFSET=-20, L_OFFSET=-17.5, 1 unit=1 foot
@@ -476,6 +519,59 @@ add(box(1.2,0.08,0.7,mats.wood),10,2.2,15.5);
 [9.5,10.5].forEach(lx=>[15.2,15.8].forEach(lz=>add(box(0.06,2.2,0.06,mats.wood),lx,1.1,lz)));
 add(cyl(0.0,0.25,0.2,mats.lamp,16),7.125,8.8,15.5);
 add(box(11.5,0.04,4,mats.rug),7.125,0.02,15.5);
+
+// ── Load Real GLTF Models (async, graceful fallback to procedural) ─────────────
+// Scale factor: Poly Haven models are in metres; scene uses feet → multiply by 3.28
+(async()=>{
+  const toast=document.getElementById('model-toast');
+  if(toast)toast.style.opacity='1';
+  const PH=3.28; // metres → feet
+
+  // CDN model (Three.js examples — no download needed)
+  const SHEEN='https://cdn.jsdelivr.net/npm/three@0.185.0/examples/models/gltf/SheenChair.glb';
+
+  // Poly Haven local models — download ZIPs from polyhaven.com, extract each into models/ folder
+  // e.g. sofa_03.zip → extract → models/sofa_03/sofa_03_2k.gltf + sofa_03.bin + textures/
+  await Promise.allSettled([
+    // ── Drawing Room chairs (CDN — immediate, no download) ──────────────────
+    loadModelAt(SHEEN,{x:11.0,y:0,z:-12.0,scale:1.0,ry:Math.PI/5}),
+    loadModelAt(SHEEN,{x:14.6,y:0,z:-12.0,scale:1.0,ry:-Math.PI/5}),
+
+    // ── Living Room ─────────────────────────────────────────────────────────
+    // sofa_03 — polyhaven.com/sofa_03 → GLTF 2K → extract to models/sofa_03/
+    loadModelAt('./models/sofa_03/sofa_03_2k.gltf',{x:-16.5,y:0,z:-8.0,scale:PH,ry:Math.PI}),
+    // modern_coffee_table_01 — polyhaven.com/modern_coffee_table_01 → GLTF 2K
+    loadModelAt('./models/modern_coffee_table_01/modern_coffee_table_01_2k.gltf',{x:-14.5,y:0,z:-7.5,scale:PH}),
+
+    // ── Dining Room ─────────────────────────────────────────────────────────
+    // dining_table — polyhaven.com/dining_table → GLTF 2K
+    loadModelAt('./models/dining_table/dining_table_2k.gltf',{x:-1.83,y:0,z:-10.37,scale:PH}),
+    // dining_chair_02 — polyhaven.com/dining_chair_02 → GLTF 2K (6 chairs)
+    loadModelAt('./models/dining_chair_02/dining_chair_02_2k.gltf',{x:-4.8,y:0,z:-9.0,  scale:PH,ry: Math.PI/2}),
+    loadModelAt('./models/dining_chair_02/dining_chair_02_2k.gltf',{x:-4.8,y:0,z:-10.37,scale:PH,ry: Math.PI/2}),
+    loadModelAt('./models/dining_chair_02/dining_chair_02_2k.gltf',{x:-4.8,y:0,z:-11.74,scale:PH,ry: Math.PI/2}),
+    loadModelAt('./models/dining_chair_02/dining_chair_02_2k.gltf',{x: 1.14,y:0,z:-9.0,  scale:PH,ry:-Math.PI/2}),
+    loadModelAt('./models/dining_chair_02/dining_chair_02_2k.gltf',{x: 1.14,y:0,z:-10.37,scale:PH,ry:-Math.PI/2}),
+    loadModelAt('./models/dining_chair_02/dining_chair_02_2k.gltf',{x: 1.14,y:0,z:-11.74,scale:PH,ry:-Math.PI/2}),
+
+    // ── Drawing Room (Poly Haven armchairs override SheenChair once downloaded) ──
+    // modern_arm_chair_01 — polyhaven.com/modern_arm_chair_01 → GLTF 2K
+    loadModelAt('./models/modern_arm_chair_01/modern_arm_chair_01_2k.gltf',{x:11.0,y:0,z:-12.0,scale:PH,ry:Math.PI/5}),
+    loadModelAt('./models/modern_arm_chair_01/modern_arm_chair_01_2k.gltf',{x:14.6,y:0,z:-12.0,scale:PH,ry:-Math.PI/5}),
+
+    // ── Bedroom ─────────────────────────────────────────────────────────────
+    // ClassicNightstand_01 — polyhaven.com/ClassicNightstand_01 → GLTF 2K
+    loadModelAt('./models/ClassicNightstand_01/ClassicNightstand_01_2k.gltf',{x:-18.5,y:0,z:1.5,scale:PH}),
+    loadModelAt('./models/ClassicNightstand_01/ClassicNightstand_01_2k.gltf',{x:-9.5, y:0,z:1.5,scale:PH}),
+
+    // ── Kitchen ─────────────────────────────────────────────────────────────
+    // bar_chair_round_01 — polyhaven.com/bar_chair_round_01 → GLTF 2K
+    loadModelAt('./models/bar_chair_round_01/bar_chair_round_01_2k.gltf',{x:13.8,y:0,z:-0.4,scale:PH}),
+    loadModelAt('./models/bar_chair_round_01/bar_chair_round_01_2k.gltf',{x:16.2,y:0,z:-0.4,scale:PH}),
+  ]);
+
+  if(toast){toast.style.opacity='0';setTimeout(()=>{toast.style.display='none';},500);}
+})();
 
 // ── Room Labels ───────────────────────────────────────────────────────────────
 function makeLabel(text) {

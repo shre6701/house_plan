@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Villa Auro — Interior 3D Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#050810;--acc:#f59e0b;--brd:rgba(245,158,11,0.18);--brd-dim:rgba(245,158,11,0.10);--glass:rgba(5,8,16,0.85);--txt:#e8dcc8;--txt-dim:rgba(232,220,200,0.55)}
+  html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Josefin Sans',sans-serif;font-weight:300;overflow:hidden}
+
+  /* ── Loader ── */
+  #loader{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;transition:opacity .5s}
+  #loader p{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.22em;color:var(--acc);opacity:.7}
+  .loader-line{width:200px;height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);animation:slide 1.4s ease-in-out infinite;overflow:hidden}
+  .loader-line:nth-child(3){animation-delay:.7s}
+  @keyframes slide{0%{transform:translateX(-200px)}100%{transform:translateX(200px)}}
+  @media(prefers-reduced-motion:reduce){.loader-line{animation:none;opacity:.4}}
+
+  /* ── Header ── */
+  #hdr{position:fixed;top:0;left:0;right:0;height:56px;background:var(--glass);backdrop-filter:blur(20px);border-bottom:1px solid var(--brd);z-index:100;display:flex;align-items:center;padding:0 20px;gap:16px}
+  .hdr-mono{width:32px;height:32px;border:1.5px solid var(--acc);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.65rem;color:var(--acc);letter-spacing:.05em;flex-shrink:0}
+  .hdr-title{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.18em;color:var(--txt);white-space:nowrap}
+  .hdr-title span{color:var(--acc)}
+  .hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .hdr-back{font-size:.65rem;letter-spacing:.12em;color:var(--txt-dim);padding:6px 12px;border:1px solid var(--brd-dim);border-radius:4px;text-decoration:none;transition:color .2s,border-color .2s}
+  .hdr-back:hover{color:var(--acc);border-color:var(--brd)}
+  .mode-group{display:flex;border:1px solid var(--brd-dim);border-radius:4px;overflow:hidden}
+  .mode-btn{background:none;border:none;padding:5px 12px;font-family:'Josefin Sans',sans-serif;font-size:.62rem;letter-spacing:.1em;color:var(--txt-dim);cursor:pointer;transition:color .2s,background .2s}
+  .mode-btn.active{background:rgba(245,158,11,0.12);color:var(--acc)}
+  .mode-btn:hover:not(.active){color:var(--txt)}
+
+  /* ── Layout ── */
+  #app{display:flex;height:100vh;padding-top:56px}
+  #panel{width:320px;flex-shrink:0;background:var(--glass);backdrop-filter:blur(20px);border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden}
+  #scene{flex:1;position:relative;background:var(--bg)}
+  #spline-embed{width:100%;height:100%;display:block;border:none;background:var(--bg)}
+
+  /* ── Left panel ── */
+  .panel-hdr{padding:18px 20px 14px;border-bottom:1px solid var(--brd-dim)}
+  .panel-hdr h2{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.22em;color:var(--acc)}
+  .panel-hdr p{font-size:.6rem;letter-spacing:.08em;color:var(--txt-dim);margin-top:4px}
+  .room-list{overflow-y:auto;flex:1;padding:10px 0}
+  .room-list::-webkit-scrollbar{width:3px}
+  .room-list::-webkit-scrollbar-track{background:transparent}
+  .room-list::-webkit-scrollbar-thumb{background:var(--brd)}
+  .room-item{display:grid;grid-template-columns:18px 1fr auto;align-items:start;gap:6px;padding:8px 20px;border-bottom:1px solid var(--brd-dim);opacity:0;transform:translateY(10px)}
+  .room-item:last-child{border-bottom:none}
+  .room-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+  .room-dot.vastu{background:var(--acc);box-shadow:0 0 6px rgba(245,158,11,.5)}
+  .room-dot.service{background:rgba(232,220,200,.2);border:1px solid var(--brd-dim)}
+  .room-name{font-size:.68rem;letter-spacing:.06em;color:var(--txt);line-height:1.4}
+  .room-zone{font-size:.52rem;letter-spacing:.08em;color:var(--txt-dim);margin-top:1px}
+  .room-size{font-size:.58rem;letter-spacing:.04em;color:var(--txt-dim);text-align:right;white-space:nowrap;margin-top:3px}
+
+  /* ── Accordion ── */
+  .accord{border-top:1px solid var(--brd-dim)}
+  .accord-btn{width:100%;background:none;border:none;border-bottom:1px solid var(--brd-dim);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:'Josefin Sans',sans-serif;font-size:.62rem;letter-spacing:.1em;color:var(--txt-dim);transition:color .2s}
+  .accord-btn:hover{color:var(--acc)}
+  .accord-btn .arr{transition:transform .3s;font-size:.6rem}
+  .accord-btn.open .arr{transform:rotate(180deg)}
+  .accord-body{display:none;padding:12px 20px;font-size:.6rem;line-height:1.8;color:var(--txt-dim);border-bottom:1px solid var(--brd-dim)}
+  .accord-body.open{display:block}
+  .accord-body b{color:var(--acc);font-weight:400}
+
+  /* ── Panel footer ── */
+  .panel-foot{padding:12px 20px;border-top:1px solid var(--brd-dim);font-size:.56rem;letter-spacing:.06em;color:var(--txt-dim);line-height:1.6}
+
+  /* ── Connection overlay ── */
+  #connect-overlay{position:absolute;inset:0;background:rgba(5,8,16,.92);display:flex;align-items:center;justify-content:center;z-index:50}
+  .connect-card{background:rgba(5,8,16,.95);border:1px solid var(--brd);border-radius:12px;padding:40px 44px;max-width:480px;width:90%;text-align:center}
+  .connect-card .icon{font-size:2.4rem;margin-bottom:18px}
+  .connect-card h3{font-family:'Cinzel',serif;font-size:1rem;letter-spacing:.18em;color:var(--acc);margin-bottom:10px}
+  .connect-card p{font-size:.66rem;letter-spacing:.07em;color:var(--txt-dim);line-height:1.9;margin-bottom:22px}
+  .connect-card ol{text-align:left;font-size:.63rem;letter-spacing:.06em;color:var(--txt-dim);line-height:2.1;margin-bottom:26px;padding-left:18px}
+  .connect-card ol li{margin-bottom:2px}
+  .connect-row{display:flex;gap:8px}
+  #spline-url-input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--brd);border-radius:6px;padding:10px 14px;font-family:'Josefin Sans',sans-serif;font-size:.65rem;letter-spacing:.06em;color:var(--txt);outline:none;transition:border-color .2s}
+  #spline-url-input:focus{border-color:var(--acc)}
+  #spline-url-input::placeholder{color:var(--txt-dim)}
+  #connect-btn{background:var(--acc);border:none;border-radius:6px;padding:10px 18px;font-family:'Josefin Sans',sans-serif;font-size:.65rem;letter-spacing:.1em;color:#050810;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s;white-space:nowrap}
+  #connect-btn:hover{opacity:.88}
+  #connect-btn:active{transform:scale(.97)}
+  .connect-error{font-size:.58rem;letter-spacing:.06em;color:#ef4444;margin-top:8px;min-height:14px}
+  .connect-reset{font-size:.56rem;letter-spacing:.08em;color:var(--txt-dim);background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:14px;display:block;width:100%;transition:color .2s}
+  .connect-reset:hover{color:var(--acc)}
+  #reset-wrap{display:none}
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-line"></div>
+  <div class="loader-line"></div>
+  <p>VILLA AURO · INTERIOR</p>
+</div>
+
+<!-- Header -->
+<header id="hdr">
+  <div class="hdr-mono">VA</div>
+  <div class="hdr-title">VILLA AURO &nbsp;<span>·</span>&nbsp; GROUND FLOOR INTERIOR</div>
+  <div class="hdr-right">
+    <a href="villa3d.html" class="hdr-back">← 3D Plan</a>
+    <div class="mode-group">
+      <button class="mode-btn active" id="mode-day">☀ Day</button>
+      <button class="mode-btn" id="mode-eve">🌇 Evening</button>
+    </div>
+  </div>
+</header>
+
+<!-- App -->
+<div id="app">
+
+  <!-- Left panel -->
+  <aside id="panel">
+    <div class="panel-hdr">
+      <h2>GROUND FLOOR GUIDE</h2>
+      <p>15 rooms · Vastu Reimagined plan</p>
+    </div>
+
+    <div class="room-list" id="roomList">
+      <!-- Vastu rooms (gold dot) -->
+      <div class="room-item"><div class="room-dot vastu"></div><div><div class="room-name">Puja Room</div><div class="room-zone">NE · Ishan</div></div><div class="room-size">4′ × 5′</div></div>
+      <div class="room-item"><div class="room-dot vastu"></div><div><div class="room-name">Living Room</div><div class="room-zone">NW · Vayu</div></div><div class="room-size">12′8″ × 14′8″</div></div>
+      <div class="room-item"><div class="room-dot vastu"></div><div><div class="room-name">Dining (dbl-ht)</div><div class="room-zone">N · Kubera</div></div><div class="room-size">11′ × 14′3″</div></div>
+      <div class="room-item"><div class="room-dot vastu"></div><div><div class="room-name">Drawing Room</div><div class="room-zone">NE · Ishan</div></div><div class="room-size">10′3″ × 14′3″</div></div>
+      <div class="room-item"><div class="room-dot vastu"></div><div><div class="room-name">East Entrance</div><div class="room-zone">E</div></div><div class="room-size">5′5″ porch</div></div>
+      <div class="room-item"><div class="room-dot vastu"></div><div><div class="room-name">Bedroom 01</div><div class="room-zone">SW · Nairutya</div></div><div class="room-size">12′ × 14′8″</div></div>
+      <div class="room-item"><div class="room-dot vastu"></div><div><div class="room-name">Kitchen</div><div class="room-zone">SE · Agneya</div></div><div class="room-size">10′ × 16′</div></div>
+      <!-- Service rooms (dim dot) -->
+      <div class="room-item"><div class="room-dot service"></div><div><div class="room-name">Walk-In Closet</div><div class="room-zone">SW</div></div><div class="room-size">12′ × 5′3″</div></div>
+      <div class="room-item"><div class="room-dot service"></div><div><div class="room-name">Lift</div><div class="room-zone">Central</div></div><div class="room-size">5′ × 5′</div></div>
+      <div class="room-item"><div class="room-dot service"></div><div><div class="room-name">En-Suite Bath</div><div class="room-zone">Central</div></div><div class="room-size">5′7″ × 7′10″</div></div>
+      <div class="room-item"><div class="room-dot service"></div><div><div class="room-name">Powder Room</div><div class="room-zone">Central</div></div><div class="room-size">6′8″ × 8′</div></div>
+      <div class="room-item"><div class="room-dot service"></div><div><div class="room-name">Service Toilet</div><div class="room-zone">South</div></div><div class="room-size">3′8″ × 6′</div></div>
+      <div class="room-item"><div class="room-dot service"></div><div><div class="room-name">Staircase</div><div class="room-zone">Central</div></div><div class="room-size">5′9″ × 12′3″</div></div>
+      <div class="room-item"><div class="room-dot service"></div><div><div class="room-name">Kitchen Pantry</div><div class="room-zone">SE</div></div><div class="room-size">4′ × 3′10″</div></div>
+      <div class="room-item"><div class="room-dot service"></div><div><div class="room-name">Staff Room</div><div class="room-zone">South</div></div><div class="room-size">11′9″ × 4′6″</div></div>
+    </div>
+
+    <!-- Accordion tips -->
+    <div class="accord">
+      <button class="accord-btn" data-target="tip1">Recommended Spline settings <span class="arr">▾</span></button>
+      <div class="accord-body" id="tip1">
+        • Canvas: <b>1920×1080</b>, perspective camera<br>
+        • Use Spline's "Room" template as base<br>
+        • Material: <b>Matte</b> for walls, <b>Glossy</b> for counters<br>
+        • Add Point Lights per room (match evening palette)
+      </div>
+
+      <button class="accord-btn" data-target="tip2">Color palette for Spline <span class="arr">▾</span></button>
+      <div class="accord-body" id="tip2">
+        Walls &nbsp;&nbsp;&nbsp;→ <b>#F2EDE4</b> (warm cream)<br>
+        Floors &nbsp;&nbsp;→ <b>#9B7D5A</b> (walnut)<br>
+        Accent &nbsp;&nbsp;→ <b>#f59e0b</b> (amber)<br>
+        Evening →  <b>#1B1535</b> (indigo dusk sky)
+      </div>
+
+      <button class="accord-btn" data-target="tip3">Free templates to start from <span class="arr">▾</span></button>
+      <div class="accord-body" id="tip3">
+        • Search <b>"interior"</b> in Spline community<br>
+        • Search <b>"room"</b> or <b>"villa"</b> for architecture<br>
+        • Browse at <b>spline.design/community</b>
+      </div>
+    </div>
+
+    <div class="panel-foot">
+      Powered by Spline · spline.design<br>
+      Best experience: Chrome or Edge on desktop.
+    </div>
+  </aside>
+
+  <!-- 3D scene area -->
+  <div id="scene">
+    <iframe id="spline-embed" src="" frameborder="0" width="100%" height="100%"
+      allow="autoplay; fullscreen; xr-spatial-tracking" allowfullscreen></iframe>
+
+    <!-- Connection overlay -->
+    <div id="connect-overlay">
+      <div class="connect-card">
+        <div class="icon">🏛</div>
+        <h3>Connect Your Spline Scene</h3>
+        <p>Build the Villa Auro interior in Spline, then paste your embed URL below.</p>
+        <ol>
+          <li>Go to <strong>spline.design</strong> → create a new scene</li>
+          <li>Build the Villa Auro ground floor (see room guide →)</li>
+          <li>File → Export → <strong>Share link</strong> → copy the embed URL</li>
+          <li>Paste below and press <strong>Connect</strong></li>
+        </ol>
+        <div class="connect-row">
+          <input type="url" id="spline-url-input" placeholder="https://my.spline.design/…" autocomplete="off" spellcheck="false">
+          <button id="connect-btn">Connect →</button>
+        </div>
+        <div class="connect-error" id="connect-error"></div>
+        <div id="reset-wrap">
+          <button class="connect-reset" id="reset-btn">Disconnect / change scene</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const loader   = document.getElementById('loader');
+  const overlay  = document.getElementById('connect-overlay');
+  const iframe   = document.getElementById('spline-embed');
+  const input    = document.getElementById('spline-url-input');
+  const btn      = document.getElementById('connect-btn');
+  const errEl    = document.getElementById('connect-error');
+  const resetBtn = document.getElementById('reset-btn');
+  const resetWrap= document.getElementById('reset-wrap');
+  const KEY      = 'spline_villa_url';
+
+  // ── Loader ──
+  let loaderGone = false;
+  function hideLoader(){
+    if(loaderGone) return;
+    loaderGone = true;
+    loader.style.opacity = '0';
+    setTimeout(()=>loader.style.display='none', 500);
+  }
+  iframe.addEventListener('load', hideLoader, {once:true});
+  setTimeout(hideLoader, 1800);
+
+  // ── Restore saved URL ──
+  const saved = localStorage.getItem(KEY);
+  if(saved){ applyUrl(saved); }
+
+  function isValidSplineUrl(url){
+    try{ const u = new URL(url); return u.hostname.includes('spline.design') || u.hostname.includes('prod.spline.design'); }
+    catch{ return false; }
+  }
+
+  function applyUrl(url){
+    iframe.src = url;
+    overlay.style.display = 'none';
+    input.value = url;
+    resetWrap.style.display = 'block';
+    localStorage.setItem(KEY, url);
+  }
+
+  btn.addEventListener('click', connect);
+  input.addEventListener('keydown', e => { if(e.key==='Enter') connect(); });
+
+  function connect(){
+    const url = input.value.trim();
+    if(!url){ errEl.textContent = 'Please paste a Spline embed URL.'; return; }
+    if(!isValidSplineUrl(url)){ errEl.textContent = 'URL must be from spline.design.'; return; }
+    errEl.textContent = '';
+    applyUrl(url);
+  }
+
+  resetBtn.addEventListener('click', ()=>{
+    localStorage.removeItem(KEY);
+    iframe.src = '';
+    overlay.style.display = 'flex';
+    resetWrap.style.display = 'none';
+    input.value = '';
+  });
+
+  // ── Mode toggle ──
+  document.getElementById('mode-day').addEventListener('click', function(){ toggleMode(this); });
+  document.getElementById('mode-eve').addEventListener('click', function(){ toggleMode(this); });
+  function toggleMode(el){
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── Accordion ──
+  document.querySelectorAll('.accord-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.target;
+      const body = document.getElementById(id);
+      const isOpen = body.classList.contains('open');
+      document.querySelectorAll('.accord-body').forEach(b=>b.classList.remove('open'));
+      document.querySelectorAll('.accord-btn').forEach(b=>b.classList.remove('open'));
+      if(!isOpen){ body.classList.add('open'); btn.classList.add('open'); }
+    });
+  });
+
+  // ── GSAP stagger entrance ──
+  const mm = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if(!mm.matches && window.gsap){
+    gsap.to('.room-item', {
+      opacity:1, y:0, duration:.35, ease:'power2.out',
+      stagger:.05, delay:.3
+    });
+  } else {
+    document.querySelectorAll('.room-item').forEach(el=>{
+      el.style.opacity='1'; el.style.transform='none';
+    });
+  }
+})();
+</script>
+</body>
+</html>
