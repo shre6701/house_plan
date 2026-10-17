@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4BHK Villa — Professional 3D CAD & Vastu Studio</title>
+<style>
+  :root {
+    --bg: #060a12;
+    --panel: #0d1322;
+    --card: #131c31;
+    --border: #1e293b;
+    --accent: #38bdf8;
+    --gold: #f59e0b;
+    --green: #10b981;
+    --red: #f43f5e;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background: var(--bg); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* Top Navigation Bar */
+  header {
+    height: 54px; background: var(--panel); border-bottom: 1px solid var(--border);
+    padding: 0 20px; display: flex; align-items: center; justify-content: space-between; z-index: 20;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 14px; letter-spacing: 0.8px; color: var(--accent); }
+  .logo span { color: var(--muted); font-weight: 500; font-size: 12px; }
+  .toolbar { display: flex; align-items: center; gap: 14px; }
+  .btn-grp { display: flex; background: var(--bg); padding: 3px; border-radius: 6px; border: 1px solid var(--border); }
+  .btn-grp button {
+    background: transparent; color: var(--muted); border: none; padding: 5px 12px;
+    font-size: 11.5px; font-weight: 600; border-radius: 4px; cursor: pointer; transition: 0.15s;
+  }
+  .btn-grp button:hover { color: #fff; }
+  .btn-grp button.active { background: var(--accent); color: #060a12; font-weight: 700; }
+  .btn-grp button.reim.active { background: var(--green); color: #060a12; }
+  .btn-grp button.orig.active { background: var(--red); color: #fff; }
+  .slider-wrap { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--muted); }
+  .slider-wrap input { accent-color: var(--accent); width: 80px; cursor: pointer; }
+
+  /* Main 3-Column CAD Workspace */
+  .workspace { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+  /* Left Room Directory Sidebar */
+  .directory {
+    width: 250px; background: var(--panel); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow-y: auto; padding: 12px; gap: 6px; z-index: 10;
+  }
+  .dir-hdr { font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 8px 4px 4px; }
+  .dir-item {
+    padding: 8px 10px; border-radius: 5px; background: rgba(255,255,255,0.02);
+    border: 1px solid transparent; cursor: pointer; transition: 0.15s; display: flex; justify-content: space-between; align-items: center;
+  }
+  .dir-item:hover { background: rgba(56, 189, 248, 0.08); border-color: rgba(56, 189, 248, 0.25); }
+  .dir-item.active { background: rgba(56, 189, 248, 0.15); border-color: var(--accent); }
+  .dir-item .name { font-size: 12px; font-weight: 600; color: #e2e8f0; }
+  .dir-item .tag { font-size: 9.5px; font-family: monospace; color: var(--accent); }
+
+  /* Center 3D Viewport */
+  #viewport { flex: 1; position: relative; background: radial-gradient(circle at center, #111a2e 0%, #050811 100%); overflow: hidden; }
+  
+  #tooltip {
+    position: fixed; pointer-events: none; display: none; z-index: 100;
+    background: rgba(9, 14, 26, 0.95); border: 1px solid var(--accent);
+    padding: 7px 11px; border-radius: 5px; box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    transform: translate(14px, -50%);
+  }
+  #tooltip b { display: block; font-size: 12px; color: #fff; }
+  #tooltip span { font-size: 10.5px; color: var(--accent); font-family: monospace; }
+
+  .compass-hud {
+    position: absolute; top: 14px; left: 14px; background: rgba(13, 19, 34, 0.85);
+    border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px;
+    font-size: 11px; color: var(--muted); pointer-events: none; line-height: 1.5;
+  }
+  .compass-hud strong { color: var(--gold); }
+
+  .legend-hud {
+    position: absolute; bottom: 14px; left: 14px; right: 14px;
+    background: rgba(13, 19, 34, 0.88); border: 1px solid var(--border);
+    padding: 8px 14px; border-radius: 6px; display: flex; gap: 16px; flex-wrap: wrap;
+    font-size: 11px; color: var(--muted); pointer-events: none; justify-content: center;
+  }
+  .leg-i { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+  .dot { width: 9px; height: 9px; border-radius: 2px; }
+
+  /* Right Inspector Drawer */
+  .inspector {
+    width: 360px; background: var(--panel); border-left: 1px solid var(--border);
+    padding: 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; z-index: 10;
+  }
+  .badge {
+    padding: 4px 9px; border-radius: 4px; font-size: 10px; font-weight: 800;
+    letter-spacing: 0.7px; text-transform: uppercase; width: fit-content;
+  }
+  .badge.reim { background: rgba(16, 185, 129, 0.15); color: var(--green); border: 1px solid var(--green); }
+  .badge.orig { background: rgba(244, 63, 94, 0.15); color: var(--red); border: 1px solid var(--red); }
+
+  .ins-title { font-size: 18px; font-weight: 800; color: #fff; line-height: 1.25; }
+  .ins-dim { font-size: 12px; color: var(--accent); font-family: monospace; margin-top: 2px; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 13px; }
+  .card h3 { font-size: 10.5px; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .card p, .card li { font-size: 12.5px; line-height: 1.55; color: #cbd5e1; }
+  .card ul { padding-left: 16px; display: flex; flex-direction: column; gap: 5px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 6px; }
+  .z-box { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); padding: 7px 9px; border-radius: 4px; font-size: 11px; color: #e2e8f0; }
+  .z-box strong { display: block; font-size: 9.5px; color: var(--accent); text-transform: uppercase; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    4BHK VILLA // 3D ARCHITECTURAL STUDIO
+    <span>Vastu Shastra & Interior Fixture Model</span>
+  </div>
+  <div class="toolbar">
+    <div class="btn-grp" id="modeBtns">
+      <button class="reim active" onclick="setMode('reim')">Refined Vastu Plan (No Lift)</button>
+      <button class="orig" onclick="setMode('orig')">Original PDF Plan</button>
+    </div>
+    <div class="btn-grp" id="floorBtns">
+      <button class="active" onclick="setFloor('all')">All Levels</button>
+      <button onclick="setFloor(0)">Ground + Site</button>
+      <button onclick="setFloor(1)">1st Floor</button>
+      <button onclick="setFloor(2)">2nd Floor</button>
+    </div>
+    <div class="slider-wrap">
+      <span>Explode Levels</span>
+      <input type="range" min="1" max="2.6" step="0.05" value="1.4" oninput="setExplode(this.value)">
+    </div>
+    <button style="background:var(--card); color:var(--accent); border:1px solid var(--border); padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:600;" onclick="resetCam()">Reset View</button>
+  </div>
+</header>
+
+<div class="workspace">
+  <!-- Left Directory -->
+  <div class="directory" id="roomList"></div>
+
+  <!-- Center 3D Hologram Viewport -->
+  <div id="viewport">
+    <div class="compass-hud">
+      <strong>TRUE PDF COMPASS ORIENTATION</strong><br>
+      ◀ <b>NORTH (-X):</b> Garden & Living Room<br>
+      ▲ <b>EAST (-Z):</b> Front Road & Car Park<br>
+      ▶ <b>SOUTH (+X):</b> 5'-5" Main Entrance<br>
+      ▼ <b>WEST (+Z):</b> Stairs, Washrooms & 5'x5' Space
+    </div>
+
+    <div id="tooltip"><b id="ttName"></b><span id="ttDim"></span></div>
+
+    <div class="legend-hud">
+      <div class="leg-i"><span class="dot" style="background:#38bdf8"></span> Living / Lounge</div>
+      <div class="leg-i"><span class="dot" style="background:#818cf8"></span> Bedrooms</div>
+      <div class="leg-i"><span class="dot" style="background:#34d399"></span> 3-Zone Washrooms & Kitchen</div>
+      <div class="leg-i"><span class="dot" style="background:#fbbf24"></span> Reserved 5'x5' Space (No Lift)</div>
+      <div class="leg-i"><span class="dot" style="background:#2dd4bf"></span> Landscaped Garden & Car Park</div>
+    </div>
+  </div>
+
+  <!-- Right Details Inspector -->
+  <div class="inspector">
+    <span class="badge reim" id="insBadge">REFINED VASTU MASTER PLAN</span>
+    <div>
+      <div class="ins-title" id="insTitle">Select Any Room</div>
+      <div class="ins-dim" id="insDim">Dimensions & Floor</div>
+    </div>
+
+    <div class="card">
+      <h3>Vastu Zone & Spatial Design</h3>
+      <p id="insVastu" style="color:var(--accent); font-weight:700; margin-bottom:5px;"></p>
+      <p id="insDesc"></p>
+    </div>
+
+    <div class="card">
+      <h3>Internal Fixtures & Sub-Zones</h3>
+      <div class="grid-2" id="insZones"></div>
+    </div>
+
+    <div class="card">
+      <h3>Contractor & Interior Directives</h3>
+      <ul id="insSpecs"></ul>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+const COLORS = {
+  social: 0x38bdf8, bed: 0x818cf8, wet: 0x34d399,
+  core: 0x64748b, lift: 0xfbbf24, garden: 0x2dd4bf, defect: 0xf43f5e
+};
+
+const DATA = {
+  reim: [
+    // --- EXTERIOR & SITE (FLOOR 0) ---
+    { id:"ext_ne", floor:0, x:-4, z:-4, w:26, d:9, h:0.35, type:"garden", fix:"ne_garden", name:"NE Sacred Garden & Water Deck", dim:"26'-0\" x 9'-0\"", vastu:"NORTH-EAST (Ishanya)",
+      desc:"Refined North-East lawn featuring a 4' stepped teakwood deck outside the Living Room, an auspicious North-East reflecting water bowl, and low jasmine/tulasi planters.",
+      zones:[["Deck","4' Teakwood Step"],["Water","NE Reflecting Bowl"],["Plants","Low Tulasi & Shrubs"],["Slope","Lowest Plinth Level"]],
+      specs:["Keep North-East open to morning sunlight without tall trees.", "Position underground rainwater harvesting tank in this NE zone."] },
+    { id:"ext_n", floor:0, x:-4, z:5, w:8, d:34.5, h:0.35, type:"garden", fix:"n_lawn", name:"North Bamboo Lawn & Path", dim:"8'-0\" Wide Setback", vastu:"NORTH (Kubera Zone)",
+      desc:"Manicured lawn corridor along the North wall with basalt stepping stones and slender bamboo screening for privacy.",
+      zones:[["Turf","Korean Carpet Grass"],["Path","Basalt Stepping Stones"],["Screen","Slender Bamboo Row"],["Light","Warm Bollard LEDs"]],
+      specs:["Provides green garden views for both the Living Room and Ground Floor Bedroom 01."] },
+    { id:"ext_car", floor:0, x:22, z:-4, w:25.5, d:9, h:0.35, type:"garden", fix:"car_park", name:"East Car Park & Pergola Porch", dim:"25'-6\" x 9'-0\"", vastu:"EAST APPROACH",
+      desc:"Refined vehicular arrival bay on the East approach road. Includes flamed granite cobblestone paving, an overhead steel-and-wood louver pergola, and an EV charger pillar.",
+      zones:[["Parking","SUV + Sedan Bay"],["Canopy","Timber-Steel Pergola"],["Paving","Flamed Granite Cobbles"],["EV Point","7.4kW Wall Charger"]],
+      specs:["Slope driveway gently toward the East road drain.", "Leads directly to the 5'-5\" South-East entrance steps."] },
+    { id:"ext_s", floor:0, x:41.85, z:5, w:5.5, d:34.5, h:0.35, type:"garden", fix:"s_util", name:"Entrance Verandah & Wet Utility", dim:"5'-6\" Wide Court", vastu:"SOUTH / SOUTH-EAST",
+      desc:"Divided into the grand 5'-5\" Entrance Verandah at the front and a screened Wet Kitchen & Laundry utility court at the rear.",
+      zones:[["Front","5'-5\" Main Verandah"],["Rear","5'-6\" Laundry & Wet Sink"],["Screen","Terracotta Jali Wall"],["Floor","Anti-Skid Kota Stone"]],
+      specs:["Heavy washing machine, dryer, and spice/frying counter tucked neatly in the covered utility."] },
+    { id:"ext_w", floor:0, x:-4, z:39.5, w:51.35, d:4.5, h:0.35, type:"garden", fix:"w_util", name:"West MEP & Service Passage", dim:"4'-6\" Wide Passage", vastu:"WEST SETBACK",
+      desc:"Rear service passage housing AC outdoor units, heat pump, and accessible vertical plumbing shafts outside the main living walls.",
+      zones:[["Clearance","3'-0\" Walkway"],["HVAC","AC Outdoor Units"],["Plumbing","Inspection Chambers"],["Access","Staff Rear Door"]],
+      specs:["Keeps maintenance staff and plumbing pipes completely outside family areas."] },
+
+    // --- GROUND FLOOR ROOMS (FLOOR 0) ---
+    { id:"gf_liv", floor:0, x:4, z:5, w:12.6, d:14.6, h:10, type:"social", fix:"living", name:"Living Room & NE Puja", dim:"12'-8\" x 14'-8\"", vastu:"NORTH-EAST (Ishanya)",
+      desc:"Sunlit main living room overlooking the North and East gardens. Freed from the 1st-floor overhead toilet! Includes an East-facing Puja alcove.",
+      zones:[["Seating","L-Sofa + 2 Chairs"],["Puja","4' East-Facing Mandir"],["View","North & East Lawn"],["Ceiling","100% Pipe-Free Slab"]],
+      specs:["Place Puja idols facing West so the person praying faces East."] },
+    { id:"gf_din", floor:0, x:16.6, z:5, w:15, d:14.25, h:20, type:"social", fix:"dining", name:"Double-Height Dining Atrium", dim:"15'-0\" x 14'-3\"", vastu:"EAST / BRAHMASTHAN",
+      desc:"Expanded 15-foot-wide central dining hall rising 20 feet through both floors, connecting the Living Room and South-East Kitchen.",
+      zones:[["Table","8-Seater Marble Table"],["Height","20' Double Volume"],["Bar","Crockery & Juice Bar"],["Light","Atrium Chandelier"]],
+      specs:["Keep central Brahmasthan floor unobstructed."] },
+    { id:"gf_kit", floor:0, x:31.6, z:5, w:10.25, d:14.25, h:10, type:"wet", fix:"kitchen", name:"Agni Kitchen (South-East)", dim:"10'-3\" x 14'-3\"", vastu:"SOUTH-EAST (Fire Corner)",
+      desc:"Relocated to the true Vastu South-East Fire corner! Features an L-shaped counter with the stove on the East wall and a breakfast bar facing the Dining Atrium.",
+      zones:[["Hob","East Wall (Face East)"],["Sink","North-East Corner"],["Tall Unit","Fridge & Ovens in SW"],["Island","2-Seater Breakfast Bar"]],
+      specs:["Direct door to the 5'-6\" South Wet Utility for dishwashing."] },
+    { id:"gf_bed1", floor:0, x:4, z:19.6, w:12, d:14.6, h:10, type:"bed", fix:"bed", name:"Bedroom 01 (Garden Suite)", dim:"12'-0\" x 14'-8\"", vastu:"NORTH-WEST (Vayu)",
+      desc:"Ground-floor suite facing the North bamboo garden. Bed headboard is positioned against the South wall for Vastu compliance.",
+      zones:[["Bed","King Bed (Head South)"],["Console","North TV Unit"],["Window","North Garden View"],["Access","Step-Free Elder Suite"]],
+      specs:["Sliding door leads into the Walk-in Closet and Attached Washroom."] },
+    { id:"gf_wic1", floor:0, x:4, z:34.2, w:12, d:5.25, h:10, type:"core", fix:"wic", name:"Walk-In Closet 01", dim:"12'-0\" x 5'-3\"", vastu:"WEST-NORTH-WEST",
+      desc:"Full-length wardrobe room buffering the West wall.",
+      zones:[["Storage","12' Wardrobe Run"],["Mirror","Full-Height Dresser"],["Walkway","3'-3\" Clear Width"],["Lighting","Sensor LED Strips"]],
+      specs:["24-inch deep cabinetry along the West wall."] },
+    { id:"gf_lift", floor:0, x:16, z:25, w:5, d:5, h:10, type:"lift", fix:"lift_empty", name:"Reserved 5'x5' Space (GF Utility)", dim:"5'-0\" x 5'-0\" (No Lift Now)", vastu:"WEST CORE",
+      desc:"Lift omitted as requested. Marked empty space currently used as a Walk-In Coat, Shoe & Home Inverter Room, built with a knock-out ceiling slab for future flexibility.",
+      zones:[["Current Use","Coat, Shoe & Inverter Room"],["Floor","Flush Tile (No Pit Open)"],["Ceiling","Removable Knock-Out Slab"],["Future","5'x5' Lift Shaft Ready"]],
+      specs:["Cast a ring beam around the 5'x5' slab so it can be opened cleanly in the future if needed."] },
+    { id:"gf_bath1", floor:0, x:16, z:30, w:5.6, d:9.4, h:10, type:"wet", fix:"bath_attached", name:"Washroom 01 (3-Zone Defined)", dim:"5'-7\" x 7'-10\"", vastu:"WEST-NORTH-WEST",
+      desc:"Refined into 3 clear functional zones: a Dry Floating Vanity at the entrance, a central Wall-Hung WC, and a glass-partitioned Wet Shower stall at the rear.",
+      zones:[["Zone 1 (Dry)","3'-0\" Floating Vanity"],["Zone 2 (Mid)","Wall-Hung WC (N-S Axis)"],["Zone 3 (Wet)","5'-7\" x 3'-4\" Glass Shower"],["Drainage","15mm Shower Floor Drop"]],
+      specs:["Toughened glass partition keeps the vanity and WC floor 100% dry."] },
+    { id:"gf_pwd", floor:0, x:21.6, z:25, w:3.7, d:8, h:10, type:"wet", fix:"bath_powder", name:"Guest Powder Washroom", dim:"3'-8\" x 8'-0\"", vastu:"WEST",
+      desc:"Designer dry washroom serving the social living and dining areas.",
+      zones:[["Vanity","Custom Narrow Stone Basin"],["WC","Rear Wall-Hung WC"],["Mirror","Backlit Arch Mirror"],["Door","Outward or Pocket Door"]],
+      specs:["No wet shower needed here; dedicate full space to a luxury vanity and WC."] },
+    { id:"gf_sert", floor:0, x:21.6, z:33, w:3.7, d:6.4, h:10, type:"wet", fix:"bath_serv", name:"Staff Washroom", dim:"3'-8\" x 6'-0\"", vastu:"WEST",
+      desc:"Accessed from the rear West utility passage.",
+      zones:[["WC","Wall WC"],["Shower","Overhead Mixer"],["Basin","Corner Ceramic Sink"],["Vent","West Louver"]],
+      specs:["Shares main West plumbing shaft."] },
+    { id:"gf_stairs", floor:0, x:25.3, z:25, w:6.5, d:10.6, h:10, type:"core", fix:"stairs", name:"Central Staircase", dim:"Clockwise U-Stairs", vastu:"WEST",
+      desc:"Rises clockwise from the central hall.",
+      zones:[["Flight","3'-3\" Wide Treads"],["Railing","Frameless Glass"]],
+      specs:["Concealed LED strip lighting under stair nosing."] },
+    { id:"gf_serv", floor:0, x:25.3, z:35.6, w:6.5, d:5.8, h:10, type:"core", fix:"serv_room", name:"Expanded Staff Room", dim:"7'-9\" x 5'-8\"", vastu:"WEST SETBACK",
+      desc:"Extended 2 feet into the West utility setback so the room widens from 3'-8\" to a livable 5'-8\".",
+      zones:[["Bed","3' x 6'3\" Single Bed"],["Storage","Overhead Cabinet"],["Walkway","2'-8\" Side Clearance"],["Window","Rear Ventilation"]],
+      specs:["Leaves utility door passage completely unobstructed."] },
+    { id:"gf_draw", floor:0, x:31.8, z:19.25, w:10, d:20.15, h:10, type:"social", fix:"drawing", name:"SW Formal Drawing Lounge", dim:"10'-0\" x 20'-2\"", vastu:"SOUTH-WEST (Nairutya)",
+      desc:"Spacious formal entertaining and media lounge anchoring the heavy South-West corner right off the entrance.",
+      zones:[["Sofa","Heavy L-Sectional in SW"],["Media","West Feature Wall"],["Credenza","Built-in Storage"],["Entry","Direct from Verandah"]],
+      specs:["Heavy furniture in the South-West stabilizes home Vastu."] },
+
+    // --- 1ST FLOOR ROOMS (FLOOR 1) ---
+    { id:"ff_bed2", floor:1, x:4, z:5, w:12, d:20, h:10, type:"bed", fix:"bed", name:"Bedroom 02 (NE Garden Suite)", dim:"12'-3\" x 20'-0\"", vastu:"NORTH-EAST / NORTH",
+      desc:"Moved into the North-East garden corner, replacing the old toilet! Overlooks the North and East gardens.",
+      zones:[["Bed","King Bed (Head South)"],["Lounge","2 Armchairs in NE"],["Desk","East Study Desk"],["Media","North Wall TV"]],
+      specs:["Protects the Ground Floor Living Room below from any overhead plumbing."] },
+    { id:"ff_wic2", floor:1, x:4, z:25, w:12, d:7.8, h:10, type:"core", fix:"wic", name:"Walk-In Closet 02", dim:"12'-3\" x 7'-8\"", vastu:"NORTH-WEST",
+      desc:"Spacious L-shaped dressing room between Bedroom 02 and Washroom 02.",
+      zones:[["Wardrobes","His & Hers L-Run"],["Vanity","Seated Dresser Mirror"]],
+      specs:["Fluted glass sliding doors."] },
+    { id:"ff_bath2", floor:1, x:4, z:32.8, w:12, d:6.6, h:10, type:"wet", fix:"bath_master", name:"Washroom 02 (3-Zone Master Bath)", dim:"12'-0\" x 6'-6\" (Stacked NW)", vastu:"NORTH-WEST / WEST",
+      desc:"Relocated to the North-West/West stack over the GF closet/bath! Designed with a 4'-6\" Double Vanity (Dry), 3'-6\" WC niche, and a 4' x 6'-6\" Glass Rain Shower stall (Wet).",
+      zones:[["Dry Zone","4'-6\" Twin Basin Vanity"],["Mid Zone","3'-6\" Wall-Hung WC"],["Wet Zone","4'-0\" x 6'-6\" Rain Shower"],["Shaft","Exterior West Pipe Duct"]],
+      specs:["15mm sunken drop in the wet shower zone."] },
+    { id:"ff_lift", floor:1, x:16, z:25, w:5, d:5, h:10, type:"lift", fix:"lift_empty", name:"Reserved 5'x5' Space (1st Fl Pantry)", dim:"5'-0\" x 5'-0\" (No Lift Now)", vastu:"WEST CORE",
+      desc:"Marked empty space over the GF 5'x5' bay. Currently floored with a removable slab to serve as a 1st-Floor Morning Coffee Pantry & Linen Closet.",
+      zones:[["Current Use","Coffee Station & Linen"],["Appliance","Mini-Fridge + Kettle"],["Slab","Knock-Out Concrete Panel"],["Future","Aligned Lift Shaft"]],
+      specs:["Saves walking downstairs for water or coffee at night."] },
+    { id:"ff_store", floor:1, x:16, z:30, w:5.6, d:9.4, h:10, type:"core", fix:"wic", name:"1st Floor Luggage & Linen Store", dim:"5'-2\" x 7'-10\"", vastu:"WEST",
+      desc:"Dedicated storage room next to the reserved lift space.",
+      zones:[["Racks","Floor-to-Ceiling Shelving"]],
+      specs:["Ventilated to West shaft."] },
+    { id:"ff_pass", floor:1, x:16, z:19.25, w:11.6, d:5.75, h:10, type:"social", fix:"passage", name:"Acoustic Gallery Bridge", dim:"6'-0\" Wide", vastu:"CENTER",
+      desc:"Central corridor overlooking the Double-Height Dining Atrium through acoustic glass.",
+      zones:[["Glazing","Acoustic Laminated Glass"]],
+      specs:["Blocks dining noise and kitchen aromas from entering bedrooms."] },
+    { id:"ff_bath3", floor:1, x:27.6, z:5, w:14.25, d:6.5, h:10, type:"wet", fix:"bath_master", name:"Washroom 03 (3-Zone Master Bath)", dim:"14'-3\" x 6'-6\"", vastu:"EAST-SOUTH-EAST",
+      desc:"Moved out of the South-West corner! Features a 5' Twin Vanity, frosted-glass WC cubicle, and a 5'-9\" Rain Shower & Wet Deck.",
+      zones:[["Dry Zone","5'-0\" Double Vanity"],["WC Stall","3'-6\" Enclosed WC"],["Wet Zone","5'-9\" Shower & Tub Deck"],["Light","Frosted East Window"]],
+      specs:["Stacks cleanly over the Ground Floor South-East Kitchen wet wall."] },
+    { id:"ff_wic3", floor:1, x:27.6, z:11.5, w:14.25, d:6.5, h:10, type:"core", fix:"wic", name:"Walk-In Dressing Lounge 03", dim:"14'-3\" x 6'-6\"", vastu:"SOUTH-EAST",
+      desc:"Parallel His & Hers walk-in closet connecting Master Suite 03 to its washroom and East Balcony.",
+      zones:[["Storage","Parallel Wardrobes"],["Island","Accessory Drawer Unit"],["Balcony","Door to East Balcony"]],
+      specs:["Natural daylight from East balcony door."] },
+    { id:"ff_bed3", floor:1, x:27.6, z:18, w:14.25, d:21.4, h:10, type:"bed", fix:"bed_master", name:"True SW Master Suite (Bedroom 03)", dim:"14'-3\" x 21'-4\" (Foyer Merged)", vastu:"SOUTH-WEST (Nairutya Master)",
+      desc:"Anchored in the auspicious South-West corner and expanded by absorbing the wasted 10'x5' Foyer! Includes King bed, private sofa lounge, and study nook.",
+      zones:[["Master Bed","King Bed (Head South)"],["Lounge","Private Suite Sofa"],["Study Nook","Reclaimed 10'x5' Foyer"],["Balcony","Access to 5'-2\" Balcony"]],
+      specs:["Ideal Vastu master suite for the head of the family."] },
+    { id:"ff_stairs", floor:1, x:21.6, z:25, w:6, d:14.4, h:10, type:"core", fix:"stairs", name:"1st Floor Staircase", dim:"Central Core", vastu:"WEST",
+      desc:"Continues clockwise to 2nd Floor.", zones:[["Flight","U-Turn Stairs"]], specs:["Glass balustrade."] },
+    { id:"ff_balc_e", floor:1, x:27.6, z:1, w:19.4, d:4, h:1.2, type:"garden", fix:"balcony", name:"East Morning Balcony", dim:"4'-0\" Wide", vastu:"EAST",
+      desc:"Front East balcony overlooking car park.", zones:[["Deck","Anti-Skid Wood Tile"]], specs:["Toughened glass railing."] },
+    { id:"ff_balc_s", floor:1, x:41.85, z:5, w:5.2, d:34.4, h:1.2, type:"garden", fix:"balcony", name:"South Wrap Balcony", dim:"5'-2\" Wide", vastu:"SOUTH",
+      desc:"Deep South balcony shading the Master Suite.", zones:[["Planters","Perimeter Green Trough"]], specs:["Buffers afternoon South heat."] },
+
+    // --- 2ND FLOOR ROOMS (FLOOR 2) ---
+    { id:"sf_bed4", floor:2, x:4, z:5, w:12, d:20, h:10, type:"bed", fix:"bed", name:"Bedroom 04 (NE Penthouse Suite)", dim:"12'-3\" x 20'-0\"", vastu:"NORTH-EAST / NORTH",
+      desc:"Stacked over 1st Floor Bedroom 02 in the quiet North-East corner.",
+      zones:[["Bed","King Bed (Head South)"],["Window","Treetop Garden View"]],
+      specs:["Keeps NE corner free of toilets on all floors."] },
+    { id:"sf_wic4", floor:2, x:4, z:25, w:12, d:7.8, h:10, type:"core", fix:"wic", name:"Walk-In Closet 04", dim:"12'-0\" x 7'-8\"", vastu:"NORTH-WEST",
+      desc:"Stacked over 1st Floor WIC 02.", zones:[["Joinery","L-Shaped Wardrobes"]], specs:["Skylight tube for natural light."] },
+    { id:"sf_bath4", floor:2, x:4, z:32.8, w:12, d:6.6, h:10, type:"wet", fix:"bath_master", name:"Washroom 04 (3-Zone Penthouse Bath)", dim:"12'-0\" x 6'-6\" (Stacked NW)", vastu:"NORTH-WEST / WEST",
+      desc:"Stacked over 1st Floor Washroom 02 with Double Vanity, Wall-Hung WC, and Steam Shower stall.",
+      zones:[["Dry Zone","4'-6\" Double Vanity"],["Mid Zone","3'-6\" WC Area"],["Wet Zone","4'-0\" x 6'-6\" Steam Shower"]],
+      specs:["Single vertical West drainage shaft."] },
+    { id:"sf_lounge", floor:2, x:16, z:5, w:15.6, d:14.25, h:10, type:"social", fix:"living", name:"Family Lounge & Media Room", dim:"15'-0\" x 14'-3\"", vastu:"EAST",
+      desc:"Sunlit entertainment lounge opening directly onto the landscaped Sky Terrace.",
+      zones:[["Seating","Dual Facing Sofas"],["Doors","Bi-Fold Glass to Terrace"]],
+      specs:["Seamless indoor-outdoor party flow."] },
+    { id:"sf_pass", floor:2, x:16, z:19.25, w:15.6, d:5.75, h:10, type:"social", fix:"passage", name:"2nd Floor Lobby Passage", dim:"6'-0\" Wide", vastu:"CENTER",
+      desc:"Connects stairs, reserved lift room, lounge, and the new guest washroom.",
+      zones:[["Lobby","6' Wide Corridor"]],
+      specs:["Direct access to the new Guest Powder/Shower Room."] },
+    { id:"sf_lift", floor:2, x:16, z:25, w:5, d:5, h:10, type:"lift", fix:"lift_empty", name:"Reserved 5'x5' Space (Terrace Store)", dim:"5'-0\" x 5'-0\" (No Lift Now)", vastu:"WEST CORE",
+      desc:"Top level of the reserved 5'x5' lift space. Serves as your Terrace Cushion & Bar Storage Room since the old Store Room was converted into the Guest Washroom.",
+      zones:[["Current Use","Terrace Cushion & Bar Store"],["Slab","Removable Knock-Out Floor"]],
+      specs:["Cast lifting hook in ceiling slab for future elevator."] },
+    { id:"sf_pwd", floor:2, x:16, z:30, w:5.6, d:9.4, h:10, type:"wet", fix:"bath_attached", name:"New 2nd Fl Guest Washroom!", dim:"5'-2\" x 7'-10\" (Converted Store)", vastu:"WEST",
+      desc:"Converted from the old Store Room! Gives Family Lounge and Terrace guests a dedicated 3-zone washroom so nobody has to walk through Bedroom 04.",
+      zones:[["Dry Zone","3'-0\" Designer Vanity"],["Mid Zone","Wall-Hung WC"],["Wet Zone","5'-2\" x 3'-4\" Shower"],["Plumbing","Stacked Over GF Bath 01"]],
+      specs:["Connects directly into the Ground Floor Bath 01 plumbing stack below."] },
+    { id:"sf_stairs", floor:2, x:21.6, z:25, w:10.2, d:14.4, h:10, type:"core", fix:"stairs", name:"2nd Floor Stairwell & Skylight", dim:"Top Landing", vastu:"WEST",
+      desc:"Top stairwell landing with overhead skylight.", zones:[["Roof","Laminated Skylight"]], specs:["Natural daylight core."] },
+    { id:"sf_terrace", floor:2, x:31.6, z:5, w:15.4, d:23.25, h:1.2, type:"garden", fix:"terrace_deck", name:"Landscaped Sky Terrace & Pergola", dim:"15'-10\" x 23'-3\"", vastu:"SOUTH-EAST / SOUTH",
+      desc:"Refined rooftop garden deck with timber pergola, outdoor BBQ counter, and perimeter planter troughs.",
+      zones:[["BBQ Bar","East Outdoor Counter"],["Canopy","Timber Pergola"],["Deck","WPC Decking + Turf"]],
+      specs:["Double-layer polyurethane waterproofing under deck tiles."] },
+    { id:"sf_cov", floor:2, x:31.8, z:28.25, w:12, d:11.15, h:10.5, type:"social", fix:"cov_seat", name:"Covered Outdoor Pavilion (SW)", dim:"10'-0\" x 13'-6\"", vastu:"SOUTH-WEST (Nairutya)",
+      desc:"Covered architectural gazebo anchoring the South-West corner at the highest roof elevation.",
+      zones:[["Seating","Curved Outdoor Lounge"],["Roof","Raised SW RCC Canopy"]],
+      specs:["Keeps the South-West corner the highest and heaviest part of the villa."] }
+  ],
+
+  orig: [
+    { id:"o_liv", floor:0, x:4, z:5, w:12.6, d:14.6, h:10, type:"social", fix:"living", name:"Living Room (Under 1st Fl Toilet)", dim:"12'-8\" x 14'-8\"", vastu:"NORTH-EAST", desc:"Original Living Room sitting directly below the 1st-floor 12'x6' Toilet.", zones:[["Issue","1st Fl Toilet Above"]], specs:["Relocate upstairs toilet."] },
+    { id:"o_din", floor:0, x:16.6, z:5, w:11, d:14.25, h:20, type:"social", fix:"dining", name:"Double Height Dining", dim:"11' x 14'-3\"", vastu:"EAST", desc:"Original dining space.", zones:[["Width","11'-0\""]], specs:["Good."] },
+    { id:"o_drw", floor:0, x:31.6, z:5, w:10.25, d:14.25, h:10, type:"social", fix:"drawing", name:"Drawing Room (In SE Fire Zone)", dim:"10'-3\" x 14'-3\"", vastu:"SOUTH-EAST", desc:"Occupies the SE Agni corner where the Kitchen belongs.", zones:[["Width","10'-3\""]], specs:["Swap with Kitchen."] },
+    { id:"o_bed1", floor:0, x:4, z:19.6, w:12, d:14.6, h:10, type:"bed", fix:"bed", name:"Bedroom 01", dim:"12' x 14'-8\"", vastu:"NORTH-WEST", desc:"Original GF Bedroom.", zones:[["Size","12' x 14'-8\""]], specs:["Rotate bed to South."] },
+    { id:"o_lift0", floor:0, x:16, z:25, w:5, d:5, h:10, type:"lift", fix:"lift_empty", name:"Lift (5'x5')", dim:"5' x 5'", vastu:"WEST", desc:"Original Lift.", zones:[["Size","5' x 5'"]], specs:["Reserved."] },
+    { id:"o_srv", floor:0, x:25.3, z:35.6, w:6.5, d:3.8, h:10, type:"defect", fix:"none", name:"Servant Quarter (3'-8\" Wide!)", dim:"7'-9\" x 3'-8\"", vastu:"WEST", desc:"DEFECT: Only 3'-8\" wide—unlivable.", zones:[["Defect","3'-8\" Width"]], specs:["Expand into setback."] },
+    { id:"o_kit", floor:0, x:31.8, z:19.25, w:10, d:16, h:10, type:"defect", fix:"kitchen", name:"Kitchen (In SW Corner!)", dim:"10' x 16'", vastu:"SOUTH-WEST (DEFECT)", desc:"DEFECT: Kitchen in South-West Earth zone.", zones:[["Defect","SW Kitchen"]], specs:["Move to SE."] },
+    { id:"o_t2", floor:1, x:4, z:5, w:12, d:6, h:10, type:"defect", fix:"bath_master", name:"1st Fl Toilet (In NE Corner!)", dim:"12' x 6'", vastu:"NORTH-EAST (DEFECT)", desc:"CRITICAL DEFECT: Toilet in sacred North-East corner over Living Room.", zones:[["Defect","NE Toilet"]], specs:["Move to NW."] },
+    { id:"o_b2", floor:1, x:4, z:18.6, w:12, d:20.8, h:10, type:"bed", fix:"bed", name:"Bedroom 02", dim:"12' x 20'-3\"", vastu:"NORTH-WEST", desc:"Original Bedroom 02.", zones:[["Size","12' x 20'-3\""]], specs:["Flip to NE."] },
+    { id:"o_foy", floor:1, x:31.8, z:19.25, w:10, d:5.75, h:10, type:"defect", fix:"none", name:"Wasted Foyer (10'x5')", dim:"10' x 5'", vastu:"SOUTH", desc:"DEFECT: 50 sq.ft. dead internal passage.", zones:[["Defect","Wasted Space"]], specs:["Absorb into Bedroom 03."] },
+    { id:"o_t3", floor:1, x:31.8, z:33.4, w:10, d:6, h:10, type:"defect", fix:"bath_master", name:"Toilet 03 (In SW Corner!)", dim:"10' x 6'", vastu:"SOUTH-WEST (DEFECT)", desc:"DEFECT: Toilet in extreme South-West corner.", zones:[["Defect","SW Toilet"]], specs:["Move Master Bed here."] },
+    { id:"o_t4", floor:2, x:4, z:5, w:12, d:6, h:10, type:"defect", fix:"bath_master", name:"2nd Fl Toilet (In NE Corner!)", dim:"12' x 6'", vastu:"NORTH-EAST (DEFECT)", desc:"CRITICAL DEFECT: Second toilet in North-East corner.", zones:[["Defect","NE Toilet"]], specs:["Move to NW."] },
+    { id:"o_str2", floor:2, x:16, z:30, w:5.6, d:9.4, h:10, type:"defect", fix:"none", name:"Store (No 2nd Fl Guest Toilet!)", dim:"5'-2\" x 7'-10\"", vastu:"WEST", desc:"DEFECT: Terrace guests have no washroom without entering Bedroom 04.", zones:[["Defect","No Guest WC"]], specs:["Convert to Powder Room."] }
+  ]
+};
+
+// ============================================================================
+// THREE.JS INITIALIZATION
+// ============================================================================
+const viewport = document.getElementById('viewport');
+const tooltip = document.getElementById('tooltip');
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(38, viewport.clientWidth / viewport.clientHeight, 1, 1000);
+camera.position.set(-52, 54, 64);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+viewport.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.maxPolarAngle = Math.PI / 2 - 0.02;
+controls.target.set(0, 10, 0);
+
+scene.add(new THREE.AmbientLight(0xdbeafe, 0.75));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+dirLight.position.set(-45, 85, -35);
+scene.add(dirLight);
+
+const grid = new THREE.GridHelper(110, 55, 0x1e293b, 0x0f172a);
+grid.position.y = -0.25;
+scene.add(grid);
+
+// Shared Materials for 3D Internal Fixtures
+const mFix   = new THREE.MeshLambertMaterial({ color: 0xf1f5f9, transparent: true, opacity: 0.88 });
+const mWood  = new THREE.MeshLambertMaterial({ color: 0xd97706, transparent: true, opacity: 0.85 });
+const mGlass = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.38 });
+const mGreen = new THREE.MeshLambertMaterial({ color: 0x10b981, transparent: true, opacity: 0.85 });
+const mWater = new THREE.MeshBasicMaterial({ color: 0x0284c7, transparent: true, opacity: 0.75 });
+const mGold  = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+
+function createFixtures(r) {
+  const g = new THREE.Group();
+  const by = -r.h / 2 + 0.1;
+
+  if (r.fix === 'bath_master') {
+    const van = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.5, 1.7), mWood);
+    van.position.set(-r.w/2 + 2.2, by + 1.25, -r.d/2 + 0.95);
+    const b1 = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.35, 0.9), mFix);
+    b1.position.set(-r.w/2 + 1.4, by + 2.7, -r.d/2 + 0.95);
+    const b2 = b1.clone(); b2.position.x = -r.w/2 + 3.0;
+    const wc = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.5, 1.9), mFix);
+    wc.position.set(0, by + 0.75, -r.d/2 + 1.05);
+    const gl = new THREE.Mesh(new THREE.BoxGeometry(0.15, 7.2, r.d - 0.5), mGlass);
+    gl.position.set(r.w/2 - 3.8, by + 3.6, 0);
+    g.add(van, b1, b2, wc, gl);
+  } else if (r.fix === 'bath_attached') {
+    const van = new THREE.Mesh(new THREE.BoxGeometry(2.3, 2.5, 1.5), mWood);
+    van.position.set(-r.w/2 + 1.3, by + 1.25, -r.d/2 + 0.9);
+    const wc = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.5, 1.3), mFix);
+    wc.position.set(r.w/2 - 1.0, by + 0.75, 0);
+    const gl = new THREE.Mesh(new THREE.BoxGeometry(r.w - 0.4, 7.2, 0.15), mGlass);
+    gl.position.set(0, by + 3.6, r.d/2 - 3.2);
+    g.add(van, wc, gl);
+  } else if (r.fix === 'bath_powder') {
+    const van = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.5, 1.3), mWood);
+    van.position.set(0, by + 1.25, -r.d/2 + 0.8);
+    const wc = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.5, 1.7), mFix);
+    wc.position.set(0, by + 0.75, r.d/2 - 1.1);
+    g.add(van, wc);
+  } else if (r.fix === 'kitchen') {
+    const c1 = new THREE.Mesh(new THREE.BoxGeometry(r.w - 0.8, 2.7, 1.9), mWood);
+    c1.position.set(0, by + 1.35, -r.d/2 + 1.1);
+    const c2 = new THREE.Mesh(new THREE.BoxGeometry(1.9, 2.7, r.d - 2.8), mWood);
+    c2.position.set(r.w/2 - 1.1, by + 1.35, 1.0);
+    const hob = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.2, 1.2), mFix);
+    hob.position.set(0, by + 2.8, -r.d/2 + 1.1);
+    g.add(c1, c2, hob);
+  } else if (r.fix === 'bed' || r.fix === 'bed_master') {
+    const mat = new THREE.Mesh(new THREE.BoxGeometry(6.2, 1.3, 5.8), mFix);
+    mat.position.set(r.w/2 - 3.4, by + 0.65, 0);
+    const hb = new THREE.Mesh(new THREE.BoxGeometry(0.45, 3.6, 6.2), mWood);
+    hb.position.set(r.w/2 - 0.4, by + 1.8, 0);
+    g.add(mat, hb);
+  } else if (r.fix === 'living' || r.fix === 'drawing') {
+    const sf = new THREE.Mesh(new THREE.BoxGeometry(7.2, 2.0, 2.5), mFix);
+    sf.position.set(0, by + 1.0, r.d/2 - 2.0);
+    const tb = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.1, 2.2), mWood);
+    tb.position.set(0, by + 0.55, 0);
+    g.add(sf, tb);
+  } else if (r.fix === 'dining') {
+    const dt = new THREE.Mesh(new THREE.BoxGeometry(4.0, 2.4, 8.2), mWood);
+    dt.position.set(0, by + 1.2, 0);
+    g.add(dt);
+  } else if (r.fix === 'lift_empty') {
+    const x1 = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.25, 0.25), mGold);
+    x1.rotation.y = Math.PI / 4; x1.position.y = by + 0.2;
+    const x2 = x1.clone(); x2.rotation.y = -Math.PI / 4;
+    g.add(x1, x2);
+  } else if (r.fix === 'ne_garden') {
+    const dk = new THREE.Mesh(new THREE.BoxGeometry(11.5, 0.3, 3.8), mWood);
+    dk.position.set(-1, 0.25, 2.1);
+    const pl = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 0.45, 20), mWater);
+    pl.position.set(-8.5, 0.3, -1.2);
+    g.add(dk, pl);
+    for (let i = 0; i < 4; i++) {
+      const sh = new THREE.Mesh(new THREE.SphereGeometry(1.0, 10, 10), mGreen);
+      sh.position.set(-9.5 + i * 5.2, 0.9, -2.4);
+      g.add(sh);
+    }
+  } else if (r.fix === 'n_lawn') {
+    for (let i = 0; i < 5; i++) {
+      const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.8, 5.2, 8), mGreen);
+      tr.position.set(-2.0, 2.6, -12.5 + i * 6.2);
+      const st = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.15, 1.5), mFix);
+      st.position.set(1.2, 0.2, -12.5 + i * 6.2);
+      g.add(tr, st);
+    }
+  } else if (r.fix === 'car_park') {
+    const cb = new THREE.Mesh(new THREE.BoxGeometry(13.0, 2.5, 5.6), new THREE.MeshLambertMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 }));
+    cb.position.set(-2, 1.5, 0);
+    const cc = new THREE.Mesh(new THREE.BoxGeometry(6.8, 1.9, 4.8), mGlass);
+    cc.position.set(-1.5, 3.6, 0);
+    g.add(cb, cc);
+    for (let i = -9; i <= 9; i += 3) {
+      const bm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.4, 8.4), mWood);
+      bm.position.set(i, 9.4, 0);
+      g.add(bm);
+    }
+  } else if (r.fix === 'terrace_deck') {
+    const bq = new THREE.Mesh(new THREE.BoxGeometry(6.5, 2.8, 2.0), mWood);
+    bq.position.set(0, 1.6, -r.d/2 + 1.8);
+    g.add(bq);
+    for (let i = -4.5; i <= 4.5; i += 3) {
+      const rf = new THREE.Mesh(new THREE.BoxGeometry(12.5, 0.35, 0.35), mWood);
+      rf.position.set(0, 9.0, i);
+      g.add(rf);
+    }
+  }
+  return g;
+}
+
+let curMode = 'reim';
+let curFloor = 'all';
+let explode = 1.4;
+let selectedId = 'gf_bath1';
+
+const modelGroup = new THREE.Group();
+scene.add(modelGroup);
+const meshes = [];
+const OX = -22, OZ = -20, FH = 11.5;
+
+function buildScene() {
+  while (modelGroup.children.length > 0) modelGroup.remove(modelGroup.children[0]);
+  meshes.length = 0;
+
+  const list = DATA[curMode];
+  const dirEl = document.getElementById('roomList');
+  dirEl.innerHTML = '';
+
+  const flLabels = ['Ground Floor & Site', '1st Floor Suites', '2nd Floor & Terrace'];
+  [0, 1, 2].forEach(fl => {
+    if (curFloor !== 'all' && curFloor !== fl) return;
+    const hdr = document.createElement('div');
+    hdr.className = 'dir-hdr';
+    hdr.textContent = flLabels[fl];
+    dirEl.appendChild(hdr);
+
+    list.filter(item => item.floor === fl).forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'dir-item' + (selectedId === r.id ? ' active' : '');
+      item.innerHTML = `<span class="name">${r.name}</span><span class="tag">${r.dim.split(' ')[0]}</span>`;
+      item.onclick = () => { selectedId = r.id; buildScene(); };
+      dirEl.appendChild(item);
+
+      const hex = COLORS[r.type] || 0x38bdf8;
+      const isSel = (selectedId === r.id);
+      const isLift = (r.type === 'lift');
+
+      const geo = new THREE.BoxGeometry(r.w, r.h, r.d);
+      const mat = new THREE.MeshPhongMaterial({
+        color: hex, emissive: hex,
+        emissiveIntensity: isSel ? 0.45 : (isLift ? 0.25 : 0.08),
+        transparent: true,
+        opacity: isSel ? 0.55 : (r.type === 'garden' ? 0.38 : 0.22),
+        depthWrite: false
+      });
+
+      const mesh = new THREE.Mesh(geo, mat);
+      const eGeo = new THREE.EdgesGeometry(geo);
+      let edges;
+      if (isLift) {
+        edges = new THREE.LineSegments(eGeo, new THREE.LineDashedMaterial({ color: 0xfbbf24, dashSize: 0.8, gapSize: 0.4 }));
+        edges.computeLineDistances();
+      } else {
+        edges = new THREE.LineSegments(eGeo, new THREE.LineBasicMaterial({ color: isSel ? 0xffffff : hex, transparent: true, opacity: isSel ? 1 : 0.75 }));
+      }
+      mesh.add(edges);
+
+      if (r.fix && r.fix !== 'none') mesh.add(createFixtures(r));
+
+      mesh.position.set(r.x + r.w / 2 + OX, (r.floor * FH * explode) + (r.h / 2), r.z + r.d / 2 + OZ);
+      mesh.userData = { room: r };
+      modelGroup.add(mesh);
+      meshes.push(mesh);
+
+      if (isSel) populateInspector(r);
+    });
+  });
+}
+
+function populateInspector(r) {
+  const b = document.getElementById('insBadge');
+  b.className = 'badge ' + curMode;
+  b.textContent = curMode === 'reim' ? 'REFINED VASTU MASTER PLAN' : 'ORIGINAL PDF DEFECT AUDIT';
+
+  const flNames = ['Ground Floor / Exterior', '1st Floor', '2nd Floor / Terrace'];
+  document.getElementById('insTitle').textContent = r.name;
+  document.getElementById('insDim').textContent = `${flNames[r.floor]}  •  ${r.dim}`;
+  document.getElementById('insVastu').textContent = `Compass Zone: ${r.vastu}`;
+  document.getElementById('insDesc').textContent = r.desc;
+
+  const zg = document.getElementById('insZones');
+  zg.innerHTML = '';
+  (r.zones || []).forEach(z => {
+    const d = document.createElement('div');
+    d.className = 'z-box';
+    d.innerHTML = `<strong>${z[0]}</strong>${z[1]}`;
+    zg.appendChild(d);
+  });
+
+  const ul = document.getElementById('insSpecs');
+  ul.innerHTML = '';
+  (r.specs || []).forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s;
+    ul.appendChild(li);
+  });
+}
+
+// Raycaster Hover & Click
+const ray = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let pDown = { x: 0, y: 0 };
+
+viewport.addEventListener('pointermove', (e) => {
+  const rect = viewport.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  ray.setFromCamera(mouse, camera);
+  const hits = ray.intersectObjects(meshes, false);
+  if (hits.length > 0) {
+    const r = hits[0].object.userData.room;
+    viewport.style.cursor = 'pointer';
+    tooltip.style.display = 'block';
+    tooltip.style.left = e.clientX + 'px';
+    tooltip.style.top = e.clientY + 'px';
+    document.getElementById('ttName').textContent = r.name;
+    document.getElementById('ttDim').textContent = `${r.dim}  |  ${r.vastu}`;
+  } else {
+    viewport.style.cursor = 'grab';
+    tooltip.style.display = 'none';
+  }
+});
+
+viewport.addEventListener('pointerdown', (e) => { pDown = { x: e.clientX, y: e.clientY }; });
+viewport.addEventListener('pointerup', (e) => {
+  if (Math.hypot(e.clientX - pDown.x, e.clientY - pDown.y) > 5) return;
+  const rect = viewport.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  ray.setFromCamera(mouse, camera);
+  const hits = ray.intersectObjects(meshes, false);
+  if (hits.length > 0) {
+    selectedId = hits[0].object.userData.room.id;
+    buildScene();
+  }
+});
+
+function setMode(m) {
+  curMode = m;
+  selectedId = (m === 'reim') ? 'gf_bath1' : 'o_t2';
+  const btns = document.getElementById('modeBtns').children;
+  btns[0].classList.toggle('active', m === 'reim');
+  btns[1].classList.toggle('active', m === 'orig');
+  buildScene();
+}
+
+function setFloor(fl) {
+  curFloor = fl;
+  const btns = document.getElementById('floorBtns').children;
+  btns[0].classList.toggle('active', fl === 'all');
+  btns[1].classList.toggle('active', fl === 0);
+  btns[2].classList.toggle('active', fl === 1);
+  btns[3].classList.toggle('active', fl === 2);
+  buildScene();
+}
+
+function setExplode(val) {
+  explode = parseFloat(val);
+  meshes.forEach(m => {
+    const r = m.userData.room;
+    m.position.y = (r.floor * FH * explode) + (r.h / 2);
+  });
+}
+
+function resetCam() {
+  camera.position.set(-52, 54, 64);
+  controls.target.set(0, 10, 0);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = viewport.clientWidth / viewport.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+buildScene();
+animate();
+</script>
+</body>
+</html>
