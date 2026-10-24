@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>4BHK Villa — Senior Architect 3D BIM & Vastu Studio</title>
-<!-- Inline SVG Favicon Eliminates the favicon.ico 404 Console Error -->
+<title>4BHK Villa — 3D BIM & Vastu Studio</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230b111e'/><path d='M20 75 L20 40 L50 20 L80 40 L80 75 Z' fill='none' stroke='%2338bdf8' stroke-width='8'/></svg>">
 <style>
 :root {
@@ -21,49 +20,51 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); overscroll-behavior: none; }
 
 .app-shell {
   display: flex; flex-direction: column;
   width: 100vw; height: 100vh; height: 100dvh; overflow: hidden;
 }
 
+/* Compact 2-Row Responsive Header (Zero Cutoffs on 375px Phones) */
 header {
   background: var(--panel); border-bottom: 1px solid var(--border);
-  padding: 8px 12px; display: flex; align-items: center; justify-content: space-between;
-  gap: 8px; z-index: 30; flex-shrink: 0;
+  padding: 6px 10px; display: flex; flex-direction: column; gap: 6px;
+  z-index: 30; flex-shrink: 0;
 }
-.brand-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.brand { font-weight: 800; font-size: 13px; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hdr-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.brand { font-weight: 800; font-size: 12.5px; color: var(--accent); letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hdr-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .dl-btn {
-  background: var(--green); color: #050811; border: none; padding: 5px 10px;
-  border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  background: var(--green); color: #050811; border: none; padding: 5px 9px;
+  border-radius: 5px; font-size: 10.5px; font-weight: 800; cursor: pointer; white-space: nowrap;
 }
 
-.top-controls {
-  display: flex; align-items: center; gap: 6px; overflow-x: auto;
-  scrollbar-width: none; -ms-overflow-style: none;
+.hdr-controls {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%;
 }
-.top-controls::-webkit-scrollbar { display: none; }
-
-.seg { display: flex; background: var(--bg); padding: 2px; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
+.seg { display: flex; background: var(--bg); padding: 2px; border-radius: 6px; border: 1px solid var(--border); }
 .seg button {
-  background: transparent; color: var(--muted); border: none; padding: 5px 9px;
-  font-size: 11px; font-weight: 600; border-radius: 4px; cursor: pointer; white-space: nowrap; transition: 0.15s;
+  background: transparent; color: var(--muted); border: none; padding: 5px 8px;
+  font-size: 10.5px; font-weight: 600; border-radius: 4px; cursor: pointer; white-space: nowrap; transition: 0.15s;
 }
 .seg button.active { background: var(--accent); color: #050811; font-weight: 700; }
 .seg button.reim.active { background: var(--green); color: #050811; }
 .seg button.orig.active { background: var(--red); color: #fff; }
 
+.desktop-sliders { display: flex; align-items: center; gap: 6px; }
 .slider-pill {
   display: flex; align-items: center; gap: 5px; background: var(--bg);
   padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border);
-  font-size: 10.5px; color: var(--muted); flex-shrink: 0; white-space: nowrap;
+  font-size: 10.5px; color: var(--muted); white-space: nowrap;
 }
-.slider-pill input { accent-color: var(--accent); width: 55px; cursor: pointer; }
+.slider-pill input { accent-color: var(--accent); width: 60px; cursor: pointer; }
 
+/* Main Workspace */
 .workspace { flex: 1; display: flex; position: relative; overflow: hidden; min-height: 0; }
 
+/* Left Room List (Desktop Sidebar / Mobile Sheet) */
 .panel-left {
   width: 260px; background: var(--panel); border-right: 1px solid var(--border);
   display: flex; flex-direction: column; overflow-y: auto; padding: 10px; gap: 4px; z-index: 20; flex-shrink: 0;
@@ -78,44 +79,57 @@ header {
 .r-item.active { background: rgba(56,189,248,0.18); border-color: var(--accent); font-weight: 700; }
 .r-item small { color: var(--accent); font-family: monospace; font-size: 9.5px; flex-shrink: 0; }
 
+/* Center 3D Viewport */
 #viewport {
   flex: 1; position: relative; width: 100%; height: 100%; min-width: 0; min-height: 0;
-  background: radial-gradient(circle at 50% 40%, #152238 0%, #050811 100%);
+  background: radial-gradient(circle at 50% 45%, #16243d 0%, #050811 100%);
   overflow: hidden; touch-action: none;
 }
 
-.vp-hud-top {
-  position: absolute; top: 10px; left: 10px; right: 10px; z-index: 10;
-  display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; gap: 8px;
+/* Slim, Non-Blocking Viewport Overlay */
+.vp-top-bar {
+  position: absolute; top: 8px; left: 8px; right: 8px; z-index: 10;
+  display: flex; justify-content: space-between; align-items: center; gap: 6px; pointer-events: none;
 }
-.compass-pill {
-  background: rgba(11, 17, 30, 0.86); backdrop-filter: blur(8px);
-  border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px;
-  font-size: 10px; color: var(--muted); line-height: 1.35; pointer-events: auto;
+.compass-badge {
+  background: rgba(11, 17, 30, 0.85); backdrop-filter: blur(8px);
+  border: 1px solid var(--border); padding: 4px 8px; border-radius: 5px;
+  font-size: 9.5px; color: var(--muted); white-space: nowrap; pointer-events: auto;
 }
-.compass-pill b { color: var(--gold); }
-.cam-pills { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; pointer-events: auto; }
-.cam-pills button {
+.compass-badge b { color: var(--gold); }
+
+.cam-strip {
+  display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; pointer-events: auto;
+}
+.cam-strip::-webkit-scrollbar { display: none; }
+.cam-strip button {
   background: rgba(11, 17, 30, 0.9); color: var(--accent); border: 1px solid var(--border);
-  padding: 5px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; cursor: pointer;
+  padding: 5px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap;
 }
-.cam-pills button:hover, .cam-pills button.active { background: var(--accent); color: #050811; }
+.cam-strip button.active { background: var(--accent); color: #050811; border-color: #fff; }
 
+/* Decluttered 3D Pin Layer */
 #label-layer { position: absolute; inset: 0; pointer-events: none; z-index: 6; overflow: hidden; }
-.tag3d {
-  position: absolute; transform: translate(-50%, -50%);
-  background: rgba(5, 8, 17, 0.85); border: 1px solid rgba(148, 163, 184, 0.35);
-  color: #f8fafc; padding: 2px 5px; border-radius: 4px; font-size: 8.5px; font-weight: 700;
-  white-space: nowrap; text-align: center; line-height: 1.15;
+.pin3d {
+  position: absolute; transform: translate(-50%, -100%);
+  background: rgba(5, 8, 17, 0.9); border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #f8fafc; padding: 3px 7px; border-radius: 5px; font-size: 9.5px; font-weight: 700;
+  white-space: nowrap; text-align: center; line-height: 1.2; box-shadow: 0 4px 12px rgba(0,0,0,0.6);
 }
-.tag3d span { display: block; font-size: 7px; color: var(--accent); font-family: monospace; }
-.tag3d.active { background: var(--accent); color: #050811; border-color: #fff; z-index: 12; transform: translate(-50%, -50%) scale(1.08); }
-.tag3d.active span { color: #050811; font-weight: 800; }
-.tag3d.dh { border-color: var(--gold); color: #fde68a; }
-.tag3d.defect { border-color: var(--red); background: rgba(127, 29, 29, 0.9); }
+.pin3d span { display: block; font-size: 8px; color: var(--accent); font-family: monospace; }
+.pin3d.active {
+  background: var(--accent); color: #050811; border: 1.5px solid #fff; z-index: 15;
+}
+.pin3d.active span { color: #050811; font-weight: 800; }
+.pin3d.active::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--accent);
+}
+.pin3d.defect { background: rgba(159, 18, 57, 0.95); border-color: #fda4af; }
 
+/* Right Specification Panel */
 .panel-right {
-  width: 360px; background: var(--panel); border-left: 1px solid var(--border);
+  width: 355px; background: var(--panel); border-left: 1px solid var(--border);
   padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; z-index: 20; flex-shrink: 0;
 }
 .badge {
@@ -131,34 +145,59 @@ header {
 .z-cell { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 5px 7px; border-radius: 4px; font-size: 10.5px; }
 .z-cell b { display: block; font-size: 8.5px; color: var(--accent); text-transform: uppercase; }
 
-.mob-quick-bar {
-  display: none; position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 15;
-  background: rgba(11, 17, 30, 0.95); backdrop-filter: blur(10px);
-  border: 1px solid var(--accent); border-radius: 8px; padding: 9px 12px;
-  justify-content: space-between; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+/* Mobile Floating Bottom Stepper Card + Sliders Drawer */
+.mob-hud-bottom {
+  display: none; position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 15;
+  flex-direction: column; gap: 6px; pointer-events: none;
 }
+.mob-sliders-drawer {
+  display: none; background: rgba(11, 17, 30, 0.95); backdrop-filter: blur(10px);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px;
+  justify-content: space-between; align-items: center; gap: 10px; pointer-events: auto;
+}
+.mob-sliders-drawer.show { display: flex; }
+
+.mob-stepper-card {
+  background: rgba(11, 17, 30, 0.95); backdrop-filter: blur(10px);
+  border: 1px solid var(--accent); border-radius: 8px; padding: 8px 10px;
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7); pointer-events: auto;
+}
+.step-btn {
+  background: var(--card); color: var(--accent); border: 1px solid var(--border);
+  width: 32px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: 800;
+  cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+}
+.step-info { flex: 1; min-width: 0; text-align: center; cursor: pointer; }
+.step-info b { font-size: 12px; color: #fff; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.step-info span { font-size: 9.5px; color: var(--accent); font-family: monospace; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 .mob-nav {
   display: none; background: var(--panel); border-top: 1px solid var(--border);
   padding-bottom: var(--safe-b); z-index: 40; flex-shrink: 0;
 }
 .mob-nav button {
-  flex: 1; height: 48px; background: transparent; border: none; color: var(--muted);
-  font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
+  flex: 1; height: 46px; background: transparent; border: none; color: var(--muted);
+  font-size: 10.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
 }
 .mob-nav button.active { color: var(--accent); background: rgba(56,189,248,0.08); border-top: 2px solid var(--accent); }
 
+@media (min-width: 901px) {
+  header { flex-direction: row; padding: 8px 14px; }
+  .hdr-controls { width: auto; }
+  .close-mob { display: none; }
+}
+
 @media (max-width: 900px) {
-  header { flex-direction: column; align-items: stretch; padding: 6px 10px; gap: 6px; }
-  .brand-wrap { justify-content: space-between; width: 100%; }
+  .desktop-sliders { display: none; }
   .panel-left, .panel-right {
-    position: absolute; left: 0; right: 0; bottom: 0; top: 15%;
-    width: 100%; height: 85%; z-index: 35; display: none;
+    position: absolute; left: 0; right: 0; bottom: 0; top: 12%;
+    width: 100%; height: 88%; z-index: 35; display: none;
     border-radius: 14px 14px 0 0; border-top: 2px solid var(--accent);
     box-shadow: 0 -10px 40px rgba(0,0,0,0.85); padding-bottom: 24px;
   }
   .panel-left.open, .panel-right.open { display: flex; }
-  .mob-quick-bar, .mob-nav { display: flex; }
-  .compass-pill span.hide-sm { display: none; }
+  .mob-hud-bottom, .mob-nav { display: flex; }
 }
 </style>
 </head>
@@ -166,13 +205,15 @@ header {
 
 <div class="app-shell">
   <header>
-    <div class="brand-wrap">
+    <div class="hdr-top">
       <div class="brand">4BHK VILLA // 3D BIM & VASTU STUDIO</div>
-      <button class="dl-btn" onclick="exportCleanHTML()">⬇ Save index.html</button>
+      <div class="hdr-actions">
+        <button class="dl-btn" onclick="exportCleanHTML()">⬇ Save index.html</button>
+      </div>
     </div>
-    <div class="top-controls">
+    <div class="hdr-controls">
       <div class="seg" id="modeBtns">
-        <button class="reim active" onclick="setMode('reim')">Vastu Reimagined</button>
+        <button class="reim active" onclick="setMode('reim')">Vastu Plan</button>
         <button class="orig" onclick="setMode('orig')">Original PDF</button>
       </div>
       <div class="seg" id="floorBtns">
@@ -181,52 +222,72 @@ header {
         <button onclick="setFloor(1)">1st</button>
         <button onclick="setFloor(2)">2nd</button>
       </div>
-      <div class="slider-pill">
-        <span>Walls</span>
-        <input type="range" min="1.2" max="9.5" step="0.3" value="4.5" oninput="setWallH(this.value)">
-      </div>
-      <div class="slider-pill">
-        <span>Gap</span>
-        <input type="range" min="1.0" max="2.4" step="0.05" value="1.35" oninput="setExplode(this.value)">
-      </div>
-      <div class="seg">
-        <button id="lblBtn" class="active" onclick="toggleLabels()">Tags</button>
+      <div class="desktop-sliders">
+        <div class="slider-pill">
+          <span>Walls</span>
+          <input type="range" min="1.2" max="9.5" step="0.3" value="4.5" oninput="setWallH(this.value)">
+        </div>
+        <div class="slider-pill">
+          <span>Gap</span>
+          <input type="range" min="1.0" max="2.4" step="0.05" value="1.35" oninput="setExplode(this.value)">
+        </div>
+        <div class="seg">
+          <button id="lblBtnDesk" onclick="toggleAllTags()">All Tags: OFF</button>
+        </div>
       </div>
     </div>
   </header>
 
   <div class="workspace">
+    <!-- Left Room Schedule -->
     <div class="panel-left" id="roomList"></div>
 
+    <!-- Center 3D Viewport -->
     <div id="viewport">
-      <div class="vp-hud-top">
-        <div class="compass-pill">
-          <b>PDF COMPASS (N = LEFT)</b><br>
-          ◀ N: Lawn | ▲ E: Car Park <span class="hide-sm">| ▶ S: 5'-5" Entry | ▼ W: Core</span>
+      <div class="vp-top-bar">
+        <div class="compass-badge">
+          <b>N = LEFT</b> | ▲ E: Car Park | ▶ S: Entry
         </div>
-        <div class="cam-pills" id="camBtns">
-          <button class="active" onclick="setCam('entrance')">🚪 Entrance Angle</button>
+        <div class="cam-strip" id="camBtns">
+          <button class="active" onclick="setCam('entrance')">🚪 Entrance</button>
           <button onclick="setCam('atrium')">✨ Dining Void</button>
           <button onclick="setCam('top')">📐 2D Plan</button>
-          <button onclick="setCam('iso')">🧊 Rear Core</button>
+          <button onclick="setCam('iso')">🧊 Full 3D</button>
         </div>
       </div>
 
       <div id="label-layer"></div>
 
-      <div class="mob-quick-bar" onclick="mobTab('specs')">
-        <div style="min-width:0;padding-right:8px">
-          <b id="mqTitle" style="font-size:12.5px;color:#fff;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">5'-5" Entrance Porch</b>
-          <span id="mqSub" style="font-size:10px;color:var(--accent);font-family:monospace">5'-5" x 6'-0" • Tap for Details</span>
+      <!-- Mobile Bottom Controls: Sliders Drawer + Prev/Next Room Stepper -->
+      <div class="mob-hud-bottom">
+        <div class="mob-sliders-drawer" id="mobSliders">
+          <div class="slider-pill" style="flex:1">
+            <span>Walls</span>
+            <input type="range" min="1.2" max="9.5" step="0.3" value="4.5" style="flex:1" oninput="setWallH(this.value)">
+          </div>
+          <div class="slider-pill" style="flex:1">
+            <span>Gap</span>
+            <input type="range" min="1.0" max="2.4" step="0.05" value="1.35" style="flex:1" oninput="setExplode(this.value)">
+          </div>
+          <button onclick="toggleAllTags()" id="lblBtnMob" style="background:var(--card);color:var(--accent);border:1px solid var(--border);padding:5px 8px;border-radius:5px;font-size:10px;font-weight:700">All Tags</button>
         </div>
-        <button style="background:var(--accent);color:#050811;border:none;padding:6px 10px;border-radius:5px;font-size:10.5px;font-weight:800;flex-shrink:0">Specs ▲</button>
+
+        <div class="mob-stepper-card">
+          <button class="step-btn" onclick="stepRoom(-1)" title="Previous Room">◀</button>
+          <div class="step-info" onclick="mobTab('specs')">
+            <b id="mqTitle">5'-5" Entrance Porch & Steps</b>
+            <span id="mqSub">5'-5" x 6'-0" • Tap for Vastu Specs ▲</span>
+          </div>
+          <button class="step-btn" onclick="stepRoom(1)" title="Next Room">▶</button>
+        </div>
       </div>
     </div>
 
+    <!-- Right Specification Sheet -->
     <div class="panel-right" id="specPanel">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span class="badge reim" id="spBadge">VASTU MASTER REDESIGN</span>
-        <button onclick="mobTab('3d')" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer">✕ View 3D</button>
+        <button onclick="mobTab('3d')" class="close-mob" style="background:var(--card);border:1px solid var(--border);color:var(--accent);padding:4px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer">✕ Close</button>
       </div>
       <div>
         <h2 id="spTitle" style="font-size:17px;font-weight:800">Select a Room</h2>
@@ -252,9 +313,10 @@ header {
   </div>
 
   <nav class="mob-nav" id="mobNav">
-    <button class="active" onclick="mobTab('3d')">🧊 3D Hologram</button>
-    <button onclick="mobTab('list')">📋 Rooms (46)</button>
-    <button onclick="mobTab('specs')">📐 Vastu Specs</button>
+    <button class="active" onclick="mobTab('3d')">🧊 3D View</button>
+    <button onclick="mobTab('list')">📋 Rooms</button>
+    <button onclick="mobTab('specs')">📐 Specs</button>
+    <button onclick="toggleMobSliders()" id="sliderNavBtn">⚙️ Sliders</button>
   </nav>
 </div>
 
@@ -269,7 +331,6 @@ const FLOOR_MAT = {
 
 const BIM_DB = {
   reim: [
-    // --- EXTERIOR & LANDSCAPE (FLOOR 0) ---
     ["r_ent",0,41.25,5,5.5,6,"s","foy","5'-5\" Entrance Porch & Steps","5'-5\" x 6'-0\" Verandah","EAST-SOUTH-EAST (Main Entry)","Formalizes the 5'-5\" Entrance! Starting from the East Car Park, you ascend 5 granite arrival steps onto a covered verandah with a shoe bench and grand teakwood pivot door.",[["Main Door","5'-5\" Teak Pivot Door"],["Shoe Rack","Concealed Bench Unit"],["Steps","5 East-Facing Steps"],["Threshold","Solid Brass Umbra"]],"Camera starts right here at the Entrance angle so you experience the arrival sequence first!"],
     ["r_fyr",0,31,5,10.25,6,"s","foy","Internal Reception Foyer","10'-3\" x 6'-0\" Foyer","SOUTH-EAST","Dedicated internal reception vestibule directly inside the 5'-5\" Entrance. A slatted timber privacy screen prevents visitors at the door from staring into the Kitchen or Dining Hall.",[["Privacy","Timber Slatted Screen"],["Console","Entry Art Console"],["Seating","2 Visitor Chairs"],["Buffer","Separates Entry & Kitchen"]],"Solves the abrupt unbuffered entrance of the original PDF plan."],
     ["r_puj",0,27,5,4,5.5,"s","puj","Defined Puja Sanctuary","4'-0\" x 5'-6\" Enclosed","EAST-SOUTH-EAST","Properly enclosed 4'-0\" x 5'-6\" Mandir (resolving the undefined '4' WIDE' marker on the PDF). The marble altar is placed on the East wall so devotees face East while praying.",[["Altar Wall","East Wall (Face East)"],["Dimensions","4'-0\" Wide x 5'-6\" Deep"],["Doors","Teak & Fluted Glass Jali"],["Ventilation","Dedicated Incense Vent"]],"Never place idols facing South or backing onto a bathroom wall."],
@@ -369,31 +430,35 @@ const BIM_DB = {
 };
 
 // ============================================================================
-// THREE.JS INITIALIZATION (STARTS AT FRONT ENTRANCE & CAR PARK ANGLE!)
+// THREE.JS INITIALIZATION & RESPONSIVE ASPECT-RATIO CAMERA SCALING
 // ============================================================================
 const vp = document.getElementById('viewport');
 const lblLayer = document.getElementById('label-layer');
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(36, 1, 1, 1000);
-// Start at South-East / East Front Entrance Angle (+X, -Z) looking directly at the 5'-5" Entrance & Car Park!
-camera.position.set(58, 42, -52);
-
+const camera = new THREE.PerspectiveCamera(40, 1, 1, 1200);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 vp.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.dampingFactor = 0.07;
-controls.maxPolarAngle = Math.PI / 2 - 0.02;
+controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI / 2 - 0.01;
 
-scene.add(new THREE.AmbientLight(0xe2e8f0, 0.84));
+// Stop auto-gliding the moment the user touches or drags the canvas!
+let isCameraGliding = false;
+const glideTargetPos = new THREE.Vector3();
+const glideLookAt    = new THREE.Vector3();
+
+controls.addEventListener('start', () => { isCameraGliding = false; });
+
+scene.add(new THREE.AmbientLight(0xe2e8f0, 0.85));
 const sun = new THREE.DirectionalLight(0xffffff, 0.85);
 sun.position.set(50, 95, -50);
 scene.add(sun);
 
-const grid = new THREE.GridHelper(115, 58, 0x1e293b, 0x0f172a);
+const grid = new THREE.GridHelper(120, 60, 0x1e293b, 0x0f172a);
 grid.position.y = -0.35;
 scene.add(grid);
 
@@ -423,21 +488,18 @@ function buildArchitecturalRoom(r, wallH, isSelected) {
 
   if (isVoid) {
     const railH = 3.5;
-    const sGlass = box(w, railH, 0.2, matGlass, 0, railH/2, d/2 - 0.1);
-    const nGlass = box(0.2, railH, d, matGlass, -w/2 + 0.1, railH/2, 0);
-    const eGlass = box(w, railH, 0.2, matGlass, 0, railH/2, -d/2 + 0.1);
-    const wGlass = box(0.2, railH, d, matGlass,  w/2 - 0.1, railH/2, 0);
-    group.add(sGlass, nGlass, eGlass, wGlass);
-
+    group.add(
+      box(w, railH, 0.2, matGlass, 0, railH/2, d/2 - 0.1),
+      box(0.2, railH, d, matGlass, -w/2 + 0.1, railH/2, 0),
+      box(w, railH, 0.2, matGlass, 0, railH/2, -d/2 + 0.1),
+      box(0.2, railH, d, matGlass,  w/2 - 0.1, railH/2, 0)
+    );
     const frameGeo = new THREE.BoxGeometry(w, 0.2, d);
-    const frameEdges = new THREE.LineSegments(
+    group.add(new THREE.LineSegments(
       new THREE.EdgesGeometry(frameGeo),
       new THREE.LineBasicMaterial({ color: isSelected ? 0xffffff : 0xfbbf24 })
-    );
-    group.add(frameEdges);
-
-    const hitPlane = box(w, 0.1, d, new THREE.MeshBasicMaterial({ visible: false }), 0, 0, 0);
-    group.add(hitPlane);
+    ));
+    group.add(box(w, 0.1, d, new THREE.MeshBasicMaterial({ visible: false }), 0, 0, 0));
     group.traverse(ch => { ch.userData = { room: r }; });
     return group;
   }
@@ -446,7 +508,7 @@ function buildArchitecturalRoom(r, wallH, isSelected) {
   const slabMat = new THREE.MeshPhongMaterial({
     color: isSelected ? 0x0284c7 : col,
     emissive: isSelected ? 0x38bdf8 : (isDefect ? 0xf43f5e : col),
-    emissiveIntensity: isSelected ? 0.4 : (isDefect ? 0.3 : 0.08)
+    emissiveIntensity: isSelected ? 0.45 : (isDefect ? 0.3 : 0.08)
   });
   const floorTile = box(w - 0.1, slabH, d - 0.1, slabMat, 0, slabH / 2, 0);
   floorTile.add(new THREE.LineSegments(
@@ -520,7 +582,6 @@ function buildArchitecturalRoom(r, wallH, isSelected) {
   } else if (fx === "puj") {
     group.add(box(2.6, 3.2, 1.3, matGold, 0, by + 1.6, -d/2 + 1.0));
   } else if (fx === "foy") {
-    // 5 Entrance Arrival Steps on East side + Shoe Bench + Main Teak Pivot Door
     for (let st = 0; st < 4; st++) {
       group.add(box(w - 0.6, 0.35, 0.8, matCeramic, 0, by + st * 0.25, -d/2 + 0.5 + st * 0.7));
     }
@@ -586,16 +647,23 @@ function buildArchitecturalRoom(r, wallH, isSelected) {
   return group;
 }
 
-let curMode = 'reim', curFloor = 'all', wallHeight = 4.5, explode = 1.35, showTags = true;
-// Default selection locked onto the 5'-5" Entrance Porch!
+let curMode = 'reim', curFloor = 'all', wallHeight = 4.5, explode = 1.35;
+// Smart Label Mode: By default, only show the active room pin so 20 tags never overlap on phones!
+let showAllTags = false;
+let currentCamPreset = 'entrance';
 let selectedId = 'r_ent';
-let targetFocus = new THREE.Vector3(8, 6, -6);
 
 const bimGroup = new THREE.Group();
 scene.add(bimGroup);
 const hitMeshes = [], domTags = [];
 
-function renderBIM() {
+// Responsive Distance Multiplier so Portrait Phones fit the whole 50ft house horizontally!
+function getResponsiveScale() {
+  const aspect = (vp.clientWidth || window.innerWidth) / (vp.clientHeight || window.innerHeight);
+  return aspect < 1 ? Math.min(1.85, 1 / Math.pow(aspect, 0.62)) : 1.0;
+}
+
+function renderBIM(focusSelected = false) {
   while (bimGroup.children.length) bimGroup.remove(bimGroup.children[0]);
   hitMeshes.length = 0;
   lblLayer.innerHTML = '';
@@ -621,8 +689,8 @@ function renderBIM() {
       btn.innerHTML = `<span>${nm}</span><small>${dm.split(' ')[0]}</small>`;
       btn.onclick = () => {
         selectedId = id;
-        renderBIM();
-        if (window.innerWidth <= 900) mobTab('specs');
+        renderBIM(true);
+        if (window.innerWidth <= 900) mobTab('3d');
       };
       listEl.appendChild(btn);
 
@@ -635,18 +703,20 @@ function renderBIM() {
       bimGroup.add(roomObj);
       hitMeshes.push(roomObj);
 
-      const isDH = (fx === 'din' || tp === 'v' || id === 'r_ent' || id === 'o_ent');
-      if (tp !== 'g' || isSel || isDH) {
-        const tag = document.createElement('div');
-        tag.className = 'tag3d' + (isSel ? ' active' : '') + (isDH ? ' dh' : '') + (tp === 'd' ? ' defect' : '');
-        tag.innerHTML = `${nm.split(' (')[0]}<span>${dm.split(' (')[0]}</span>`;
-        lblLayer.appendChild(tag);
-        domTags.push({ el: tag, obj: roomObj, fl: f, isSel: isSel, isDH: isDH });
-      }
+      const pin = document.createElement('div');
+      pin.className = 'pin3d' + (isSel ? ' active' : '') + (tp === 'd' ? ' defect' : '');
+      pin.innerHTML = `${nm.split(' (')[0]}<span>${dm.split(' (')[0]}</span>`;
+      lblLayer.appendChild(pin);
+      domTags.push({ el: pin, obj: roomObj, fl: f, isSel: isSel, isGarden: (tp === 'g') });
 
       if (isSel) {
         updateSpecSheet(r);
-        targetFocus.set(px * 0.35, py + 3, pz * 0.35);
+        if (focusSelected) {
+          glideLookAt.set(px * 0.45, py + 2, pz * 0.45);
+          const offset = camera.position.clone().sub(controls.target);
+          glideTargetPos.copy(glideLookAt).add(offset);
+          isCameraGliding = true;
+        }
       }
     });
   });
@@ -666,7 +736,7 @@ function updateSpecSheet(r) {
   document.getElementById('spNotes').textContent = sp;
 
   document.getElementById('mqTitle').textContent = nm;
-  document.getElementById('mqSub').textContent = `${dm} • ${vs}`;
+  document.getElementById('mqSub').textContent = `${dm} • ${vs} (Tap for Specs ▲)`;
 
   const zGrid = document.getElementById('spZones');
   zGrid.innerHTML = '';
@@ -676,6 +746,16 @@ function updateSpecSheet(r) {
     dEl.innerHTML = `<b>${pair[0]}</b>${pair[1]}`;
     zGrid.appendChild(dEl);
   });
+}
+
+// Step Through Rooms with Prev / Next Thumb Buttons on Mobile!
+function stepRoom(dir) {
+  const visibleRooms = BIM_DB[curMode].filter(r => curFloor === 'all' || r[1] === curFloor);
+  if (!visibleRooms.length) return;
+  let idx = visibleRooms.findIndex(r => r[0] === selectedId);
+  idx = (idx + dir + visibleRooms.length) % visibleRooms.length;
+  selectedId = visibleRooms[idx][0];
+  renderBIM(true);
 }
 
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
@@ -693,7 +773,7 @@ vp.addEventListener('pointerup', e => {
     while (o && !o.userData?.room) o = o.parent;
     if (o?.userData?.room) {
       selectedId = o.userData.room[0];
-      renderBIM();
+      renderBIM(false);
       break;
     }
   }
@@ -705,50 +785,68 @@ function setMode(m) {
   const btns = document.getElementById('modeBtns').children;
   btns[0].classList.toggle('active', m === 'reim');
   btns[1].classList.toggle('active', m === 'orig');
-  renderBIM();
+  renderBIM(false);
 }
+
 function setFloor(fl) {
   curFloor = fl;
   const btns = document.getElementById('floorBtns').children;
   [0, 1, 2, 3].forEach(i => btns[i].classList.toggle('active', (fl === 'all' && i === 0) || fl === i - 1));
-  renderBIM();
+  renderBIM(false);
+  setCam(currentCamPreset, false);
 }
-function setWallH(val) { wallHeight = parseFloat(val); renderBIM(); }
+
+function setWallH(val) { wallHeight = parseFloat(val); renderBIM(false); }
 function setExplode(val) {
   explode = parseFloat(val);
   hitMeshes.forEach(m => { m.position.y = m.userData.room[1] * 12 * explode; });
 }
-function toggleLabels() {
-  showTags = !showTags;
-  const btn = document.getElementById('lblBtn');
-  btn.classList.toggle('active', showTags);
-  lblLayer.style.display = showTags ? 'block' : 'none';
+
+function toggleAllTags() {
+  showAllTags = !showAllTags;
+  const bD = document.getElementById('lblBtnDesk');
+  const bM = document.getElementById('lblBtnMob');
+  if (bD) { bD.textContent = 'All Tags: ' + (showAllTags ? 'ON' : 'OFF'); bD.classList.toggle('active', showAllTags); }
+  if (bM) { bM.textContent = showAllTags ? 'Tags: ALL' : 'Tags: 1'; bM.classList.toggle('active', showAllTags); }
 }
-function setCam(v) {
+
+function toggleMobSliders() {
+  const drw = document.getElementById('mobSliders');
+  const btn = document.getElementById('sliderNavBtn');
+  const isOpen = drw.classList.toggle('show');
+  btn.classList.toggle('active', isOpen);
+}
+
+// Responsive Camera Presets (Automatically scales distance for Portrait Phones!)
+function setCam(v, selectDefault = true) {
+  currentCamPreset = v;
   const cBtns = document.getElementById('camBtns').children;
   cBtns[0].classList.toggle('active', v === 'entrance');
   cBtns[1].classList.toggle('active', v === 'atrium');
   cBtns[2].classList.toggle('active', v === 'top');
   cBtns[3].classList.toggle('active', v === 'iso');
 
+  const sc = getResponsiveScale();
+  const flY = (curFloor === 'all') ? 8 : (curFloor * 12 * explode + 2);
+
   if (v === 'entrance') {
-    selectedId = (curMode === 'reim') ? 'r_ent' : 'o_ent';
-    renderBIM();
-    camera.position.set(58, 42, -52);
-    targetFocus.set(6, 6, -5);
+    if (selectDefault) { selectedId = (curMode === 'reim') ? 'r_ent' : 'o_ent'; renderBIM(false); }
+    glideTargetPos.set(48 * sc, 38 * sc + flY * 0.4, -48 * sc);
+    glideLookAt.set(2, flY, -2);
   } else if (v === 'atrium') {
-    selectedId = (curMode === 'reim') ? 'r_din' : 'o_din';
-    renderBIM();
-    camera.position.set(-14, 34, -38);
-    targetFocus.set(0, 8, -8);
+    if (selectDefault) { selectedId = (curMode === 'reim') ? 'r_din' : 'o_din'; renderBIM(false); }
+    glideTargetPos.set(-16 * sc, 36 * sc + flY * 0.3, -38 * sc);
+    glideLookAt.set(-2, flY, -6);
   } else if (v === 'top') {
-    camera.position.set(0, 95, 0.01);
-    targetFocus.set(0, 0, 0);
+    glideTargetPos.set(0, 92 * sc, 0.01);
+    glideLookAt.set(0, flY, 0);
   } else {
-    camera.position.set(0, 62, 68);
-    targetFocus.set(0, 8, 0);
+    glideTargetPos.set(-46 * sc, 48 * sc + flY * 0.4, 54 * sc);
+    glideLookAt.set(0, flY, 2);
   }
+  isCameraGliding = true;
 }
+
 function mobTab(tab) {
   document.getElementById('roomList').classList.toggle('open', tab === 'list');
   document.getElementById('specPanel').classList.toggle('open', tab === 'specs');
@@ -778,6 +876,7 @@ const ro = new ResizeObserver(entries => {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h, false);
+      setCam(currentCamPreset, false);
     }
   }
 });
@@ -785,27 +884,42 @@ ro.observe(vp);
 
 (function animate() {
   requestAnimationFrame(animate);
-  controls.target.lerp(targetFocus, 0.08);
-  controls.update();
-  if (showTags) {
-    const w = vp.clientWidth, h = vp.clientHeight;
-    domTags.forEach(t => {
-      if (curFloor === 'all' && !t.isSel && !t.isDH && t.fl !== 0) { t.el.style.display = 'none'; return; }
-      const v = t.obj.position.clone();
-      v.y += 2.2;
-      v.project(camera);
-      if (v.z > 1) { t.el.style.display = 'none'; }
-      else {
-        t.el.style.display = 'block';
-        t.el.style.left = ((v.x * 0.5 + 0.5) * w) + 'px';
-        t.el.style.top = ((-(v.y * 0.5) + 0.5) * h) + 'px';
-      }
-    });
+
+  // Smoothly glide camera ONLY when triggered by a preset or room step, then release to user finger!
+  if (isCameraGliding) {
+    camera.position.lerp(glideTargetPos, 0.12);
+    controls.target.lerp(glideLookAt, 0.12);
+    if (camera.position.distanceTo(glideTargetPos) < 0.35 && controls.target.distanceTo(glideLookAt) < 0.2) {
+      isCameraGliding = false;
+    }
   }
+
+  controls.update();
+
+  const w = vp.clientWidth, h = vp.clientHeight;
+  const isTopView = (currentCamPreset === 'top');
+
+  domTags.forEach(t => {
+    // Decluttered Rule: Show ONLY the active selected room pin in 3D, unless user turned on "All Tags" or is in "2D Plan" on a single floor
+    const shouldShow = t.isSel || showAllTags || (isTopView && curFloor !== 'all' && !t.isGarden);
+    if (!shouldShow) { t.el.style.display = 'none'; return; }
+
+    const v = t.obj.position.clone();
+    v.y += t.isSel ? (wallHeight + 2.2) : 1.5;
+    v.project(camera);
+    if (v.z > 1) { t.el.style.display = 'none'; }
+    else {
+      t.el.style.display = 'block';
+      t.el.style.left = ((v.x * 0.5 + 0.5) * w) + 'px';
+      t.el.style.top = ((-(v.y * 0.5) + 0.5) * h) + 'px';
+    }
+  });
+
   renderer.render(scene, camera);
 })();
 
-renderBIM();
+renderBIM(false);
+setCam('entrance', false);
 </script>
 </body>
 </html>
