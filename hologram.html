@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>4BHK Villa — 3D BIM & Vastu Studio</title>
+<title>4BHK Villa — Entrance-Referenced 3D BIM Studio</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230b111e'/><path d='M20 75 L20 40 L50 20 L80 40 L80 75 Z' fill='none' stroke='%2338bdf8' stroke-width='8'/></svg>">
 <style>
 :root {
@@ -19,7 +19,7 @@
   --muted: #94a3b8;
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
 html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); overscroll-behavior: none; }
 
 .app-shell {
@@ -27,27 +27,29 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
   width: 100vw; height: 100vh; height: 100dvh; overflow: hidden;
 }
 
-/* Streamlined Header (Fits Cleanly on All Phone Widths 320px - 430px+) */
+/* Streamlined Top Bar */
 header {
   background: var(--panel); border-bottom: 1px solid var(--border);
   padding: 6px 10px; display: flex; align-items: center; justify-content: space-between;
-  gap: 8px; z-index: 30; flex-shrink: 0; flex-wrap: wrap;
+  gap: 6px; z-index: 30; flex-shrink: 0;
 }
-.brand { font-weight: 800; font-size: 12px; color: var(--accent); letter-spacing: 0.4px; white-space: nowrap; }
+.brand { font-weight: 800; font-size: 12px; color: var(--accent); letter-spacing: 0.4px; white-space: nowrap; margin-right: 4px; }
 
 .hdr-controls {
-  display: flex; align-items: center; justify-content: space-between; gap: 6px; flex: 1; min-width: 280px;
+  display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; overflow-x: auto; scrollbar-width: none;
 }
-.seg { display: flex; background: var(--bg); padding: 2px; border-radius: 6px; border: 1px solid var(--border); }
+.hdr-controls::-webkit-scrollbar { display: none; }
+
+.seg { display: flex; background: var(--bg); padding: 2px; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
 .seg button {
-  background: transparent; color: var(--muted); border: none; padding: 5px 8px;
-  font-size: 10.5px; font-weight: 600; border-radius: 4px; cursor: pointer; white-space: nowrap; transition: 0.15s;
+  background: transparent; color: var(--muted); border: none; padding: 5px 9px;
+  font-size: 11px; font-weight: 600; border-radius: 4px; cursor: pointer; white-space: nowrap; transition: 0.15s;
 }
 .seg button.active { background: var(--accent); color: #050811; font-weight: 700; }
 .seg button.reim.active { background: var(--green); color: #050811; }
 .seg button.orig.active { background: var(--red); color: #fff; }
 
-.desktop-sliders { display: flex; align-items: center; gap: 6px; }
+.desktop-sliders { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .slider-pill {
   display: flex; align-items: center; gap: 5px; background: var(--bg);
   padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border);
@@ -76,39 +78,60 @@ header {
 /* Center 3D Viewport */
 #viewport {
   flex: 1; position: relative; width: 100%; height: 100%; min-width: 0; min-height: 0;
-  background: radial-gradient(circle at 50% 42%, #16243d 0%, #050811 100%);
+  background: radial-gradient(circle at 50% 45%, #16243d 0%, #050811 100%);
   overflow: hidden; touch-action: none;
 }
 
-/* Single-Row Viewport Top Bar */
+/* Viewport Top Camera Bar */
 .vp-top-bar {
   position: absolute; top: 8px; left: 8px; right: 8px; z-index: 10;
-  display: flex; justify-content: space-between; align-items: center; gap: 6px; pointer-events: none;
+  display: flex; flex-direction: column; gap: 6px; pointer-events: none;
 }
-.compass-badge {
-  background: rgba(11, 17, 30, 0.88); backdrop-filter: blur(8px);
-  border: 1px solid var(--border); padding: 5px 8px; border-radius: 5px;
-  font-size: 9.5px; color: var(--muted); white-space: nowrap; pointer-events: auto;
-}
-.compass-badge b { color: var(--gold); }
-
 .cam-strip {
-  display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; pointer-events: auto;
+  display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; pointer-events: auto;
+  padding-bottom: 2px;
 }
 .cam-strip::-webkit-scrollbar { display: none; }
 .cam-strip button {
-  background: rgba(11, 17, 30, 0.9); color: var(--accent); border: 1px solid var(--border);
-  padding: 5px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  background: rgba(11, 17, 30, 0.92); color: #cbd5e1; border: 1px solid var(--border);
+  padding: 6px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 .cam-strip button.active { background: var(--accent); color: #050811; border-color: #fff; }
 
-/* Decluttered 3D Pin Layer */
+/* Entrance-Referenced Direction Badges */
+.edge-dir {
+  position: absolute; z-index: 5; pointer-events: none;
+  background: rgba(11, 17, 30, 0.82); border: 1px solid rgba(245, 158, 11, 0.4);
+  color: var(--gold); padding: 3px 8px; border-radius: 5px; font-size: 9px; font-weight: 800; letter-spacing: 0.4px;
+}
+.edge-front { bottom: 64px; left: 10px; border-color: var(--green); color: var(--green); }
+.edge-right { right: 8px; top: 44px; }
+.edge-left  { left: 8px; top: 44px; }
+
+/* Floating Touch Navigation Pad (Right Side) */
+.touch-pad {
+  position: absolute; right: 8px; bottom: 68px; z-index: 14;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.tp-btn {
+  background: rgba(11, 17, 30, 0.92); color: var(--text); border: 1px solid var(--border);
+  width: 38px; height: 38px; border-radius: 8px; font-size: 11px; font-weight: 800;
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.6); line-height: 1.05;
+}
+.tp-btn span { font-size: 7.5px; color: var(--accent); font-weight: 700; margin-top: 1px; }
+.tp-btn.active { background: var(--accent); color: #050811; border-color: #fff; }
+.tp-btn.active span { color: #050811; }
+
+/* Interactive Clickable 3D Pin Layer */
 #label-layer { position: absolute; inset: 0; pointer-events: none; z-index: 6; overflow: hidden; }
 .pin3d {
   position: absolute; transform: translate(-50%, -100%);
-  background: rgba(5, 8, 17, 0.92); border: 1px solid rgba(56, 189, 248, 0.5);
+  background: rgba(5, 8, 17, 0.92); border: 1px solid rgba(56, 189, 248, 0.55);
   color: #f8fafc; padding: 3px 7px; border-radius: 5px; font-size: 9.5px; font-weight: 700;
   white-space: nowrap; text-align: center; line-height: 1.2; box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  pointer-events: auto; cursor: pointer;
 }
 .pin3d span { display: block; font-size: 8px; color: var(--accent); font-family: monospace; }
 .pin3d.active {
@@ -178,14 +201,16 @@ header {
 
 @media (min-width: 901px) {
   .close-mob { display: none; }
+  .touch-pad { bottom: 16px; }
+  .edge-front { bottom: 16px; }
 }
 
 @media (max-width: 900px) {
   .brand { display: none; }
   .desktop-sliders { display: none; }
   .panel-left, .panel-right {
-    position: absolute; left: 0; right: 0; bottom: 0; top: 8%;
-    width: 100%; height: 92%; z-index: 35; display: none;
+    position: absolute; left: 0; right: 0; bottom: 0; top: 6%;
+    width: 100%; height: 94%; z-index: 35; display: none;
     border-radius: 14px 14px 0 0; border-top: 2px solid var(--accent);
     box-shadow: 0 -10px 40px rgba(0,0,0,0.85); padding-bottom: 24px;
   }
@@ -198,22 +223,22 @@ header {
 
 <div class="app-shell">
   <header>
-    <div class="brand">4BHK VILLA // 3D BIM & VASTU STUDIO</div>
+    <div class="brand">4BHK VILLA // ENTRANCE-REFERENCED 3D STUDIO</div>
     <div class="hdr-controls">
       <div class="seg" id="modeBtns">
         <button class="reim active" onclick="setMode('reim')">Vastu Plan</button>
         <button class="orig" onclick="setMode('orig')">Original PDF</button>
       </div>
       <div class="seg" id="floorBtns">
-        <button class="active" onclick="setFloor('all')">All</button>
-        <button onclick="setFloor(0)">GF</button>
+        <button class="active" onclick="setFloor(0)">GF</button>
         <button onclick="setFloor(1)">1st</button>
         <button onclick="setFloor(2)">2nd</button>
+        <button onclick="setFloor('all')">All 3D</button>
       </div>
       <div class="desktop-sliders">
         <div class="slider-pill">
           <span>Walls</span>
-          <input type="range" min="1.2" max="9.5" step="0.3" value="4.5" oninput="setWallH(this.value)">
+          <input type="range" min="1.0" max="9.0" step="0.3" value="3.2" oninput="setWallH(this.value)">
         </div>
         <div class="slider-pill">
           <span>Gap</span>
@@ -233,15 +258,25 @@ header {
     <!-- Center 3D Viewport -->
     <div id="viewport">
       <div class="vp-top-bar">
-        <div class="compass-badge">
-          <b>N=LEFT</b> | ▲E:Park | ▶S:Entry
-        </div>
         <div class="cam-strip" id="camBtns">
-          <button class="active" onclick="setCam('entrance')">🚪 Entry & Office</button>
+          <button class="active" onclick="setCam('entrance')">🚪 Entrance Side (Front)</button>
           <button onclick="setCam('kitchen')">🍳 Large Kitchen</button>
           <button onclick="setCam('atrium')">✨ Dining Void</button>
-          <button onclick="setCam('top')">📐 2D Plan</button>
+          <button onclick="setCam('top')">📐 2D Plan (Entrance Bottom)</button>
         </div>
+      </div>
+
+      <!-- Entrance-Referenced Orientation Badges -->
+      <div class="edge-dir edge-front">▲ FRONT: 5'-5" ENTRANCE, OFFICE & KITCHEN (SOUTH)</div>
+      <div class="edge-dir edge-left">◀ BACK: NORTH (Bed 01 & Living)</div>
+      <div class="edge-dir edge-right">EAST (Car Park) ▶</div>
+
+      <!-- 1-Thumb Mobile Touch Control Pad -->
+      <div class="touch-pad">
+        <button class="tp-btn" id="panModeBtn" onclick="toggleTouchPan()">🖐️<span>PAN</span></button>
+        <button class="tp-btn" onclick="zoomStep(0.82)">➕<span>ZOOM</span></button>
+        <button class="tp-btn" onclick="zoomStep(1.22)">➖<span>OUT</span></button>
+        <button class="tp-btn" onclick="setCam('entrance', false)">🎯<span>FIT</span></button>
       </div>
 
       <div id="label-layer"></div>
@@ -251,19 +286,19 @@ header {
         <div class="mob-sliders-drawer" id="mobSliders">
           <div class="slider-pill" style="flex:1">
             <span>Walls</span>
-            <input type="range" min="1.2" max="9.5" step="0.3" value="4.5" style="flex:1" oninput="setWallH(this.value)">
+            <input type="range" min="1.0" max="9.0" step="0.3" value="3.2" style="flex:1" oninput="setWallH(this.value)">
           </div>
           <div class="slider-pill" style="flex:1">
             <span>Gap</span>
             <input type="range" min="1.0" max="2.4" step="0.05" value="1.35" style="flex:1" oninput="setExplode(this.value)">
           </div>
-          <button onclick="toggleAllTags()" id="lblBtnMob" style="background:var(--card);color:var(--accent);border:1px solid var(--border);padding:5px 8px;border-radius:5px;font-size:10px;font-weight:700">All Tags</button>
+          <button onclick="toggleAllTags()" id="lblBtnMob" style="background:var(--card);color:var(--accent);border:1px solid var(--border);padding:5px 8px;border-radius:5px;font-size:10px;font-weight:700">Tags</button>
         </div>
 
         <div class="mob-stepper-card">
           <button class="step-btn" onclick="stepRoom(-1)">◀</button>
           <div class="step-info" onclick="mobTab('specs')">
-            <b id="mqTitle">Foyer & Home Office</b>
+            <b id="mqTitle">Foyer + Home Office Studio</b>
             <span id="mqSub">10'-3" x 12'-0" • Tap for Vastu Specs ▲</span>
           </div>
           <button class="step-btn" onclick="stepRoom(1)">▶</button>
@@ -301,7 +336,7 @@ header {
   </div>
 
   <nav class="mob-nav" id="mobNav">
-    <button class="active" onclick="mobTab('3d')">🧊 3D View</button>
+    <button class="active" onclick="mobTab('3d')">🧊 3D Map</button>
     <button onclick="mobTab('list')">📋 Rooms</button>
     <button onclick="mobTab('specs')">📐 Specs</button>
     <button onclick="toggleMobSliders()" id="sliderNavBtn">⚙️ Sliders</button>
@@ -317,21 +352,19 @@ const FLOOR_MAT = {
   d: 0x7f1d1d, v: 0xf59e0b
 };
 
-// Re-Iterated BIM Database:
-// 1. Bedroom 01 stays in original North-West wing (12' x 14'-8") with Walk-In Closet (12' x 5'-3") & Attached Washroom 01 (5'-7" x 7'-10")!
-// 2. Front Drawing Room (10'-3" x 12'-0") becomes a Coinciding Entrance Foyer + Executive Home Office & Visitor Lounge!
-// 3. Media Lounge removed -> Kitchen expands into a Grand 10'-3" x 18'-3" Chef's Island Kitchen + 8' x 3'-10" Walk-In Pantry Store!
+// Complete BIM Database
+// Reference Point: The 5'-5" Entrance Side (+X, South-East) is now the Front Foreground!
 const BIM_DB = {
   reim: [
     // --- GROUND FLOOR & SITE (FLOOR 0) ---
-    ["r_ent",0,41.25,5,5.5,12,"s","foy","5'-5\" Entrance Porch & Verandah","5'-5\" x 12'-0\" Arrival Deck","EAST-SOUTH-EAST (Main Entry)","Formalizes the 5'-5\" Entrance! Starting from the East Car Park, you ascend 5 granite arrival steps onto a covered verandah with a concealed shoe console and grand teakwood main door.",[["Main Door","5'-5\" Teak Pivot Door"],["Shoe Console","Built-in Bench & Rack"],["Steps","5 East-Facing Steps"],["Threshold","Solid Brass Umbra"]],"Camera starts looking directly at this Entrance and Home Office wing!"],
-    ["r_off",0,31,5,10.25,12,"s","office_foyer","Foyer + Home Office / Drawing Studio","10'-3\" x 12'-0\" Dual-Zone","SOUTH-EAST / EAST","Redesigned front room coinciding with the Entrance Foyer! A slatted timber screen buffers the 5'-5\" doorway, while the East window side houses an Executive Home Office Desk and a 2-seater Visitor Drawing Lounge.",[["Foyer Buffer","Slatted Timber Screen"],["Office Desk","East-Facing Work Desk"],["Visitor Sofa","2-Seater Client Lounge"],["Privacy","Keeps Guests at Front"]],"Allows you to work from home and host professional visitors right at the entrance without bringing them into the family living areas."],
-    ["r_kit",0,31,17,10.25,18.25,"w","kit_grand","Expanded Chef's Island Kitchen!","10'-3\" x 18'-3\" (Expanded!)","SOUTH-EAST TO SOUTH-WEST","By removing the redundant media lounge and compacting the front office to 12ft, the Kitchen expands from 16ft to a massive 18'-3\" Chef's Kitchen! The cooking hob sits in the auspicious South-East (Agni) zone facing East, with a 6-foot central breakfast island and heavy fridge/ovens in the SW.",[["Cooking Hob","SE Agni Zone (Face East)"],["Center Island","6'-0\" Breakfast & Prep Island"],["Appliance Wall","Tall Ovens & Double Fridge"],["Wet Utility","Direct Door to 5'-6\" Utility"]],"Combines massive storage and counter space with 100% Vastu-compliant South-East fire placement."],
+    ["r_off",0,31,5,10.25,12,"s","office_foyer","Foyer + Home Office / Drawing Studio","10'-3\" x 12'-0\" Dual-Zone","SOUTH-EAST / EAST","Coinciding Entrance Foyer & Home Office right inside the 5'-5\" Entrance! A slatted timber screen buffers the front door, while the East window wall houses an East-facing Executive Work Desk and a 2-seater Visitor Lounge.",[["Foyer Screen","Slatted Timber Buffer"],["Office Desk","East-Facing Work Desk"],["Visitor Sofa","2-Seater Client Lounge"],["Entry Door","Direct from 5'-5\" Porch"]],"Sits right in the front foreground next to the 5'-5\" Entrance Porch."],
+    ["r_ent",0,41.25,5,5.5,12,"s","foy","5'-5\" Entrance Porch & Steps","5'-5\" x 12'-0\" Arrival Deck","EAST-SOUTH-EAST (Main Entry)","Formalizes the 5'-5\" Entrance right at the front of the plan! Starting from the East Car Park, you walk up 5 granite steps onto a covered verandah with a concealed shoe console and teakwood main door.",[["Main Door","5'-5\" Teak Pivot Door"],["Shoe Console","Built-in Bench & Rack"],["Steps","5 East-Facing Steps"],["Threshold","Solid Brass Umbra"]],"Primary foreground reference point for the entire villa plan."],
+    ["r_kit",0,31,17,10.25,18.25,"w","kit_grand","Expanded Chef's Island Kitchen!","10'-3\" x 18'-3\" (Expanded!)","SOUTH-EAST TO SOUTH-WEST","With the redundant media lounge removed and the front office compacted to 12ft, the Kitchen expands from 16ft to a massive 18'-3\" Chef's Island Kitchen! The cooking hob sits in the auspicious South-East (Agni) zone facing East, with a 6-foot center island and tall appliance wall.",[["Cooking Hob","SE Agni Zone (Face East)"],["Center Island","6'-0\" Breakfast & Prep Island"],["Appliance Wall","Tall Ovens & Double Fridge"],["Wet Utility","Direct Door to 5'-6\" Utility"]],"Replaces the old media lounge space with a true luxury family kitchen right next to the Home Office."],
     ["r_str",0,31,35.25,10.25,4.15,"c","wic","Walk-In Kitchen Pantry & Store","8'-0\" x 3'-10\"","EXTREME SOUTH-WEST","Preserved from the original PDF! Heavy dry-goods pantry at the South-West end of the expanded kitchen, anchoring the SW corner per Vastu while keeping the rear utility exit door open.",[["Shelving","Heavy-Duty Pantry Racks"],["Vastu Role","Heavy SW Mass"],["Exit Door","Rear Utility Door Preserved"]],"Directly accessed from the expanded kitchen."],
-    ["r_puj",0,27,5,4,5.5,"s","puj","Defined Puja Sanctuary","4'-0\" x 5'-6\" Enclosed","EAST-SOUTH-EAST","Properly enclosed 4'-0\" x 5'-6\" Mandir (resolving the undefined '4' WIDE' marker on the PDF). The marble altar is placed on the East wall so devotees face East while praying.",[["Altar Wall","East Wall (Face East)"],["Dimensions","4'-0\" Wide x 5'-6\" Deep"],["Doors","Teak & Fluted Glass Jali"],["Ventilation","Dedicated Incense Vent"]],"Never place idols facing South or backing onto a bathroom wall."],
+    ["r_puj",0,27,5,4,5.5,"s","puj","Defined Puja Sanctuary","4'-0\" x 5'-6\" Enclosed","EAST-SOUTH-EAST","Properly enclosed 4'-0\" x 5'-6\" Mandir between the Dining Hall and Home Office. The marble altar is placed on the East wall so devotees face East while praying.",[["Altar Wall","East Wall (Face East)"],["Dimensions","4'-0\" Wide x 5'-6\" Deep"],["Doors","Teak & Fluted Glass Jali"],["Ventilation","Dedicated Incense Vent"]],"Never place idols facing South or backing onto a bathroom wall."],
     ["r_bar",0,27,10.5,4,8.75,"c","wic","Crockery & Washbasin Alcove","4'-0\" x 8'-9\" Niche","CENTER-EAST","Occupies the 4-foot recessed bay behind the Puja Room facing the Dining Table. Houses a built-in crockery sideboard and a dry handwash basin.",[["Crockery","Backlit Fluted Glass Bar"],["Basin","Dry Dining Handwash"],["Counter","Italian Marble Top"],["Storage","Cutlery Drawers"]],"Eliminates dead space behind the enclosed Puja sanctuary."],
     ["r_din",0,16,5,11,14.25,"s","din","DOUBLE-HEIGHT DINING ATRIUM","11'-0\" x 14'-3\" (20' Double-Height)","EAST / BRAHMASTHAN","True 2-story Double-Height Dining Hall rising straight through the 1st-floor cutout! Features an 8-seater marble dining table, double-height East glass window wall, and a 20-foot cascading chandelier.",[["Ceiling Height","20'-0\" Double-Height Volume"],["Chandelier","Cascading 2-Story Pendant"],["Dining Table","8-Seater Marble Table"],["1st Fl Overlook","Open to 1st Fl Gallery"]],"The double-height shaft floods the central Brahmasthan with morning East light across both floors."],
-    ["r_liv",0,4,5,12,14.25,"s","liv","Main Living & Media Room","12'-8\" x 14'-8\" (Pipe-Free)","NORTH-EAST (Ishanya)","Serves as your primary Ground Floor Living & Media Room! Sits in the sunlit North-East garden corner with zero overhead sewage pipes (since Bedroom 02's toilet above was moved to the NW).",[["Primary Role","Family Living & Media TV"],["Garden Link","Sliding Glass to NE Deck"],["Ceiling","100% Pipe-Free Slab"],["Daylight","North & East Glazing"]],"Large L-shaped sectional sofa enjoys both the media wall and panoramic garden views."],
+    ["r_liv",0,4,5,12,14.25,"s","liv","Main Living & Media Room","12'-8\" x 14'-8\" (Pipe-Free)","NORTH-EAST (Ishanya)","Serves as your primary Ground Floor Living & Media Room in the North-East garden corner! Zero overhead sewage pipes (since Bedroom 02's toilet above was moved to the NW).",[["Primary Role","Family Living & Media TV"],["Garden Link","Sliding Glass to NE Deck"],["Ceiling","100% Pipe-Free Slab"],["Daylight","North & East Glazing"]],"Large L-shaped sectional sofa enjoys both the media wall and panoramic garden views."],
     ["r_b1",0,4,19.25,12,14.95,"b","bed","Bedroom 01 (With Attached Washroom)","12'-0\" x 14'-8\" (Preserved!)","NORTH-WEST (Vayu)","Preserved in its exact original North-West garden wing with its Walk-In Closet and Attached Washroom! The bed headboard is placed against the South wall for Vastu-compliant sleep.",[["King Bed","Headboard on South Wall"],["Closet Link","12' x 5'-3\" Walk-In Closet"],["Attached Bath","5'-7\" x 7'-10\" 3-Zone Bath"],["Garden View","North Bamboo Lawn"]],"Step-free ground floor suite with private dressing and bath core."],
     ["r_w1",0,4,34.2,12,5.2,"c","wic","Walk-In Closet 01 (Bedroom 01)","12'-0\" x 5'-3\"","WEST-NORTH-WEST","Full-length walk-in wardrobe inside Bedroom 01's suite, buffering the West exterior wall and leading directly into Attached Washroom 01.",[["Wardrobe","12' Long x 2' Deep Run"],["Mirror","Full-Height Dresser"],["Walkway","3'-3\" Clear Passage"]],"Internal motion-sensor LED wardrobe strips."],
     ["r_tb1",0,16,30,5,9.4,"w","b_at","Attached Washroom 01 (3-Zone)","5'-7\" x 7'-10\"","WEST-NORTH-WEST","Attached directly to Bedroom 01! Redesigned with strict Dry-to-Wet progression: a 3' Dry Floating Vanity at the entry, a central Wall-Hung WC, and a 5'-7\" x 3'-4\" glass-enclosed Wet Rain Shower at the rear.",[["Zone 1 (Dry)","3'-0\" Floating Vanity"],["Zone 2 (Mid)","Wall-Hung WC (N-S Axis)"],["Zone 3 (Wet)","5'-7\" x 3'-4\" Glass Shower"],["Floor Drop","15mm Shower Drop"]],"Toughened glass partition keeps the vanity and WC floor 100% dry."],
@@ -345,39 +378,41 @@ const BIM_DB = {
     ["r_car",0,22,-4,24.75,9,"g","g_car","East Car Park & Pergola Porch","24'-9\" x 9'-0\"","EAST APPROACH","Refined vehicular arrival porch on the East road side. Features flamed granite cobblestone paving, an overhead steel-and-timber louver pergola, and an EV charging pillar.",[["Parking Bay","SUV + Sedan Porch"],["Canopy","Timber-Steel Pergola"],["Paving","Flamed Granite Cobbles"],["EV Ready","7.4kW Wall Charger"]],"Slope driveway gently toward East street drain; leads directly up 5 steps to the 5'-5\" Entrance."],
     ["r_ne",0,-4,-4,26,9,"g","g_ne","NE Sacred Garden & Water Deck","26'-0\" x 9'-0\"","NORTH-EAST (Ishanya)","Refined North-East garden featuring a 4' stepped teakwood deck outside the Living Room, an auspicious North-East reflecting water bowl, and low jasmine planters.",[["Teak Deck","4' Stepped Deck"],["Water Court","NE Reflecting Bowl"],["Planting","Low Tulasi & Shrubs"],["Plinth","Lowest Site Level"]],"Keep North-East open to morning sunlight without heavy trees; place underground rainwater tank here."],
     ["r_nn",0,-4,5,8,34.4,"g","g_nn","North Bamboo Lawn & Stepping Path","8'-0\" Wide Setback","NORTH (Kubera)","Manicured lawn corridor along the North boundary wall with basalt stepping stones and slender bamboo screening for privacy.",[["Lawn","Korean Carpet Grass"],["Pathway","Basalt Stepping Stones"],["Privacy","Multiplex Bamboo"],["Lighting","Warm 2700K Bollards"]],"Provides serene green views for both the Living Room and Bedroom 01."],
-    ["r_ww",0,-4,39.4,50.75,4.6,"g","none","West MEP & Service Corridor","4'-6\" Wide Passage","WEST SETBACK","Rear service passage housing AC outdoor condensers, heat pumps, and accessible external plumbing shafts outside the main house walls.",[["Walkway","3'-0\" Clear Access"],["HVAC","AC Outdoor Units"],["Plumbing","Inspection Chambers"],["Access","Rear Utility Door"]],"Keeps maintenance staff and all vertical soil/waste pipes completely off interior living walls."],
+    ["r_ww",0,-4,39.4,50.75,4.6,"g","none","West MEP & Service Corridor","4'-6\" Wide Passage","WEST SETBACK","Rear service passage housing AC outdoor condensers, heat pumps, and accessible external plumbing shafts.",[["Walkway","3'-0\" Clear Access"],["HVAC","AC Outdoor Units"],["Plumbing","Inspection Chambers"],["Access","Rear Utility Door"]],"Keeps maintenance staff and all vertical soil/waste pipes completely off interior living walls."],
 
     // --- 1ST FLOOR SUITES (FLOOR 1) ---
+    ["f_b3",1,27,18,14.25,21.4,"b","bed","True SW Master Suite (Bedroom 03)","14'-3\" x 21'-4\" (Foyer Merged)","SOUTH-WEST (Nairutya Master)","Anchored in the auspicious South-West corner on the Entrance side and expanded by absorbing the wasted 10'x5' Foyer! Includes King bed, private sofa lounge, and study nook.",[["Master Bed","King Bed (Head South)"],["Lounge","Private Suite Sofa"],["Study Nook","Reclaimed 10'x5' Foyer"],["Balcony","Access to 5'-2\" Balcony"]],"Ideal Vastu master suite for the head of the family."],
+    ["f_w3",1,27,11.5,14.25,6.5,"c","wic","Walk-In Dressing Lounge 03","14'-3\" x 6'-6\"","SOUTH-EAST","Parallel His & Hers walk-in closet connecting Master Suite 03 to its washroom and East Balcony.",[["Storage","Parallel Wardrobes"],["Island","Accessory Drawer Unit"],["Balcony","Door to East Balcony"]],"Natural daylight from East balcony door."],
+    ["f_t3",1,27,5,14.25,6.5,"w","b_ms","Washroom 03 (3-Zone Master Bath)","14'-3\" x 6'-6\" (In SE)","EAST-SOUTH-EAST","Moved out of the South-West corner! Features a 5' Twin Vanity, enclosed WC cubicle, and a 5'-9\" Rain Shower & Wet Deck.",[["Dry Zone","5'-0\" Double Vanity"],["WC Stall","3'-6\" Enclosed WC"],["Wet Zone","5'-9\" Shower & Tub Deck"]],"Stacks cleanly over the Ground Floor East/SE wet wall."],
+    ["f_vd",1,16,5,11,14.25,"v","void_open","DOUBLE-HEIGHT VOID CUTOUT","11'-0\" x 14'-3\" Open Shaft","EAST / BRAHMASTHAN","True open slab cutout looking straight down onto the Ground Floor Dining Table! Framed with a 3'-6\" glass balustrade and acoustic partition along the 1st-floor gallery bridge.",[["Slab Opening","11'-0\" x 14'-3\" Hollow Cutout"],["Balustrade","12mm Toughened Glass Railing"],["Chandelier Drop","Suspended Through Void"],["Sightline","Direct View to GF Dining"]],"Look straight through this open shaft in 3D to see the dining table and chandelier below."],
+    ["f_pas",1,16,19.25,11,5.75,"s","none","Acoustic Gallery Bridge","6'-0\" Wide Passage","CENTER","Central corridor overlooking the Double-Height Dining Void.",[["Width","6'-0\" Clear Passage"],["Railing","Overlooks Dining Void"]],"Blocks kitchen noise and odors from entering bedrooms."],
     ["f_b2",1,4,5,12,20,"b","bed","Bedroom 02 (NE Garden Suite)","12'-0\" x 20'-3\" (Flipped!)","NORTH-EAST / NORTH","Moved into the bright North-East garden corner, replacing the old 1st-floor toilet! Enjoys dual-aspect views over the North and East lawns.",[["King Bed","Headboard on South Wall"],["Lounge Nook","Armchairs by NE Window"],["Study Desk","East Window Desk"],["Ceiling Below","Protects GF Living Room"]],"Eliminates the severe North-East toilet defect and stops pipes from running over the Living Room."],
     ["f_w2",1,4,25,12,7.8,"c","wic","Walk-In Closet 02","12'-3\" x 7'-8\"","NORTH-WEST","L-shaped walk-in dressing buffer between Bedroom 02 and Washroom 02.",[["Wardrobes","His & Hers L-Run"],["Dresser","Seated Mirror Vanity"]],"Fluted glass sliding doors."],
     ["f_t2",1,4,32.8,12,6.6,"w","b_ms","Washroom 02 (3-Zone Master Bath)","12'-0\" x 6'-6\" (Stacked NW)","NORTH-WEST / WEST","Relocated to the North-West/West stack directly over GF Closet 01! Features a 4'-6\" Twin Vanity (Dry), 3'-6\" WC zone, and a 4' x 6'-6\" Glass Rain Shower stall.",[["Dry Zone","4'-6\" Twin Basin Vanity"],["Mid Zone","3'-6\" Wall-Hung WC"],["Wet Zone","4'-0\" x 6'-6\" Rain Shower"],["Shaft","Exterior West Pipe Duct"]],"100% Vastu compliant North-West bathroom placement."],
-    ["f_vd",1,16,5,11,14.25,"v","void_open","DOUBLE-HEIGHT VOID CUTOUT","11'-0\" x 14'-3\" Open Shaft","EAST / BRAHMASTHAN","True open slab cutout looking straight down onto the Ground Floor Dining Table! Framed with a 3'-6\" glass balustrade and acoustic partition along the 1st-floor gallery bridge.",[["Slab Opening","11'-0\" x 14'-3\" Hollow Cutout"],["Balustrade","12mm Toughened Glass Railing"],["Chandelier Drop","Suspended Through Void"],["Sightline","Direct View to GF Dining"]],"Look straight through this open shaft in 3D to see the dining table and chandelier below."],
-    ["f_pas",1,16,19.25,11,5.75,"s","none","Acoustic Gallery Bridge","6'-0\" Wide Passage","CENTER","Central corridor overlooking the Double-Height Dining Void.",[["Width","6'-0\" Clear Passage"],["Railing","Overlooks Dining Void"]],"Blocks kitchen noise and odors from entering bedrooms."],
     ["f_lf1",1,16,25,5,5,"l","lft","Reserved 5'x5' Space (1st Fl Pantry)","5'-0\" x 5'-0\" (No Lift Now)","WEST CORE","Floored with a removable knock-out slab to serve as a 1st-Floor Morning Coffee Station & Walk-In Linen Closet.",[["Current Use","Coffee Station & Linen"],["Appliance","Mini-Fridge + Kettle"],["Slab","Knock-Out Concrete Panel"]],"Saves walking downstairs for water or coffee at night."],
     ["f_str",1,16,30,5,9.4,"c","wic","1st Floor Luggage & Linen Store","5'-2\" x 7'-10\"","WEST","Dedicated storage room stacked over GF Bath 01.",[["Racks","Floor-to-Ceiling Shelving"]],"Ventilated to West shaft."],
     ["f_st1",1,21,25,6,14.4,"c","str","1st Floor Staircase","Central Core","WEST","Continues clockwise to 2nd Floor.",[["Flight","U-Turn Stairs"]],"Glass balustrade."],
-    ["f_t3",1,27,5,14.25,6.5,"w","b_ms","Washroom 03 (3-Zone Master Bath)","14'-3\" x 6'-6\" (In SE)","EAST-SOUTH-EAST","Moved out of the South-West corner! Features a 5' Twin Vanity, enclosed WC cubicle, and a 5'-9\" Rain Shower & Wet Deck.",[["Dry Zone","5'-0\" Double Vanity"],["WC Stall","3'-6\" Enclosed WC"],["Wet Zone","5'-9\" Shower & Tub Deck"]],"Stacks cleanly over the Ground Floor East/SE wet wall."],
-    ["f_w3",1,27,11.5,14.25,6.5,"c","wic","Walk-In Dressing Lounge 03","14'-3\" x 6'-6\"","SOUTH-EAST","Parallel His & Hers walk-in closet connecting Master Suite 03 to its washroom and East Balcony.",[["Storage","Parallel Wardrobes"],["Island","Accessory Drawer Unit"],["Balcony","Door to East Balcony"]],"Natural daylight from East balcony door."],
-    ["f_b3",1,27,18,14.25,21.4,"b","bed","True SW Master Suite (Bedroom 03)","14'-3\" x 21'-4\" (Foyer Merged)","SOUTH-WEST (Nairutya Master)","Anchored in the auspicious South-West corner and expanded by absorbing the wasted 10'x5' Foyer! Includes King bed, private sofa lounge, and study nook.",[["Master Bed","King Bed (Head South)"],["Lounge","Private Suite Sofa"],["Study Nook","Reclaimed 10'x5' Foyer"],["Balcony","Access to 5'-2\" Balcony"]],"Ideal Vastu master suite for the head of the family."],
     ["f_be",1,27,1,19.45,4,"g","none","East Morning Balcony","4'-0\" Wide","EAST","Front East balcony overlooking car park.",[["Deck","Anti-Skid Wood Tile"]],"Toughened glass railing."],
     ["f_bs",1,41.25,5,5.2,34.4,"g","none","South Wrap Balcony","5'-2\" Wide","SOUTH","Deep South balcony shading the Master Suite.",[["Planters","Perimeter Green Trough"]],"Buffers afternoon South heat."],
 
     // --- 2ND FLOOR & TERRACE (FLOOR 2) ---
+    ["s_ter",2,31,5,15.45,23.25,"g","ter","Landscaped Sky Terrace & Pergola","15'-10\" x 23'-3\"","SOUTH-EAST / SOUTH","Refined rooftop garden deck on the Entrance side with timber pergola, outdoor BBQ counter, and perimeter planter troughs.",[["BBQ Bar","East Outdoor Counter"],["Canopy","Timber Pergola"],["Deck","WPC Decking + Turf"]],"Double-layer polyurethane waterproofing under deck tiles."],
+    ["s_cov",2,31,28.25,12,11.15,"s","liv","Covered Outdoor Pavilion (SW)","10'-0\" x 13'-6\"","SOUTH-WEST (Nairutya)","Covered architectural gazebo anchoring the South-West corner at the highest roof elevation.",[["Seating","Curved Outdoor Lounge"],["Roof","Raised SW RCC Canopy"]],"Keeps the South-West corner the highest and heaviest part of the villa."],
+    ["s_lng",2,16,5,15,14.25,"s","liv","2nd Fl Family & Media Lounge","15'-0\" x 14'-3\"","EAST","Dedicated upstairs Family & Home Theater Lounge opening directly onto the landscaped Sky Terrace!",[["Media Setup","Big-Screen Home Theater"],["Seating","Dual Facing Lounge Sofas"],["Doors","Bi-Fold Glass to Terrace"]],"Provides a dedicated upstairs media and party lounge."],
+    ["s_pas",2,16,19.25,15,5.75,"s","none","2nd Floor Lobby Passage","6'-0\" Wide","CENTER","Connects stairs, reserved lift room, lounge, and the new guest washroom.",[["Lobby","6' Wide Corridor"]],"Direct access to the new Guest Powder/Shower Room."],
+    ["s_pwd",2,16,30,5,9.4,"w","b_at","New 2nd Fl Guest Washroom!","5'-2\" x 7'-10\" (Converted Store)","WEST","Converted from the old Store Room! Gives Family Lounge and Terrace guests a dedicated 3-zone washroom so nobody has to walk through Bedroom 04.",[["Dry Zone","3'-0\" Designer Vanity"],["Mid Zone","Wall-Hung WC"],["Wet Zone","5'-2\" x 3'-4\" Shower"],["Plumbing","Stacked Over GF Bath 01"]],"Connects directly into the Ground Floor Bath 01 plumbing stack below."],
+    ["s_lf2",2,16,25,5,5,"l","lft","Reserved 5'x5' Space (Terrace Store)","5'-0\" x 5'-0\" (No Lift Now)","WEST CORE","Serves as your Terrace Cushion & Bar Storage Room since the old Store Room was converted into the Guest Washroom.",[["Current Use","Terrace Cushion & Bar Store"],["Slab","Removable Knock-Out Floor"]],"Cast lifting hook in ceiling slab for future elevator."],
     ["s_b4",2,4,5,12,20,"b","bed","Bedroom 04 (NE Penthouse Suite)","12'-0\" x 20'-3\"","NORTH-EAST / NORTH","Stacked over 1st Floor Bedroom 02 in the quiet North-East corner.",[["Bed","King Bed (Head South)"],["Window","Treetop Garden View"]],"Keeps NE corner free of toilets on all floors."],
     ["s_w4",2,4,25,12,7.8,"c","wic","Walk-In Closet 04","12'-0\" x 7'-8\"","NORTH-WEST","Stacked over 1st Floor WIC 02.",[["Joinery","L-Shaped Wardrobes"]],"Skylight tube for natural light."],
     ["s_t4",2,4,32.8,12,6.6,"w","b_ms","Washroom 04 (3-Zone Penthouse Bath)","12'-0\" x 6'-6\" (Stacked NW)","NORTH-WEST / WEST","Stacked over 1st Floor Washroom 02 with Double Vanity, Wall-Hung WC, and Steam Shower stall.",[["Dry Zone","4'-6\" Double Vanity"],["Mid Zone","3'-6\" WC Area"],["Wet Zone","4'-0\" x 6'-6\" Steam Shower"]],"Single vertical West drainage shaft."],
-    ["s_lng",2,16,5,15,14.25,"s","liv","2nd Fl Family & Media Lounge","15'-0\" x 14'-3\"","EAST","Dedicated upstairs Family & Home Theater Lounge opening directly onto the landscaped Sky Terrace!",[["Media Setup","Big-Screen Home Theater"],["Seating","Dual Facing Lounge Sofas"],["Doors","Bi-Fold Glass to Terrace"]],"Provides a dedicated upstairs media and party lounge."],
-    ["s_pas",2,16,19.25,15,5.75,"s","none","2nd Floor Lobby Passage","6'-0\" Wide","CENTER","Connects stairs, reserved lift room, lounge, and the new guest washroom.",[["Lobby","6' Wide Corridor"]],"Direct access to the new Guest Powder/Shower Room."],
-    ["s_lf2",2,16,25,5,5,"l","lft","Reserved 5'x5' Space (Terrace Store)","5'-0\" x 5'-0\" (No Lift Now)","WEST CORE","Serves as your Terrace Cushion & Bar Storage Room since the old Store Room was converted into the Guest Washroom.",[["Current Use","Terrace Cushion & Bar Store"],["Slab","Removable Knock-Out Floor"]],"Cast lifting hook in ceiling slab for future elevator."],
-    ["s_pwd",2,16,30,5,9.4,"w","b_at","New 2nd Fl Guest Washroom!","5'-2\" x 7'-10\" (Converted Store)","WEST","Converted from the old Store Room! Gives Family Lounge and Terrace guests a dedicated 3-zone washroom so nobody has to walk through Bedroom 04.",[["Dry Zone","3'-0\" Designer Vanity"],["Mid Zone","Wall-Hung WC"],["Wet Zone","5'-2\" x 3'-4\" Shower"],["Plumbing","Stacked Over GF Bath 01"]],"Connects directly into the Ground Floor Bath 01 plumbing stack below."],
-    ["s_st2",2,21,25,10,14.4,"c","str","2nd Floor Stairwell & Skylight","Top Landing","WEST","Top stairwell landing with overhead skylight.",[["Roof","Laminated Skylight"]],"Natural daylight core."],
-    ["s_ter",2,31,5,15.45,23.25,"g","ter","Landscaped Sky Terrace & Pergola","15'-10\" x 23'-3\"","SOUTH-EAST / SOUTH","Refined rooftop garden deck with timber pergola, outdoor BBQ counter, and perimeter planter troughs.",[["BBQ Bar","East Outdoor Counter"],["Canopy","Timber Pergola"],["Deck","WPC Decking + Turf"]],"Double-layer polyurethane waterproofing under deck tiles."],
-    ["s_cov",2,31,28.25,12,11.15,"s","liv","Covered Outdoor Pavilion (SW)","10'-0\" x 13'-6\"","SOUTH-WEST (Nairutya)","Covered architectural gazebo anchoring the South-West corner at the highest roof elevation.",[["Seating","Curved Outdoor Lounge"],["Roof","Raised SW RCC Canopy"]],"Keeps the South-West corner the highest and heaviest part of the villa."]
+    ["s_st2",2,21,25,10,14.4,"c","str","2nd Floor Stairwell & Skylight","Top Landing","WEST","Top stairwell landing with overhead skylight.",[["Roof","Laminated Skylight"]],"Natural daylight core."]
   ],
 
   orig: [
     ["o_ent",0,41.25,5,5.5,14.25,"g","foy","5'-5\" Entrance Steps (Unbuffered)","5'-5\" Wide","SOUTH-EAST","Original entrance steps opening straight into the side of the Drawing Room without a vestibule.",[["Width","5'-5\""]],"Needs foyer vestibule."],
     ["o_drw",0,31,5,10.25,14.25,"d","liv","Drawing Room (10'-3\" x 14'-3\")","10'-3\" x 14'-3\"","SOUTH-EAST","Original Drawing Room with no foyer buffer or office space.",[["Size","10'-3\" x 14'-3\""],["Entry","No Foyer Buffer"]],"Convert to Foyer + Home Office and give extra 2'-3\" length to Kitchen."],
+    ["o_kit",0,31,19.25,10.25,16,"d","kit","Kitchen (10' x 16' Closed Box)","10' x 16'","SOUTH-WEST","Original 10' x 16' Kitchen.",[["Size","10' x 16'"]],"Expand to 18'-3\" with SE Agni cooking counter and center island."],
+    ["o_str",0,31,35.25,10.25,4.15,"c","wic","Store Room","8' x 3'-10\"","SOUTH-WEST","Original Store Room.",[["Size","8' x 3'-10\""]],"Preserved."],
     ["o_puj",0,27,5,4,6,"d","puj","Puja (Undefined Depth / West Facing)","4' Wide","EAST","DEFECT: Only marked '4' WIDE' with no depth dimension and drawn facing West instead of East.",[["Defect","Undefined Depth"],["Orientation","Faces West"]],"Enclose as 4'x5'-6\" facing East."],
     ["o_din",0,16,5,11,14.25,"s","din","Double Height Dining Area","11' x 14'-3\" (20' High)","EAST","Original double-height dining area rising through the 1st-floor void.",[["Width","11'-0\""],["Height","20' Double Volume"]],"Open to 1st floor."],
     ["o_ne",0,-4,-4,26,9,"g","g_ne","Original Lawn (GF)","North-East Lawn","NORTH-EAST","Original perimeter lawn.",[["Zone","NE Lawn"]],"Unrefined layout."],
@@ -391,8 +426,6 @@ const BIM_DB = {
     ["o_svt",0,21,33,3.7,6.4,"w","b_pw","Servant Toilet","3'-8\" x 6'","WEST","Original servant toilet.",[["Size","3'-8\" x 6'"]],"Standard."],
     ["o_st0",0,24.7,25,6.3,10.6,"c","str","Staircase","U-Turn Stairs","WEST","Original stairs.",[["Core","Stairs"]],"Standard."],
     ["o_srv",0,24.7,35.6,6.3,3.8,"d","none","Servant Quarter (Only 3'-8\" Wide!)","7'-9\" x 3'-8\"","WEST","CRITICAL DEFECT: Only 3'-8\" wide—narrower than a corridor and unlivable.",[["Defect","3'-8\" Width"]],"Expand 2ft into West setback."],
-    ["o_kit",0,31,19.25,10.25,16,"d","kit","Kitchen (10' x 16' Closed Box)","10' x 16'","SOUTH-WEST","Original 10' x 16' Kitchen.",[["Size","10' x 16'"]],"Expand to 18'-3\" with SE Agni cooking counter and center island."],
-    ["o_str",0,31,35.25,10.25,4.15,"c","wic","Store Room","8' x 3'-10\"","SOUTH-WEST","Original Store Room.",[["Size","8' x 3'-10\""]],"Preserved."],
     ["o_utl",0,41.25,19.25,5.5,20.15,"g","none","Utility Areas","5'-6\" & 4'-6\" Wide","UTILITY","Original utility setbacks.",[["Width","5'-6\" & 4'-6\""]],"Service paths."],
     ["of_t2",1,4,5,12,6,"d","b_ms","Toilet 02 (In Sacred NE Corner!)","12' x 6'","NORTH-EAST (DEFECT)","CRITICAL DEFECT: Toilet placed in the sacred North-East corner directly over the Ground Floor Living Room.",[["Defect","NE Toilet over Living"]],"Flip with Bedroom 02 so toilet is in NW."],
     ["of_w2",1,4,11,12,7.6,"c","wic","Walk-In Closet 02","12'-3\" x 7'-8\"","NORTH","Original closet blocking North wall.",[["Size","12'-3\" x 7'-8\""]],"Shift south."],
@@ -421,11 +454,14 @@ const BIM_DB = {
   ]
 };
 
+// ============================================================================
+// THREE.JS ENGINE: FLOOR-SLAB-ONLY RAYCASTING (100% FIRST-TAP ACCURACY)
+// ============================================================================
 const vp = document.getElementById('viewport');
 const lblLayer = document.getElementById('label-layer');
 const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(40, 1, 1, 1200);
+const camera = new THREE.PerspectiveCamera(38, 1, 1, 1400);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 vp.appendChild(renderer.domElement);
@@ -434,16 +470,18 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.maxPolarAngle = Math.PI / 2 - 0.01;
+controls.screenSpacePanning = true;
 
 let isCameraGliding = false;
 const glideTargetPos = new THREE.Vector3();
 const glideLookAt    = new THREE.Vector3();
+let touchPanActive   = false;
 
 controls.addEventListener('start', () => { isCameraGliding = false; });
 
-scene.add(new THREE.AmbientLight(0xe2e8f0, 0.85));
+scene.add(new THREE.AmbientLight(0xe2e8f0, 0.86));
 const sun = new THREE.DirectionalLight(0xffffff, 0.85);
-sun.position.set(50, 95, -50);
+sun.position.set(55, 95, -35);
 scene.add(sun);
 
 const grid = new THREE.GridHelper(120, 60, 0x1e293b, 0x0f172a);
@@ -464,6 +502,9 @@ function box(w, h, d, mat, x, y, z) {
   return m;
 }
 
+// Separate array for ONLY floor slabs & furniture bases so transparent walls NEVER steal taps!
+const floorClickTargets = [];
+
 function buildArchitecturalRoom(r, wallH, isSelected) {
   const [id, fl, x, z, w, d, tp, fx] = r;
   const group = new THREE.Group();
@@ -475,7 +516,7 @@ function buildArchitecturalRoom(r, wallH, isSelected) {
   const isDining = (fx === 'din');
 
   if (isVoid) {
-    const railH = 3.5;
+    const railH = 3.2;
     group.add(
       box(w, railH, 0.2, matGlass, 0, railH/2, d/2 - 0.1),
       box(0.2, railH, d, matGlass, -w/2 + 0.1, railH/2, 0),
@@ -487,31 +528,39 @@ function buildArchitecturalRoom(r, wallH, isSelected) {
       new THREE.EdgesGeometry(frameGeo),
       new THREE.LineBasicMaterial({ color: isSelected ? 0xffffff : 0xfbbf24 })
     ));
-    group.add(box(w, 0.1, d, new THREE.MeshBasicMaterial({ visible: false }), 0, 0, 0));
-    group.traverse(ch => { ch.userData = { room: r }; });
+    const voidSlab = box(w - 0.2, 0.3, d - 0.2, new THREE.MeshBasicMaterial({ visible: false }), 0, 0.15, 0);
+    voidSlab.userData = { room: r };
+    floorClickTargets.push(voidSlab);
+    group.add(voidSlab);
     return group;
   }
 
-  const slabH = 0.35;
+  // 1. Solid Clickable Floor Slab (Primary Raycast Target — Never Blocked by Walls!)
+  const slabH = 0.45;
   const slabMat = new THREE.MeshPhongMaterial({
     color: isSelected ? 0x0284c7 : col,
     emissive: isSelected ? 0x38bdf8 : (isDefect ? 0xf43f5e : col),
-    emissiveIntensity: isSelected ? 0.45 : (isDefect ? 0.3 : 0.08)
+    emissiveIntensity: isSelected ? 0.55 : (isDefect ? 0.3 : 0.08)
   });
-  const floorTile = box(w - 0.1, slabH, d - 0.1, slabMat, 0, slabH / 2, 0);
+  const floorTile = box(w - 0.12, slabH, d - 0.12, slabMat, 0, slabH / 2, 0);
+  floorTile.userData = { room: r };
+  floorClickTargets.push(floorTile);
+
   floorTile.add(new THREE.LineSegments(
     new THREE.EdgesGeometry(floorTile.geometry),
     new THREE.LineBasicMaterial({ color: isSelected ? 0xffffff : (isLift ? 0xfbbf24 : 0x64748b) })
   ));
   group.add(floorTile);
 
+  // 2. Visual Extruded Walls (Excluded from `floorClickTargets` so they NEVER block your finger!)
   if (!isGarden) {
     const t = 0.35;
-    const actualWallH = isDining ? (wallH * 2.1) : wallH;
+    const actualWallH = (isDining && curFloor === 'all') ? (wallH * 2.1) : wallH;
     const wMat = new THREE.MeshLambertMaterial({
       color: isSelected ? 0x38bdf8 : (isDefect ? 0xf43f5e : (isLift ? 0xf59e0b : 0xcbd5e1)),
       transparent: true,
-      opacity: isSelected ? 0.65 : (isDining ? 0.25 : 0.38)
+      opacity: isSelected ? 0.65 : (isDining ? 0.25 : 0.32),
+      depthWrite: false
     });
     const nWall = box(t, actualWallH, d, wMat, -w/2 + t/2, slabH + actualWallH/2, 0);
     const sWall = box(t, actualWallH, d, wMat,  w/2 - t/2, slabH + actualWallH/2, 0);
@@ -520,164 +569,154 @@ function buildArchitecturalRoom(r, wallH, isSelected) {
     [nWall, sWall, eWall, wWall].forEach(wl => {
       wl.add(new THREE.LineSegments(
         new THREE.EdgesGeometry(wl.geometry),
-        new THREE.LineBasicMaterial({ color: isSelected ? 0xffffff : (isDining ? 0xfbbf24 : 0x475569), transparent: true, opacity: 0.7 })
+        new THREE.LineBasicMaterial({ color: isSelected ? 0xffffff : (isDining ? 0xfbbf24 : 0x475569), transparent: true, opacity: isSelected ? 1.0 : 0.65 })
       ));
       group.add(wl);
     });
   }
 
+  // 3. Interior Fixtures (Also tagged so tapping a bed, desk, or kitchen island selects its room)
+  const fixGroup = new THREE.Group();
   const by = slabH;
   if (fx === "din") {
-    group.add(box(3.8, 2.4, 8.2, matTimber, 0, by + 1.2, 0));
+    fixGroup.add(box(3.8, 2.4, 8.2, matTimber, 0, by + 1.2, 0));
     for (let c = -3; c <= 3; c += 2) {
-      group.add(
+      fixGroup.add(
         box(1.2, 2.8, 1.2, matCeramic, -2.5, by + 1.4, c),
         box(1.2, 2.8, 1.2, matCeramic,  2.5, by + 1.4, c)
       );
     }
-    const cordH = Math.max(8, wallH * 1.8);
-    group.add(
-      box(0.15, cordH, 0.15, matGold, 0, by + 6 + cordH/2, 0),
-      box(2.6, 0.4, 5.0, matGold, 0, by + 6.5, 0),
-      box(1.6, 0.4, 3.2, matGold, 0, by + 8.5, 0)
+    const cordH = Math.max(7, wallH * 1.6);
+    fixGroup.add(
+      box(0.15, cordH, 0.15, matGold, 0, by + 5.5 + cordH/2, 0),
+      box(2.6, 0.4, 5.0, matGold, 0, by + 6.0, 0),
+      box(1.6, 0.4, 3.2, matGold, 0, by + 7.8, 0)
     );
   } else if (fx === "office_foyer") {
-    // Coinciding Foyer + Home Office: Slatted Foyer Screen + East-Facing Executive Work Desk + Visitor Sofa
-    group.add(
-      box(0.2, Math.min(wallH, 7.0), 4.5, matTimber, w/2 - 2.8, by + Math.min(wallH, 7.0)/2, d/2 - 2.2),
+    fixGroup.add(
+      box(0.2, Math.min(wallH, 6.0), 4.5, matTimber, w/2 - 2.8, by + Math.min(wallH, 6.0)/2, d/2 - 2.2),
       box(4.6, 2.4, 2.2, matTimber, -1.2, by + 1.2, -d/2 + 2.2),
       box(1.6, 2.8, 1.6, matCeramic, -1.2, by + 1.4, -d/2 + 4.2),
       box(2.0, 1.8, 4.8, matSofa, -w/2 + 1.6, by + 0.9, 1.8)
     );
   } else if (fx === "kit_grand") {
-    // Expanded 18'-3" Chef's Island Kitchen: East Hob Counter + South Counter + 6ft Center Island + Tall Fridge/Ovens
-    group.add(
+    fixGroup.add(
       box(w - 1.2, 2.7, 1.9, matTimber, 0, by + 1.35, -d/2 + 1.2),
       box(1.9, 2.7, d - 2.4, matTimber, w/2 - 1.2, by + 1.35, 0),
       box(2.6, 0.2, 1.2, matCeramic, 0.8, by + 2.8, -d/2 + 1.2),
       box(3.2, 2.8, 6.2, matCeramic, -0.8, by + 1.4, 0.5),
       box(3.4, 0.2, 6.4, matTimber, -0.8, by + 2.85, 0.5),
-      box(2.2, Math.min(wallH, 6.8), 4.2, matSofa, -w/2 + 1.4, by + Math.min(wallH, 6.8)/2, d/2 - 2.5)
+      box(2.2, Math.min(wallH, 5.5), 4.2, matSofa, -w/2 + 1.4, by + Math.min(wallH, 5.5)/2, d/2 - 2.5)
     );
   } else if (fx === "b_ms") {
-    group.add(
+    fixGroup.add(
       box(3.6, 2.4, 1.6, matTimber, -w/2 + 2.2, by + 1.2, -d/2 + 1.1),
       box(1.1, 0.3, 0.9, matCeramic, -w/2 + 1.5, by + 2.55, -d/2 + 1.1),
       box(1.1, 0.3, 0.9, matCeramic, -w/2 + 2.9, by + 2.55, -d/2 + 1.1),
-      box(1.4, 1.5, 1.8, matCeramic, 0, by + 0.75, -d/2 + 1.2),
-      box(0.15, Math.min(wallH, 6.8), d - 0.8, matGlass, w/2 - 3.8, by + Math.min(wallH, 6.8)/2, 0)
+      box(1.4, 1.5, 1.8, matCeramic, 0, by + 0.75, -d/2 + 1.2)
     );
   } else if (fx === "b_at") {
-    group.add(
+    fixGroup.add(
       box(2.2, 2.4, 1.4, matTimber, -w/2 + 1.4, by + 1.2, -d/2 + 1.1),
       box(1.1, 0.3, 0.8, matCeramic, -w/2 + 1.4, by + 2.55, -d/2 + 1.1),
-      box(1.5, 1.5, 1.4, matCeramic, w/2 - 1.1, by + 0.75, 0),
-      box(w - 0.8, Math.min(wallH, 6.8), 0.15, matGlass, 0, by + Math.min(wallH, 6.8)/2, d/2 - 3.2)
+      box(1.5, 1.5, 1.4, matCeramic, w/2 - 1.1, by + 0.75, 0)
     );
   } else if (fx === "b_pw") {
-    group.add(
+    fixGroup.add(
       box(1.8, 2.4, 1.2, matTimber, 0, by + 1.2, -d/2 + 1.0),
       box(1.3, 1.5, 1.6, matCeramic, 0, by + 0.75, d/2 - 1.2)
     );
   } else if (fx === "kit") {
-    group.add(
+    fixGroup.add(
       box(w - 1.2, 2.7, 1.9, matTimber, 0, by + 1.35, -d/2 + 1.3),
       box(1.9, 2.7, d - 3.0, matTimber, w/2 - 1.3, by + 1.35, 0.8),
       box(2.4, 0.2, 1.2, matCeramic, 0, by + 2.8, -d/2 + 1.3)
     );
   } else if (fx === "puj") {
-    group.add(box(2.6, 3.2, 1.3, matGold, 0, by + 1.6, -d/2 + 1.0));
+    fixGroup.add(box(2.6, 3.2, 1.3, matGold, 0, by + 1.6, -d/2 + 1.0));
   } else if (fx === "foy") {
     for (let st = 0; st < 4; st++) {
-      group.add(box(w - 0.6, 0.35, 0.8, matCeramic, 0, by + st * 0.25, -d/2 + 0.5 + st * 0.7));
+      fixGroup.add(box(w - 0.6, 0.35, 0.8, matCeramic, 0, by + st * 0.25, -d/2 + 0.5 + st * 0.7));
     }
-    group.add(
-      box(3.4, 1.7, 1.3, matTimber, 0, by + 0.85, d/2 - 1.0),
-      box(0.25, Math.min(wallH, 7.2), 3.6, matGold, -w/2 + 0.2, by + Math.min(wallH, 7.2)/2, 0)
-    );
+    fixGroup.add(box(3.4, 1.7, 1.3, matTimber, 0, by + 0.85, d/2 - 1.0));
   } else if (fx === "bed") {
-    group.add(
+    fixGroup.add(
       box(6.2, 1.3, 5.6, matCeramic, w/2 - 3.5, by + 0.65, 0),
       box(0.45, 3.4, 6.0, matTimber, w/2 - 0.6, by + 1.7, 0),
       box(5.0, 0.15, 3.6, matSofa, w/2 - 3.8, by + 1.35, 0)
     );
   } else if (fx === "liv") {
-    group.add(
+    fixGroup.add(
       box(6.6, 1.9, 2.4, matSofa, 0, by + 0.95, d/2 - 2.0),
       box(2.4, 1.9, 4.5, matSofa, -w/2 + 2.0, by + 0.95, d/2 - 3.2),
       box(3.4, 1.1, 2.0, matTimber, 0.5, by + 0.55, 0)
     );
   } else if (fx === "wic") {
-    group.add(box(w - 1.0, Math.min(wallH, 7.0), 1.8, matTimber, 0, by + Math.min(wallH, 7.0)/2, d/2 - 1.2));
+    fixGroup.add(box(w - 1.0, 2.4, 1.8, matTimber, 0, by + 1.2, d/2 - 1.2));
   } else if (fx === "str") {
     for (let s = 0; s < 7; s++) {
-      group.add(box(2.6, 0.4, 1.1, matTimber, -1.3, by + 0.4 + s * 0.9, -d/2 + 2.0 + s * 1.1));
-      group.add(box(2.6, 0.4, 1.1, matTimber,  1.3, by + 3.5 + s * 0.9,  d/2 - 2.0 - s * 1.1));
+      fixGroup.add(box(2.6, 0.4, 1.1, matTimber, -1.3, by + 0.4 + s * 0.9, -d/2 + 2.0 + s * 1.1));
+      fixGroup.add(box(2.6, 0.4, 1.1, matTimber,  1.3, by + 3.5 + s * 0.9,  d/2 - 2.0 - s * 1.1));
     }
   } else if (fx === "lft") {
     const b1 = box(5.4, 0.25, 0.25, matGold, 0, by + 0.2, 0); b1.rotation.y = Math.PI/4;
     const b2 = b1.clone(); b2.rotation.y = -Math.PI/4;
-    group.add(b1, b2);
+    fixGroup.add(b1, b2);
   } else if (fx === "g_ne") {
-    group.add(
+    fixGroup.add(
       box(11, 0.35, 3.8, matTimber, -1, by + 0.2, 2.0),
       box(3.8, 0.5, 3.8, matWater, -8.5, by + 0.25, -1.2)
     );
     for (let i = 0; i < 4; i++) {
       const sh = new THREE.Mesh(new THREE.SphereGeometry(1.0, 10, 10), matPlant);
       sh.position.set(-9.5 + i * 5.2, by + 1.0, -2.5);
-      group.add(sh);
+      fixGroup.add(sh);
     }
   } else if (fx === "g_nn") {
     for (let i = 0; i < 5; i++) {
-      const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.8, 5.2, 8), matPlant);
-      tr.position.set(-2.0, by + 2.6, -12.5 + i * 6.2);
-      group.add(tr, box(2.0, 0.15, 1.5, matCeramic, 1.2, by + 0.1, -12.5 + i * 6.2));
+      const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.65, 3.6, 8), matPlant);
+      tr.position.set(-2.0, by + 1.8, -12.5 + i * 6.2);
+      fixGroup.add(tr, box(2.0, 0.15, 1.5, matCeramic, 1.2, by + 0.1, -12.5 + i * 6.2));
     }
   } else if (fx === "g_car") {
-    group.add(
+    fixGroup.add(
       box(12.5, 2.4, 5.4, matSofa, -2, by + 1.4, 0),
       box(6.8, 1.8, 4.8, matGlass, -1.5, by + 3.4, 0)
     );
-    for (let i = -9; i <= 9; i += 3) {
-      group.add(box(0.35, 0.4, 8.2, matTimber, i, by + 8.8, 0));
-    }
   } else if (fx === "ter") {
-    group.add(box(6.5, 2.7, 1.9, matTimber, 0, by + 1.35, -d/2 + 1.8));
-    for (let i = -4.5; i <= 4.5; i += 3) {
-      group.add(box(12.5, 0.35, 0.35, matTimber, 0, by + 8.5, i));
-    }
+    fixGroup.add(box(6.5, 2.7, 1.9, matTimber, 0, by + 1.35, -d/2 + 1.8));
   }
 
-  group.traverse(ch => { ch.userData = { room: r }; });
+  fixGroup.traverse(ch => {
+    if (ch.isMesh) {
+      ch.userData = { room: r };
+      floorClickTargets.push(ch);
+    }
+  });
+  group.add(fixGroup);
   return group;
 }
 
-let curMode = 'reim', curFloor = 'all', wallHeight = 4.5, explode = 1.35;
+// Start on Ground Floor (0) using the Entrance Side (+X) as the Foreground Reference Point!
+let curMode = 'reim', curFloor = 0, wallHeight = 3.2, explode = 1.35;
 let showAllTags = false;
 let currentCamPreset = 'entrance';
-// Default selected room highlights the new Coinciding Foyer + Home Office!
 let selectedId = 'r_off';
 
 const bimGroup = new THREE.Group();
 scene.add(bimGroup);
-const hitMeshes = [], domTags = [];
+const domTags = [];
 
-// Responsive Scale + Vertical Screen-Space Centering for Portrait Phones!
-function getViewportMetrics() {
+function getFitMultiplier() {
   const w = vp.clientWidth || window.innerWidth;
   const h = vp.clientHeight || window.innerHeight;
   const aspect = w / h;
-  const isPortrait = aspect < 1;
-  const scale = isPortrait ? Math.min(1.65, 1 / Math.pow(aspect, 0.55)) : 1.0;
-  // On portrait phones, aim slightly lower in Y so the 3D building shifts UP into the center of the screen!
-  const yOffset = isPortrait ? -5.5 : 0;
-  return { scale, yOffset, isPortrait };
+  return aspect < 1 ? Math.min(2.1, 0.94 / aspect) : 1.05;
 }
 
-function renderBIM(focusSelected = false) {
+function renderBIM(focusRoom = false) {
   while (bimGroup.children.length) bimGroup.remove(bimGroup.children[0]);
-  hitMeshes.length = 0;
+  floorClickTargets.length = 0;
   lblLayer.innerHTML = '';
   domTags.length = 0;
 
@@ -708,26 +747,31 @@ function renderBIM(focusSelected = false) {
 
       const roomObj = buildArchitecturalRoom(r, wallHeight, isSel);
       const px = x + w / 2 - 21.5;
-      const py = f * 12 * explode;
+      const py = (curFloor === 'all') ? (f * 12 * explode) : 0;
       const pz = z + d / 2 - 20;
       roomObj.position.set(px, py, pz);
       roomObj.userData = { room: r };
       bimGroup.add(roomObj);
-      hitMeshes.push(roomObj);
 
+      // Tapping any 3D Pin also selects the room immediately!
       const pin = document.createElement('div');
       pin.className = 'pin3d' + (isSel ? ' active' : '') + (tp === 'd' ? ' defect' : '');
       pin.innerHTML = `${nm.split(' (')[0]}<span>${dm.split(' (')[0]}</span>`;
+      pin.onclick = (ev) => {
+        ev.stopPropagation();
+        selectedId = id;
+        renderBIM(true);
+      };
       lblLayer.appendChild(pin);
       domTags.push({ el: pin, obj: roomObj, fl: f, isSel: isSel, isGarden: (tp === 'g') });
 
       if (isSel) {
         updateSpecSheet(r);
-        if (focusSelected) {
-          const { yOffset } = getViewportMetrics();
-          glideLookAt.set(px * 0.4, py + 2 + yOffset * 0.5, pz * 0.4);
-          const offset = camera.position.clone().sub(controls.target);
-          glideTargetPos.copy(glideLookAt).add(offset);
+        if (focusRoom) {
+          // Keep the Entrance Side (+X) in the foreground when focusing on any selected room!
+          const m = getFitMultiplier();
+          glideLookAt.set(px * 0.4, py + 1, pz * 0.4);
+          glideTargetPos.set(px * 0.3 + 48 * m, py + 46 * m, pz * 0.3 - 10 * m);
           isCameraGliding = true;
         }
       }
@@ -770,23 +814,59 @@ function stepRoom(dir) {
   renderBIM(true);
 }
 
+function toggleTouchPan() {
+  touchPanActive = !touchPanActive;
+  const btn = document.getElementById('panModeBtn');
+  btn.classList.toggle('active', touchPanActive);
+  btn.innerHTML = touchPanActive ? `🔄<span>ORBIT</span>` : `🖐️<span>PAN</span>`;
+  controls.touches.ONE = touchPanActive ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE;
+  controls.mouseButtons.LEFT = touchPanActive ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE;
+}
+
+function zoomStep(factor) {
+  isCameraGliding = false;
+  const dir = camera.position.clone().sub(controls.target);
+  dir.multiplyScalar(factor);
+  if (dir.length() > 18 && dir.length() < 260) {
+    camera.position.copy(controls.target).add(dir);
+  }
+}
+
+// First-Tap Accurate Raycasting (Intersects ONLY Floor Slabs & Furniture, Ignoring Transparent Walls!)
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
-let downPos = { x: 0, y: 0 };
-vp.addEventListener('pointerdown', e => { downPos = { x: e.clientX, y: e.clientY }; });
+let downPos = { x: 0, y: 0 }, downTime = 0;
+
+vp.addEventListener('pointerdown', e => {
+  downPos = { x: e.clientX, y: e.clientY };
+  downTime = performance.now();
+});
+
 vp.addEventListener('pointerup', e => {
-  if (Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y) > 8) return;
+  // Generous 22px mobile thumb tolerance so slightly rolled taps NEVER get rejected!
+  const moveDist = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y);
+  const elapsed  = performance.now() - downTime;
+  if (moveDist > 22 || elapsed > 600) return;
+
   const rect = vp.getBoundingClientRect();
   mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
   ray.setFromCamera(mouse, camera);
-  const hits = ray.intersectObjects(hitMeshes, true);
-  for (let i = 0; i < hits.length; i++) {
-    let o = hits[i].object;
-    while (o && !o.userData?.room) o = o.parent;
-    if (o?.userData?.room) {
-      selectedId = o.userData.room[0];
+
+  // Intersect ONLY solid floor slabs & furniture!
+  const hits = ray.intersectObjects(floorClickTargets, false);
+  if (hits.length > 0) {
+    // Prefer indoor rooms over outer garden slabs if both are close
+    let chosen = hits[0].object.userData.room;
+    for (let i = 0; i < hits.length; i++) {
+      const candidate = hits[i].object.userData.room;
+      if (candidate && candidate[6] !== 'g') {
+        chosen = candidate;
+        break;
+      }
+    }
+    if (chosen) {
+      selectedId = chosen[0];
       renderBIM(false);
-      break;
     }
   }
 });
@@ -798,12 +878,21 @@ function setMode(m) {
   btns[0].classList.toggle('active', m === 'reim');
   btns[1].classList.toggle('active', m === 'orig');
   renderBIM(false);
+  setCam(currentCamPreset, false);
 }
 
 function setFloor(fl) {
   curFloor = fl;
   const btns = document.getElementById('floorBtns').children;
-  [0, 1, 2, 3].forEach(i => btns[i].classList.toggle('active', (fl === 'all' && i === 0) || fl === i - 1));
+  btns[0].classList.toggle('active', fl === 0);
+  btns[1].classList.toggle('active', fl === 1);
+  btns[2].classList.toggle('active', fl === 2);
+  btns[3].classList.toggle('active', fl === 'all');
+
+  if (fl === 0) selectedId = (curMode === 'reim') ? 'r_off' : 'o_drw';
+  else if (fl === 1) selectedId = (curMode === 'reim') ? 'f_b3' : 'of_t2';
+  else if (fl === 2) selectedId = (curMode === 'reim') ? 's_ter' : 'os_ter';
+
   renderBIM(false);
   setCam(currentCamPreset, false);
 }
@@ -811,7 +900,11 @@ function setFloor(fl) {
 function setWallH(val) { wallHeight = parseFloat(val); renderBIM(false); }
 function setExplode(val) {
   explode = parseFloat(val);
-  hitMeshes.forEach(m => { m.position.y = m.userData.room[1] * 12 * explode; });
+  if (curFloor === 'all') {
+    bimGroup.children.forEach(m => {
+      if (m.userData?.room) m.position.y = m.userData.room[1] * 12 * explode;
+    });
+  }
 }
 
 function toggleAllTags() {
@@ -829,6 +922,9 @@ function toggleMobSliders() {
   btn.classList.toggle('active', isOpen);
 }
 
+// ============================================================================
+// ENTRANCE-REFERENCED CAMERA PRESETS (ENTRANCE SIDE IS ALWAYS FOREGROUND!)
+// ============================================================================
 function setCam(v, selectDefault = true) {
   currentCamPreset = v;
   const cBtns = document.getElementById('camBtns').children;
@@ -837,26 +933,40 @@ function setCam(v, selectDefault = true) {
   cBtns[2].classList.toggle('active', v === 'atrium');
   cBtns[3].classList.toggle('active', v === 'top');
 
-  const { scale, yOffset } = getViewportMetrics();
-  const flY = (curFloor === 'all') ? 6 : (curFloor * 12 * explode);
+  const m = getFitMultiplier();
+  const baseY = (curFloor === 'all') ? 10 : 0;
 
   if (v === 'entrance') {
-    if (selectDefault) { selectedId = (curMode === 'reim') ? 'r_off' : 'o_drw'; renderBIM(false); }
-    glideTargetPos.set(44 * scale, 36 * scale + flY * 0.4, -44 * scale);
-    glideLookAt.set(2, flY + yOffset, -2);
+    // ENTRANCE-REFERENCED 3D VIEW: Camera is on the South-East (+X, -Z) Entrance side looking across the villa!
+    // Foreground = 5'-5" Entrance, Foyer + Home Office, Expanded 18'-3" Kitchen!
+    // Background = North Living Room & Bedroom 01 Suite!
+    if (selectDefault && curFloor === 0) { selectedId = (curMode === 'reim') ? 'r_off' : 'o_drw'; renderBIM(false); }
+    glideLookAt.set(2, baseY, 1);
+    glideTargetPos.set(48 * m, baseY + 50 * m, -14 * m);
   } else if (v === 'kitchen') {
-    if (selectDefault) { selectedId = (curMode === 'reim') ? 'r_kit' : 'o_kit'; renderBIM(false); }
-    glideTargetPos.set(46 * scale, 38 * scale + flY * 0.3, 38 * scale);
-    glideLookAt.set(6, flY + yOffset, 4);
+    if (selectDefault) { curFloor = 0; syncFloorBtns(); selectedId = (curMode === 'reim') ? 'r_kit' : 'o_kit'; renderBIM(false); }
+    // Foreground focus on the Expanded 10'-3" x 18'-3" Chef's Island Kitchen from the South-West/South!
+    glideLookAt.set(8, 1, 6);
+    glideTargetPos.set(44 * m, 42 * m, 24 * m);
   } else if (v === 'atrium') {
-    if (selectDefault) { selectedId = (curMode === 'reim') ? 'r_din' : 'o_din'; renderBIM(false); }
-    glideTargetPos.set(-16 * scale, 34 * scale + flY * 0.3, -36 * scale);
-    glideLookAt.set(-2, flY + yOffset * 0.6, -4);
+    if (selectDefault) { curFloor = 'all'; syncFloorBtns(); selectedId = (curMode === 'reim') ? 'r_din' : 'o_din'; renderBIM(false); }
+    // Look from the East/Entrance side straight into the Double-Height Dining Void!
+    glideLookAt.set(0, 6, -4);
+    glideTargetPos.set(36 * m, 44 * m, -36 * m);
   } else if (v === 'top') {
-    glideTargetPos.set(0, 88 * scale, 0.01);
-    glideLookAt.set(0, flY, 0);
+    // 2D Top Plan with the Entrance Side (+X) positioned at the Bottom-Right foreground!
+    glideLookAt.set(1, baseY, 1);
+    glideTargetPos.set(4, baseY + 84 * m, 1.01);
   }
   isCameraGliding = true;
+}
+
+function syncFloorBtns() {
+  const btns = document.getElementById('floorBtns').children;
+  btns[0].classList.toggle('active', curFloor === 0);
+  btns[1].classList.toggle('active', curFloor === 1);
+  btns[2].classList.toggle('active', curFloor === 2);
+  btns[3].classList.toggle('active', curFloor === 'all');
 }
 
 function mobTab(tab) {
@@ -886,9 +996,9 @@ ro.observe(vp);
   requestAnimationFrame(animate);
 
   if (isCameraGliding) {
-    camera.position.lerp(glideTargetPos, 0.12);
-    controls.target.lerp(glideLookAt, 0.12);
-    if (camera.position.distanceTo(glideTargetPos) < 0.35 && controls.target.distanceTo(glideLookAt) < 0.2) {
+    camera.position.lerp(glideTargetPos, 0.14);
+    controls.target.lerp(glideLookAt, 0.14);
+    if (camera.position.distanceTo(glideTargetPos) < 0.25 && controls.target.distanceTo(glideLookAt) < 0.15) {
       isCameraGliding = false;
     }
   }
@@ -903,7 +1013,7 @@ ro.observe(vp);
     if (!shouldShow) { t.el.style.display = 'none'; return; }
 
     const v = t.obj.position.clone();
-    v.y += t.isSel ? (wallHeight + 2.2) : 1.5;
+    v.y += t.isSel ? (wallHeight + 1.8) : 1.0;
     v.project(camera);
     if (v.z > 1) { t.el.style.display = 'none'; }
     else {
